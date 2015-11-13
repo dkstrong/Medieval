@@ -1,0 +1,49 @@
+
+Game.png
+size: 512,512
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+Interface/Hud/Key2Hud
+  rotate: false
+  xy: 0, 134
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+Interface/Hud/health
+  rotate: false
+  xy: 64, 70
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Interface/Hud/selection-box
+  rotate: false
+  xy: 192, 192
+  size: 6, 6
+  split: 1, 1, 1, 1
+  orig: 6, 6
+  offset: 0, 0
+  index: -1
+Textures/MoveCommandMarker
+  rotate: false
+  xy: 0, 70
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Textures/TargetCommandMarker
+  rotate: false
+  xy: 128, 134
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Textures/TokenShadow
+  rotate: false
+  xy: 0, 6
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1

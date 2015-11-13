@@ -1,0 +1,184 @@
+These are the references for all art assets
+
+### Characters And Monsters
+Animated Heroes (Knight, Archer, Mage, Priest)
+Clement Wu, Nikolaus, Botanic
+Reskinned and Reanimated by Kevin Boyette
+URL: http://opengameart.org/users/botanic
+
+Skeleton
+zebzorb
+http://opengameart.org/content/low-poly-rigged-skeleton
+
+Goblin
+Lee Zhi Fei
+
+Rock Monster, Rat Monster
+Kevin Boyette
+
+
+Training Dummy
+Danimal
+http://opengameart.org/content/mecha-training-dummy
+reanimated by Daniel Strong
+
+
+### Doors, Crates, Traps, Switches, etc
+Ceramic Pitcher
+Aare
+http://opengameart.org/content/ceramic-bear-mug
+
+Fountains, Chests, Barrels
+Danimal
+http://opengameart.org/content/pixel-dungeons-set1-props-and-stuff
+
+Torch
+cemkalyoncu
+p0ss
+Tapio
+Yughues
+http://opengameart.org/content/izchaks-torches
+
+Spike Trap
+Danimal
+http://opengameart.org/content/spyke-trap-low-poly-updated
+
+Boulder, Bushes
+Duion
+http://opengameart.org/content/uberpack-1
+
+Wooden Crate, Wooden Barrel
+Kevin Boyette
+
+Stairs
+Clint Bellanger
+http://opengameart.org/content/low-poly-stairs
+
+Church
+yd
+http://opengameart.org/content/church
+
+### Decor
+
+Table, chair, bench
+Enetheru
+nicholas.samuel@gmail.com
+http://opengameart.org/content/wooden-furniture
+
+Stacked Barrels
+yd
+http://opengameart.org/content/three-barrels
+
+Trees
+Duion
+http://opengameart.org/content/uberpack-1
+
+### Loot
+Bow_01
+Kevin Boyette
+
+Sword, Bow, Staff
+PantherOne
+URL: http://opengameart.org/users/pantherone
+
+Silver Key
+Renderwahn
+URL: http://opengameart.org/content/key-collection
+
+Gold Key
+Savino
+URL: http://opengameart.org/content/antique-key
+
+Red Key
+yd
+URL: http://opengameart.org/content/low-poly-key
+
+Potion
+sansdound
+URL: http://opengameart.org/content/potions-4
+
+Scrolls
+Clint Bellanger
+http://opengameart.org/content/elemental-scrolls
+
+Book
+Aare
+http://opengameart.org/content/old-book
+
+### Textures
+Floor and Wall textures
+Spiney
+URL: http://opengameart.org/users/spiney, http://opengameart.org/node/12116
+CC-BY
+
+Grass
+para
+http://opengameart.org/content/synthetic-grass-texture-pack
+
+Pit textures
+'Unnamed' ( (Viktor.Hahn@web.de )
+http://opengameart.org/content/unnameds-textures, http://opengameart.org/node/26250, http://opengameart.org/node/26232
+CC-BY-SA
+
+Pressure Plate Texture
+Sindwiller
+http://opengameart.org/content/painted-bolted-metal-tile
+CC-BY-SA
+
+2d Animated effects (lightening spell, etc)
+Clint Bellanger
+http://opengameart.org/users/clint-bellanger
+CC0
+
+Wooden particle texture
+Kevin Boyette
+
+### Interface
+
+
+### Music
+
+http://opengameart.org/content/walking-with-poseidon
+http://opengameart.org/content/arabesque
+http://opengameart.org/content/ritual
+
+
+
+### -------------------
+### -- considering
+### ------------------
+
+These assets may be used in the game, you may or may not see them in some builds.
+
+Stats Icons
+johndh
+URL: http://opengameart.org/content/simple-stat-icons
+
+
+Flying Loot (has 3d models of various types of loot)
+http://opengameart.org/content/flying-loot-animations
+
+
+Scrolls
+http://opengameart.org/content/scroll
+http://opengameart.org/content/burnt-scroll
+http://opengameart.org/content/scroll-wooden-rollers
+http://opengameart.org/content/scrolls-0
+
+
+Books
+http://opengameart.org/content/spell-book-of-fire
+http://opengameart.org/content/spell-book-pack-0
+http://opengameart.org/content/old-book
+http://opengameart.org/content/book
+http://opengameart.org/content/spell-book
+
+Music
+http://opengameart.org/content/magical-theme
+
+Weapons
+http://opengameart.org/content/staff-1
+http://opengameart.org/content/simple-axe
+
+Decor
+http://opengameart.org/content/medieval-props-textured

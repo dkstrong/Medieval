@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 18.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Capa_1"
+   x="0px"
+   y="0px"
+   width="1000px"
+   height="1000px"
+   viewBox="0 0 1000 1000"
+   enable-background="new 0 0 1000 1000"
+   xml:space="preserve"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="back.svg"
+   inkscape:export-filename="C:\Users\Danny\dev\IdeaProjects\CrazyJacks\images\GameSkin\back.png"
+   inkscape:export-xdpi="5.7600002"
+   inkscape:export-ydpi="5.7600002"><metadata
+   id="metadata9"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs7" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1920"
+   inkscape:window-height="1018"
+   id="namedview5"
+   showgrid="false"
+   inkscape:zoom="0.472"
+   inkscape:cx="930.75809"
+   inkscape:cy="511.35752"
+   inkscape:window-x="-8"
+   inkscape:window-y="-8"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Capa_1" />
+<path
+   d="m 914.8,814.5 c -24.4,24.4 -52.9,43.7 -84.5,57.1 -32.9,14 -67.8,21.1 -103.6,21.1 H 82 c -41.4,0 -75,-33.6 -75,-75 0,-41.4 33.6,-75 75,-75 h 644.7 c 30.9,0 60,-12.2 82.1,-34.2 22.1,-22.1 34.2,-51.2 34.2,-82.1 v -97 c 0,-30.9 -12.2,-60 -34.2,-82.1 -22.1,-22.1 -51.2,-34.2 -82.1,-34.2 h -284 l 44.1,44.1 c 29.3,29.3 29.3,76.8 0,106.1 -29.3,29.3 -76.8,29.3 -106.1,0 L 208,390.5 c -29.3,-29.3 -29.3,-76.8 0,-106.1 L 380.7,111.7 c 14.6,-14.6 33.8,-22 53,-22 19.2,0 38.4,7.3 53,22 29.3,29.3 29.3,76.8 0,106.1 L 441.5,263 h 285.2 c 35.8,0 70.7,7.1 103.6,21.1 31.7,13.4 60.1,32.7 84.5,57.1 24.4,24.4 43.7,52.9 57.1,84.5 14,32.9 21.1,67.8 21.1,103.6 v 97 c 0,35.8 -7.1,70.7 -21.1,103.6 -13.4,31.7 -32.6,60.1 -57.1,84.6 z"
+   id="path3"
+   style="fill:#a7a9ac;fill-opacity:1"
+   inkscape:connector-curvature="0" />
+</svg>
