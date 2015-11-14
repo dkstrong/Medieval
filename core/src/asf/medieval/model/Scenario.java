@@ -37,7 +37,7 @@ public class Scenario {
 	{
 		SoldierToken soldierToken= new SoldierToken();
 		soldierToken.init(this);
-		steerGraph.addAgent(soldierToken.agent);
+		steerGraph.agents.add(soldierToken);
 		tokens.add(soldierToken);
 		if(listener!=null)
 			listener.onNewSoldier(soldierToken);
@@ -54,7 +54,7 @@ public class Scenario {
 
 			for (int i = 0; i < others.size; i++) {
 				SoldierToken other = (SoldierToken)others.get(i);
-				if (character.location.dst(other.location) <= character.boundingRadius + other.boundingRadius + minDistanceFromBoundary)
+				if (character.location.dst(other.location) <= character.radius + other.radius + minDistanceFromBoundary)
 					continue SET_NEW_POS;
 			}
 			return;

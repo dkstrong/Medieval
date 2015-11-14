@@ -203,6 +203,19 @@ public class UtMath {
 		return fValue * fValue;
 	}
 
+	/**
+	 * truncate the length of the vector to the given limit
+	 */
+	public static void truncate(Vector3 source, float limit) {
+
+		if (source.len2() <= UtMath.sqr(limit)) {
+			//return source;
+		} else {
+			UtMath.scaleAdd(source.nor(), limit, Vector3.Zero);
+			//source.nor().scaleAdd(limit, Vector3.Zero);
+		}
+	}
+
 
 	/**
 	 * use this value as the "scale" value in interpolation to use hermite acceleration (easily start up, easily slow down at the end)

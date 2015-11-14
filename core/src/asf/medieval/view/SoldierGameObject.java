@@ -35,7 +35,7 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 		this.world = world;
 		this.token = soldierToken;
 
-		shape = new Box( token.boundingRadius, token.height/2f, token.boundingRadius, 0, token.height/2f, 0);
+		shape = new Box( token.radius, token.height/2f, token.radius, 0, token.height/2f, 0);
 
 		Model model = world.assetManager.get("Models/Characters/Skeleton.g3db");
 		modelInstance = new ModelInstance(model);
@@ -47,12 +47,12 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 
 
 
-		//shape = new Disc(token.boundingRadius);
-		//shape = new Sphere(token.boundingRadius,0, token.height/2f, 0);
+		//shape = new Disc(token.radius);
+		//shape = new Sphere(token.radius,0, token.height/2f, 0);
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(token.boundingRadius*2, token.boundingRadius*2);
+		selectionDecal.setDimensions(token.radius *2, token.radius *2);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 

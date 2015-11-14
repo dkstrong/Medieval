@@ -1,11 +1,20 @@
 package asf.medieval.ai;
 
+import asf.medieval.ai.behavior.Behavior;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.List;
 
 /**
+ * You can extend this class and use it as an easy example
+ * of how to calculate velocities using the steering system
+ *
+ * to move the agent just do
+ *
+ * vehicle.updateVelocity();
+ * agent.location += vehicle.velocity
+ *
  * Created by Danny on 11/13/2015.
  */
 public abstract class Vehicle implements SteerAgent {
@@ -17,9 +26,7 @@ public abstract class Vehicle implements SteerAgent {
 	private final Vector3 velocity = new Vector3();
 	//
 	//private SteerGraph steerGraph;
-	private Behavior[] behavior;
-	private Vector3 staticTarget;
-	private SteerAgent agentTarget;
+	public Behavior behavior;
 
 	public Vehicle() {
 		this(1.5f, 2.0f, 1.0f, 0.5f);
@@ -37,19 +44,21 @@ public abstract class Vehicle implements SteerAgent {
 	}
 
 	private final Vector3 force = new Vector3();
-
 	public void updateVelocity(SteerGraph steerGraph, float delta) {
 
 
-		if (staticTarget != null) {
-			force.set(steerGraph.calcSteeringForce(this, staticTarget, delta, behavior));
-		} else if (agentTarget != null) {
-			force.set(steerGraph.calcSteeringForce(this, agentTarget, delta, behavior));
-		} else {
-			force.set(0, 0, 0);
+		if(behavior != null)
+		{
+			behavior.update(delta);
+			force.set(behavior.getForce());
+		}
+		else
+		{
+			force.set(0,0,0);
 		}
 
-		truncate(force, maxTurnForce * delta);
+		UtMath.truncate(force, maxTurnForce * delta);
+
 
 		if (mass < Float.MIN_VALUE) {
 			UtMath.scaleAdd(force.nor(), maxSpeed, Vector3.Zero);
@@ -58,86 +67,15 @@ public abstract class Vehicle implements SteerAgent {
 		} else {
 			Vector3 acceleration = force.scl(1f/mass);
 			velocity.add(acceleration);
-			truncate(velocity, maxSpeed);
+			UtMath.truncate(velocity, maxSpeed);
 		}
 
 
 	}
 
-	/**
-	 * truncate the length of the vector to the given limit
-	 */
-	private void truncate(Vector3 source, float limit) {
 
-		if (source.len2() <= UtMath.sqr(limit)) {
-			//return source;
-		} else {
-			UtMath.scaleAdd(source.nor(), limit, Vector3.Zero);
-			//source.nor().scaleAdd(limit, Vector3.Zero);
-		}
-	}
 
-	public SteerAgent getTarget() {
-		return agentTarget;
-	}
 
-	public Vector3 getStaticTarget() {
-		return staticTarget;
-	}
-
-	public void clearTarget() {
-		this.behavior = null;
-		this.staticTarget = null;
-		this.agentTarget = null;
-		this.velocity.set(0, 0, 0);
-	}
-
-	public void setTarget(Vector3 staticTarget) {
-		setTarget(staticTarget, Behavior.Seek, Behavior.Avoid, Behavior.Separation);
-	}
-
-	public void setTarget(SteerAgent agentTarget) {
-		setTarget(agentTarget, Behavior.Persuit, Behavior.Avoid, Behavior.Separation);
-	}
-
-	public void setTarget(Vector3 staticTarget, Behavior... behavior) {
-		this.behavior = behavior;
-		this.staticTarget = staticTarget;
-		agentTarget = null;
-	}
-
-	public void setTarget(SteerAgent agentTarget, Behavior... behavior) {
-		this.behavior = behavior;
-		this.agentTarget = agentTarget;
-		staticTarget = null;
-	}
-
-	public boolean isObstructed(SteerGraph steerGraph, float tpf) {
-
-		Vector3 futureLoc = getFutureLocation(tpf);
-
-		if (futureLoc.equals(getLocation())) {
-			//not moving, done here
-			return false;
-		}
-
-		List<SteerAgent> agents = steerGraph.getAgents();
-
-		for (SteerAgent agent : agents) {
-			if (agent == this) {
-				continue; //cant obstruct yourself
-			}
-
-			//TODO: should i consider the distance of the other agents future location instead of current? does it matter?
-
-			if (futureLoc.dst2(agent.getLocation()) < UtMath.sqr(getAvoidanceRadius() + agent.getAvoidanceRadius())) {
-				return true;
-			}
-
-		}
-
-		return false;
-	}
 
 	public Vector3 getVelocity() {
 		return velocity;
