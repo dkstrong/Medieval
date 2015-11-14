@@ -112,7 +112,10 @@ public class HudGameObject implements GameObject,InputProcessor {
 		label.setText(
 
 			"FPS: " + Gdx.graphics.getFramesPerSecond() +
-				"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB");
+			"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB" +
+			"\nCam Center: " + UtMath.round(world.cameraManager.twRtsCamController.center,2) +""
+
+		);
 
 
 		if (selectedSoldiers.size < 1){

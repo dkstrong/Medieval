@@ -225,6 +225,26 @@ public class UtMath {
 	}
 
 
+	public static void lookAt(Vector3 direction, Vector3 up, Quaternion store) {
+
+		Vector3 vect3 = new Vector3();
+		Vector3 vect1 = new Vector3();
+		Vector3 vect2 = new Vector3();
+
+		vect3.set(direction).nor();
+		vect1.set(up).crs(direction).nor();
+		vect2.set(direction).crs(vect1).nor();
+
+		fromAxes(vect1, vect2, vect3, store);
+
+	}
+
+	public static void fromAxes(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Quaternion store) {
+		Matrix3 m3 = new Matrix3(new float[]{xAxis.x, yAxis.x, zAxis.x, xAxis.y, yAxis.y, zAxis.y, xAxis.z, yAxis.z, zAxis.z});
+		store.setFromMatrix(m3);
+	}
+
+
 	/**
 	 * use this value as the "scale" value in interpolation to use hermite acceleration (easily start up, easily slow down at the end)
 	 *

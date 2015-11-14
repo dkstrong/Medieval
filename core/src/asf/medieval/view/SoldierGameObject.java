@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.SoldierToken;
+import asf.medieval.utility.UtMath;
 import asf.medieval.view.shape.Box;
 import asf.medieval.view.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
@@ -43,7 +44,7 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 			animController = new AnimationController(modelInstance);
 			animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
 		}
-		rotation.setEulerAngles(180f, 0, 0);
+		//rotation.setEulerAngles(180f, 0, 0);
 
 
 
@@ -61,6 +62,14 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 	@Override
 	public void update(float delta) {
 		translation.set(token.location);
+
+		Vector3 dir = token.getVelocity().cpy().nor();
+		dir.x *= -1f; // TODO: why do i need to flip the x direction !?!?!
+		dir.y *= -1f;
+		rotation.setFromCross(dir, Vector3.Z);
+
+
+
 
 		if (animController != null)
 			animController.update(delta);

@@ -9,9 +9,10 @@ import com.badlogic.gdx.math.Vector3;
  * Created by Daniel Strong on 11/11/2015.
  */
 public class SoldierToken implements Token, SteerAgent {
-	Scenario scenario;
+	private Scenario scenario;
 
 	public final Vector3 location = new Vector3();
+
 	public float radius = 1;
 	public float height = 7.5f;
 
