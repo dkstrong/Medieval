@@ -1,7 +1,6 @@
 package asf.medieval.model;
 
 import asf.medieval.ai.SteerAgent;
-import asf.medieval.ai.Vehicle;
 import asf.medieval.ai.behavior.*;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector3;
@@ -38,34 +37,30 @@ public class SoldierToken implements Token, SteerAgent {
 
 	private final Vector3 force = new Vector3();
 
-	private void updateVelocityAndLocation(float delta)
-	{
-		location.add(force);
-	}
 
-	private void updateVelocityAndLocationOld(float delta)
+	private void updateVelocityAndLocation(float delta)
 	{
 		if(behavior != null)
 		{
 			behavior.update(delta);
 			force.set(behavior.getForce());
+
 		}
 		else
 		{
 			force.set(0,0,0);
 		}
 
-		UtMath.truncate(force, maxTurnForce * delta);
-
 
 		if (mass < Float.MIN_VALUE) {
-			UtMath.scaleAdd(force.nor(), maxSpeed, Vector3.Zero);
+			force.nor().scl(maxSpeed);
+			//UtMath.scaleAdd(force.nor(), maxSpeed, Vector3.Zero);
 			//force.nor().scaleAdd(maxSpeed, Vector3.Zero);
 			velocity.set(force);
 		} else {
-			Vector3 acceleration = force.scl(1f/mass);
-			velocity.add(acceleration);
-			UtMath.truncate(velocity, maxSpeed);
+			UtMath.truncate(force, maxTurnForce * delta);
+			force.scl(1f/mass);
+			UtMath.truncate(velocity.add(force), maxSpeed);
 		}
 
 
@@ -74,8 +69,7 @@ public class SoldierToken implements Token, SteerAgent {
 			//if (!canStepIntoOtherAgents && agent.isObstructed(tpf)) {
 			//        setVelocity(velocity.negate());
 			//}
-
-			location.add(velocity.cpy().scl(delta));
+			location.mulAdd(velocity, delta);
 
 			//Quaternion rotTo = spatial.getLocalRotation().clone();
 			//rotTo.lookAt(velocity.normalize(), Vector3f.UNIT_Y);
@@ -93,7 +87,14 @@ public class SoldierToken implements Token, SteerAgent {
 
 		Seek seek = new Seek();
 		seek.agent = this;
-		seek.staticTargetLocation.set(staticTarget);
+		seek.target.set(staticTarget);
+
+		Arrival arrival = new Arrival();
+		arrival.agent = this;
+		arrival.target.set(staticTarget);
+
+		Wander wander = new Wander();
+		wander.agent = this;
 
 		Avoid avoid = new Avoid();
 		avoid.agent = this;
@@ -105,7 +106,10 @@ public class SoldierToken implements Token, SteerAgent {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.behaviors.addAll(seek, avoid, separation);
+		blend.add(arrival,0.25f);
+		blend.add(avoid,0.25f);
+		blend.add(separation,4f);
+		blend.calcWeights();
 
 		behavior = blend;
 	}
@@ -125,7 +129,9 @@ public class SoldierToken implements Token, SteerAgent {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.behaviors.addAll(seek, avoid, separation);
+		blend.add(seek,1);
+		blend.add(avoid,1);
+		blend.add(separation,1);
 
 		behavior = blend;
 	}

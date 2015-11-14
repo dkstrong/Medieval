@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Evade implements Behavior{
 
-	private Vector3 steeringOut = new Vector3();
+	private Vector3 force = new Vector3();
 
 	public SteerAgent agent;
 
@@ -26,19 +26,41 @@ public class Evade implements Behavior{
 	@Override
 	public void update(float delta) {
 
+		newVersion(delta);
+	}
+
+	private void newVersion(float delta)
+	{
+		float distance = agent.getLocation().dst(target.getLocation());
+		float t = distance / agent.getMaxSpeed();
+
+		Vector3 targetLocation = target.getFutureLocation(t);
+
+		// does a basic flee to the future location of the target
+		force.set(agent.getLocation()).sub(targetLocation);
+		force.nor().scl(agent.getMaxSpeed());
+		force.sub(agent.getVelocity());
+
+	}
+
+	private void oldVersion(float delta)
+	{
+		Vector3 temp1 = new Vector3();
+
 		Vector3 targetLocation = target.getFutureLocation(delta);
 		// calculate speed difference to see how far ahead we need to leed
 		float speedDiff = target.getMaxSpeed() - agent.getMaxSpeed();
 		float desiredSpeed = (target.getMaxSpeed() + speedDiff) * delta;
-		Vector3 targetVelocity = temp1.set(target.getVelocity()).scl(desiredSpeed);
-		Vector3 projectedLocation = targetVelocity.add(targetLocation); // projectedLocation = targetLocation + targetVelocity
-		Vector3 desierdVel = projectedLocation.sub(agent.getLocation()).nor().scl(agent.getMaxSpeed());
-		Vector3 steering = desierdVel.sub(agent.getVelocity()).scl(-1f);  // negate the direction
-		steeringOut.set(steering);
+
+		force.set(target.getVelocity()).scl(desiredSpeed);
+		force.add(targetLocation);
+		force.sub(agent.getLocation()).nor().scl(agent.getMaxSpeed());
+		force.sub(agent.getVelocity()).scl(-1f);
 	}
+
 
 	@Override
 	public Vector3 getForce() {
-		return steeringOut;
+		return force;
 	}
 }

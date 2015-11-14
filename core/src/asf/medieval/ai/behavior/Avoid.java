@@ -12,6 +12,9 @@ import java.util.List;
  *
  * avoid obstacles (SteeringAgents with velocity == Zero)
  *
+ *
+ * http://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
+ *
  * Created by daniel on 11/13/15.
  */
 public class Avoid implements Behavior{

@@ -181,18 +181,26 @@ public class HudGameObject implements GameObject,InputProcessor {
 			{
 				// Direct selection
 				Ray ray = getWorldCoord(screenX, screenY, vec1);
+				SoldierGameObject closestSgo = null;
+				float closestDistance = Float.MAX_VALUE;
 
 				for (GameObject gameObject : world.gameObjects) {
 					if(gameObject instanceof SoldierGameObject)
 					{
 						SoldierGameObject sgo = (SoldierGameObject) gameObject;
-						sgo.selected  = sgo.intersects(ray) >0;
-						if(sgo.selected){
-							selectedSoldiers.add(sgo);
-							break;
+						sgo.selected  = false;
+						float sgoDistance = sgo.intersects(ray);
+						if(sgoDistance > 0 && sgoDistance < closestDistance)
+						{
+							closestDistance = sgoDistance;
+							closestSgo = sgo;
 						}
-
 					}
+				}
+
+				if(closestSgo!=null){
+					closestSgo.selected = true;
+					selectedSoldiers.add(closestSgo);
 				}
 			}
 			else

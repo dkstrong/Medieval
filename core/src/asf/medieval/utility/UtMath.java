@@ -211,9 +211,17 @@ public class UtMath {
 		if (source.len2() <= UtMath.sqr(limit)) {
 			//return source;
 		} else {
-			UtMath.scaleAdd(source.nor(), limit, Vector3.Zero);
+			source.nor().scl(limit);
+			//UtMath.scaleAdd(source.nor(), limit, Vector3.Zero);
 			//source.nor().scaleAdd(limit, Vector3.Zero);
 		}
+	}
+
+	public static void truncateAlt(Vector3 vector, float max)
+	{
+		float i = max / vector.len();
+		i = i < 1.0f ? i : 1.0f;
+		vector.scl(i);
 	}
 
 
