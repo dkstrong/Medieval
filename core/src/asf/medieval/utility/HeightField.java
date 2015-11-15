@@ -1,4 +1,4 @@
-package asf.medieval.terrain;
+package asf.medieval.utility;
 
 
 import java.nio.ByteBuffer;
@@ -19,6 +19,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -430,29 +431,54 @@ public class HeightField implements Disposable {
 	public float getElevationRaycast(Vector3 coordinate) {
 		Vector3 out = new Vector3();
 
-		float[] verticesBody = new float[mesh.getNumVertices()];
-		mesh.getVertices(verticesBody);
-
-		List<float[]> meshes = new ArrayList<float[]>();
-		meshes.add(verticesBody);
-
 		Ray ray = new Ray();
 		ray.origin.set(coordinate.x, 100, coordinate.z);
 		ray.direction.set(0, -1, 0);
 
-		intersectRayMeshes(ray, meshes, out);
+		intersectRayMesh(ray, mesh, out);
+		System.out.println("elevation find: "+out);
 
 		return out.y;
 	}
 
-	private static boolean intersectRayMeshes(Ray ray, List<float[]> meshes, Vector3 globalIntersection) {
+	public void getCoordinateRaycast(Ray ray,Vector3 store)
+	{
+		store.set(0,0,0);
+
+		intersectRayMesh(ray, mesh, store);
+		System.out.println("coordinate find: "+store);
+
+	}
+
+
+	private static boolean intersectRayMesh(Ray ray, Mesh mesh, Vector3 intersectionCoordinate)
+	{
+		boolean intersectionOccured = false;
+		Vector3 tempIntersection = new Vector3();
+
+		float[] verticies = new float[mesh.getNumVertices()* 6];
+		mesh.getVertices(verticies);
+
+		short[] indicies = new short[mesh.getNumIndices()];
+		mesh.getIndices(indicies);
+
+		if (Intersector.intersectRayTriangles(ray, verticies,indicies, 4, tempIntersection)) {
+			intersectionCoordinate.set(tempIntersection);
+			return true;
+		}
+
+		return false;
+
+	}
+
+
+	private static boolean intersectRayMeshes(Ray ray, Array<Mesh> meshes, Vector3 globalIntersection) {
 
 		boolean intersectionOccured = false;
 		Vector3 localIntersection = new Vector3();
 
-		for (float[] mesh : meshes) {
-
-			if (Intersector.intersectRayTriangles(ray, mesh, localIntersection)) {
+		for (Mesh mesh : meshes) {
+			if (intersectRayMesh(ray, mesh, localIntersection)) {
 				if (!intersectionOccured) {
 					globalIntersection.set(localIntersection);
 					intersectionOccured = true;
@@ -469,5 +495,7 @@ public class HeightField implements Disposable {
 
 		return intersectionOccured;
 	}
+
+
 
 }

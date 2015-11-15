@@ -167,8 +167,15 @@ public class HudGameObject implements GameObject,InputProcessor {
 	private Ray getWorldCoord(float screenX, float screenY, Vector3 storeWorldCoord)
 	{
 		Ray ray = world.cameraManager.cam.getPickRay(screenX, screenY);
+
 		final float distance = -ray.origin.y / ray.direction.y;
 		storeWorldCoord.set(ray.direction).scl(distance).add(ray.origin);
+		storeWorldCoord.y = world.scenario.heightField.getElevation(storeWorldCoord);
+
+		//world.scenario.heightField.getCoordinateRaycast(ray, storeWorldCoord);
+		// In order to have a mesh accurate collision i think id need something like this BIH Tree...
+		/// https://github.com/jMonkeyEngine/jmonkeyengine/tree/master/jme3-core/src/main/java/com/jme3/collision
+
 		return ray;
 	}
 

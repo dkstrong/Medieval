@@ -59,7 +59,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 	private final InternalLoadingInputAdapter internalLoadingInputAdapter = new InternalLoadingInputAdapter();
 	public TextureAtlas pack;
 
-	private final Scenario scenario;
+	public final Scenario scenario;
 	protected final Array<GameObject> gameObjects;
 	private HudGameObject hudGameObject;
 	public TerrainGameObject terrainGameObject;
@@ -94,7 +94,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 
 		gameObjects = new Array<GameObject>(false, 128, GameObject.class);
 
-		scenario = new Scenario(new ScenarioRand(settings.random));
+
+		scenario = ScenarioFactory.scenarioTest();
 
 	}
 
@@ -120,7 +121,6 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 
 
 		scenario.setListener(this);
-		ScenarioFactory.steeringTest2(scenario);
 
 		inputMultiplexer.addProcessor(cameraManager.twRtsCamController);
 		inputMultiplexer.addProcessor(hudGameObject);

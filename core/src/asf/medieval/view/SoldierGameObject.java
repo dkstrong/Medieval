@@ -53,7 +53,7 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(token.radius *2, token.radius *2);
+		selectionDecal.setDimensions(token.radius *3.5f, token.radius *3.5f);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
@@ -63,13 +63,31 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 	public void update(float delta) {
 		translation.set(token.location);
 
-		Vector3 dir = token.getVelocity().cpy().nor();
-		dir.x *= -1f; // TODO: why do i need to flip the x direction !?!?!
-		dir.y *= -1f;
-		rotation.setFromCross(dir, Vector3.Z);
 
 
-		translation.y = world.terrainGameObject.field.getElevation(translation);
+
+
+		float speed = token.getVelocity().len();
+		if(speed < .75f)
+		{
+			if (!animController.current.animation.id.startsWith("Idle"))
+				animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+		}
+		else
+		{
+			if (!animController.current.animation.id.startsWith("Walk")){
+				animController.animate("Walk", 0, -1, -1, 1, this, 0.2f);
+			}else{
+				animController.current.speed = speed  /token.getMaxSpeed();
+			}
+
+
+			Vector3 dir = token.getVelocity().cpy();
+			dir.x *= -1f; // TODO: why do i need to flip the x direction !?!?!
+			dir.y  =0;
+			dir.nor();
+			rotation.setFromCross(dir, Vector3.Z);
+		}
 
 
 		if (animController != null)

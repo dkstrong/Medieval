@@ -1,8 +1,13 @@
 package asf.medieval.model;
 
-import com.badlogic.gdx.math.Vector2;
+import asf.medieval.utility.HeightField;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+
+import java.util.Random;
 
 /**
  * Created by Daniel Strong on 11/12/2015.
@@ -10,6 +15,34 @@ import com.badlogic.gdx.utils.Array;
 public class ScenarioFactory {
 
 
+
+	public static Scenario scenarioTest()
+	{
+		ScenarioRand scenarioRand = new ScenarioRand(new Random(1));
+
+		int w = 50, h = 50;
+		float magnitude = 1f;
+		Pixmap data = new Pixmap(Gdx.files.internal("heightmap.png"));
+
+		HeightField field = new HeightField(true, data, true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+		data.dispose();
+		field.corner00.set(-w, 0, -h);
+		field.corner10.set(w, 0, -h);
+		field.corner01.set(-w, 0, h);
+		field.corner11.set(w, 0, h);
+		field.color00.set(0.75f, 0.75f, 0.75f, 1);
+		field.color01.set(0.75f, 0.75f, 0.75f, 1);
+		field.color10.set(0.75f, 0.75f, 0.75f, 1);
+		field.color11.set(0.75f, 0.75f, 0.75f, 1);
+		field.magnitude.set(0f, magnitude, 0f);
+		field.update();
+
+
+		Scenario scenario = new Scenario(scenarioRand, field);
+
+		steeringTest2(scenario);
+		return scenario;
+	}
 
 	public static void seekPosition(SoldierToken character, Vector3 position)
 	{
@@ -25,8 +58,6 @@ public class ScenarioFactory {
 
 	public static Scenario steeringTest(Scenario scenario)
 	{
-		if(scenario == null)
-			scenario = new Scenario(null);
 		SoldierToken character = scenario.newSoldier();
 
 		seekPosition(character, new Vector3(10,0,0));
@@ -36,8 +67,6 @@ public class ScenarioFactory {
 
 	public static Scenario steeringTest2(Scenario scenario)
 	{
-		if(scenario == null)
-			scenario = new Scenario(null);
 
 		Array<SoldierToken> characters;
 

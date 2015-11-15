@@ -1,6 +1,7 @@
 package asf.medieval.model;
 
 import asf.medieval.ai.SteerGraph;
+import asf.medieval.utility.HeightField;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -11,12 +12,14 @@ public class Scenario {
 	protected transient Listener listener;
 
 	protected final ScenarioRand rand;
+	public HeightField heightField;
 	protected final SteerGraph steerGraph = new SteerGraph();
 
 	protected Array<Token> tokens = new Array<Token>(false, 256, Token.class);
 
-	public Scenario(ScenarioRand rand) {
+	public Scenario(ScenarioRand rand, HeightField heightField) {
 		this.rand = rand;
+		this.heightField = heightField;
 	}
 
 	public void setListener(Listener listener) {

@@ -45,6 +45,7 @@ public class SoldierToken implements Token, SteerAgent {
 		{
 			behavior.update(delta);
 			force.set(behavior.getForce());
+				force.y =0;
 
 		}
 		else
@@ -76,7 +77,7 @@ public class SoldierToken implements Token, SteerAgent {
 			//rotTo.lookAt(velocity.normalize(), Vector3f.UNIT_Y);
 			//spatial.setLocalRotation(rotTo);
 		}
-		location.y = 0;
+		location.y = scenario.heightField.getElevation(location);
 	}
 
 
