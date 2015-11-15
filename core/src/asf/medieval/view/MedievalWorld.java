@@ -5,6 +5,8 @@ import asf.medieval.model.Scenario;
 import asf.medieval.model.ScenarioFactory;
 import asf.medieval.model.ScenarioRand;
 import asf.medieval.model.SoldierToken;
+import asf.medieval.net.GameClient;
+import asf.medieval.net.GameServer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -26,6 +28,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -36,6 +39,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 
 	public static class Settings {
 
+		public boolean server;
 		public Random random;
 	}
 
@@ -59,12 +63,15 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 	private final InternalLoadingInputAdapter internalLoadingInputAdapter = new InternalLoadingInputAdapter();
 	public TextureAtlas pack;
 
+	private GameServer gameServer;
+	private GameClient gameClient;
+
 	public final Scenario scenario;
 	protected final Array<GameObject> gameObjects;
 	private HudGameObject hudGameObject;
 	public TerrainGameObject terrainGameObject;
 
-	public MedievalWorld(MedievalApp app, Settings settings) {
+	public MedievalWorld(MedievalApp app, Settings settings)  {
 		this.app = app;
 		this.settings = settings;
 		cameraManager = new CameraManager();
@@ -96,6 +103,17 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 
 
 		scenario = ScenarioFactory.scenarioTest();
+
+		if(settings.server){
+			try {
+				gameServer = new GameServer(scenario);
+			} catch (IOException e) {
+				// TODO: better// proper handling here..
+				e.printStackTrace();
+				System.err.println("failed to launch server");
+				Gdx.app.exit();
+			}
+		}
 
 	}
 

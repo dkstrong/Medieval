@@ -12,6 +12,7 @@ public class UtMath {
 	public static final float PI = (float)Math.PI;
 	public static final float HALF_PI = (float)Math.PI / 2f;
 	public static final float QUARTER_PI = (float)Math.PI / 4f;
+	public static final float ONE_THIRD = 1f / 3f;
 
 
 	public static Vector3 quaternionToEuler(Quaternion quaternion, Vector3 store) {
