@@ -25,6 +25,13 @@ public class UtDebugPrint {
 				System.out.println(String.valueOf(0));
 			}
 		}
+		else if(val instanceof Object[])
+		{
+			Object[] objects = (Object[]) val;
+			for (Object o : objects) {
+				System.out.println(String.valueOf(o));
+			}
+		}
 		else if(val instanceof Vector3)
 		{
 			System.out.println(UtMath.round((Vector3) val, 2));

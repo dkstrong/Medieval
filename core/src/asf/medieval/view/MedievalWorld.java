@@ -62,6 +62,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 	private final Scenario scenario;
 	protected final Array<GameObject> gameObjects;
 	private HudGameObject hudGameObject;
+	public TerrainGameObject terrainGameObject;
 
 	public MedievalWorld(MedievalApp app, Settings settings) {
 		this.app = app;
@@ -70,6 +71,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		environment = new Environment();
 
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.54f, 0.54f, 0.54f, 1f));
+		environment.set(new ColorAttribute(ColorAttribute.Fog, 0.13f, 0.13f, 0.13f, 1f));
 		environment.add(new DirectionalLight().set(0.65f, 0.65f, 0.65f, -1f, -0.8f, 0.3f));
 
 		environment.add((shadowLight = new DirectionalShadowLight(2048, 2048, 200,200, .1f, 800f))
@@ -113,7 +115,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		//cameraManager.setChaseTarget(characterGameObject);
 
 
-		addGameObject(new SceneGameObject(this));
+		//addGameObject(new SceneGameObject(this));
+		addGameObject(terrainGameObject=new TerrainGameObject(this));
 
 
 		scenario.setListener(this);

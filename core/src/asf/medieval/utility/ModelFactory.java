@@ -29,6 +29,14 @@ public class ModelFactory {
 		return model;
 	}
 
+	public static Model coordinate(float length, Color color){
+		ModelBuilder modelBuilder = new ModelBuilder();
+		Material mat = new Material(ColorAttribute.createDiffuse(color));
+		//Model model = modelBuilder.createXYZCoordinates(length, mat, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+		Model model = modelBuilder.createXYZCoordinates(length, 0.1f,0.25f,5,GL20.GL_TRIANGLES,mat, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+		return model;
+	}
+
 	public static Model sphere(float radius, Color color){
 		ModelBuilder modelBuilder = new ModelBuilder();
 		Material mat = new Material(ColorAttribute.createDiffuse(color));

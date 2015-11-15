@@ -25,12 +25,12 @@ public class DebugPosGameObject implements GameObject{
 	public final Vector3 translation = new Vector3();
 	public final Quaternion rotation = new Quaternion();
 
-	private float t = 4;
+	private float t = Float.NaN;
 
-	public DebugPosGameObject(MedievalWorld world, Vector3 pos) {
+	public DebugPosGameObject(MedievalWorld world, Vector3 pos, float length, Color color) {
 		this.world = world;
 
-		Model model = ModelFactory.cylinder(2, 10, Color.YELLOW);
+		Model model = ModelFactory.coordinate(length, color);
 		modelInstance = new ModelInstance(model);
 
 

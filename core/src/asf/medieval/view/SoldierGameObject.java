@@ -69,6 +69,7 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 		rotation.setFromCross(dir, Vector3.Z);
 
 
+		translation.y = world.terrainGameObject.field.getElevation(translation);
 
 
 		if (animController != null)
