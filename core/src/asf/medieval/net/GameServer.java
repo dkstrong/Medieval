@@ -18,6 +18,7 @@ import java.io.*;
  */
 public class GameServer implements Disposable {
 	private Server server;
+	private boolean bound = false;
 
 	public IntMap<PlayerConnection> loggedInPlayerConnections = new IntMap<PlayerConnection>();
 
@@ -39,17 +40,29 @@ public class GameServer implements Disposable {
 
 	public void bindServer(GameServerConfig gameServerConfig)
 	{
+		if(gameServerConfig==null)
+			throw new IllegalArgumentException("gameServerConfig can not be null");
+		if(bound)
+			throw new IllegalStateException("Server is already bound");
+
 		try {
 			server.bind(gameServerConfig.tcpPort, gameServerConfig.udpPort);
+			bound = true;
 			UtLog.trace("server bound to port: "+gameServerConfig.tcpPort);
 		} catch (IOException e) {
 			UtLog.warning("server threw exception while binding to port: "+gameServerConfig.tcpPort, e);
+			bound = false;
 		}
 
 	}
 
+	public boolean isBound(){
+		return bound;
+	}
+
 	public void unbindServer()
 	{
+		bound = false;
 		server.close();
 		UtLog.trace("server unbound connection");
 	}

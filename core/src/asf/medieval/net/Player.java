@@ -7,10 +7,12 @@ public class Player {
 
 	public int id;
 	public String name;
+	public float loading;
+
 
 	@Override
 	public String toString() {
-		return "Player{"+id+"-"+name+"}";
+		return id+"."+name;
 	}
 
 	public void set(Player player){

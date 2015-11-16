@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.ScenarioFactory;
+import asf.medieval.net.Player;
 import asf.medieval.utility.StretchableImage;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -109,11 +111,36 @@ public class HudGameObject implements GameObject,InputProcessor {
 		long used = total - free;
 		int availableProcessors = rt.availableProcessors();
 		*/
+
+		String gameServerStatusString = null;
+		String gameClientStatusString=null;
+		if(world.gameServer!=null){
+			gameServerStatusString = world.gameServer.isBound() ? "Server Online" : "Server Offline";
+		}
+
+		if(world.gameClient!=null){
+			if(gameServerStatusString== null)
+				gameServerStatusString = world.gameClient.isConnected() ? "Connected to: "+world.gameClient.hostName+":"+world.gameClient.tcpPort : "No Server Connection";
+
+			gameClientStatusString="Players:";
+			if(world.gameClient.player.id > 0 && world.gameClient.players.containsKey(world.gameClient.player.id)){
+				gameClientStatusString+= "\n"+String.valueOf(world.gameClient.player);
+			}
+			for (Player player : world.gameClient.players.values()) {
+				if(player.id != world.gameClient.player.id){
+					gameClientStatusString+= "\n"+String.valueOf(player);
+				}
+			}
+		}
+
 		label.setText(
 
 			"FPS: " + Gdx.graphics.getFramesPerSecond() +
 			"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB" +
-			"\nCam Center: " + UtMath.round(world.cameraManager.twRtsCamController.center,2) +""
+			"\n"+
+			(gameServerStatusString != null ? "\n"+gameServerStatusString : "") +
+			(gameClientStatusString != null ? "\n"+gameClientStatusString : "")
+
 
 		);
 

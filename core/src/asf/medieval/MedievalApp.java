@@ -1,5 +1,7 @@
 package asf.medieval;
 
+import asf.medieval.net.GameServerConfig;
+import asf.medieval.utility.UtLog;
 import asf.medieval.view.MedievalWorld;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -10,7 +12,10 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.I18NBundle;
+import com.esotericsoftware.kryonet.Client;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Locale;
 import java.util.Random;
 
@@ -122,7 +127,27 @@ public class MedievalApp extends ApplicationAdapter {
 	private void loadStraightInToGame()
 	{
 		MedievalWorld.Settings settings = new MedievalWorld.Settings();
+
+
+
 		settings.random = new Random(1);
+		settings.gameServerConfig = new GameServerConfig();
+		Client client = new Client();
+		InetAddress inetAddress = client.discoverHost(settings.gameServerConfig.udpPort, 500);
+		try {
+			client.dispose();
+		} catch (IOException e) {
+			e.printStackTrace();
+			UtLog.error("exception throw while disposing client", e);
+		}
+
+		if(inetAddress == null){
+			settings.server = true;
+		}else{
+			settings.client = true;
+		}
+
+
 		loadWorld(settings);
 
 	}

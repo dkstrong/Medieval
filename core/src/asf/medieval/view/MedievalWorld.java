@@ -3,11 +3,11 @@ package asf.medieval.view;
 import asf.medieval.MedievalApp;
 import asf.medieval.model.Scenario;
 import asf.medieval.model.ScenarioFactory;
-import asf.medieval.model.ScenarioRand;
 import asf.medieval.model.SoldierToken;
 import asf.medieval.net.GameClient;
 import asf.medieval.net.GameServer;
 import asf.medieval.net.GameServerConfig;
+import asf.medieval.net.Player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -29,7 +29,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -39,8 +38,10 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 
 
 	public static class Settings {
-
+		public GameServerConfig gameServerConfig;
 		public boolean server;
+		public String hostName;
+		public boolean client;
 		public Random random;
 	}
 
@@ -64,8 +65,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 	private final InternalLoadingInputAdapter internalLoadingInputAdapter = new InternalLoadingInputAdapter();
 	public TextureAtlas pack;
 
-	private GameServer gameServer;
-	private GameClient gameClient;
+	public GameServer gameServer;
+	public GameClient gameClient;
 
 	public final Scenario scenario;
 	protected final Array<GameObject> gameObjects;
@@ -103,11 +104,20 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		gameObjects = new Array<GameObject>(false, 128, GameObject.class);
 
 
-		scenario = ScenarioFactory.scenarioTest();
+		scenario = ScenarioFactory.scenarioFlat();
 
 		if(settings.server){
 			gameServer = new GameServer();
-			gameServer.bindServer(new GameServerConfig());
+			gameServer.bindServer(settings.gameServerConfig);
+		}
+
+		if(settings.server ||  settings.client){
+
+			String hostname = settings.server ? "localhost" : settings.hostName;
+			gameClient = new GameClient();
+			Player player = new Player();
+			player.name = System.getProperty("user.name");
+			gameClient.connectToServer(hostname,settings.gameServerConfig.tcpPort,settings.gameServerConfig.udpPort,player);
 		}
 
 	}

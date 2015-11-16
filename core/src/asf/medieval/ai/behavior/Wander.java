@@ -14,10 +14,17 @@ public class Wander implements Behavior {
 	public SteerAgent agent;
 	public float circleDistance = 10;
 	public float circleRadius = 1;
-	public float angleChange = MathUtils.PI2 * 0.1f;
+	public float angleChange;
 
 	private final Vector3 displacement = new Vector3();
-	private float wanderAngle = MathUtils.random.nextFloat() * MathUtils.PI2;
+	private float wanderAngle;
+
+	public Wander() {
+		// TODO: need to get random instance from scenario or this wont be deterministic
+		angleChange = MathUtils.PI2 * 0.1f;
+		wanderAngle = MathUtils.random.nextFloat() * MathUtils.PI2;
+	}
+
 	@Override
 	public void update(float delta) {
 		// Calculate the circle center

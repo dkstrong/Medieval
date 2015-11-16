@@ -23,16 +23,13 @@ public class GameServerTest {
 
 	@BeforeClass
 	public static void beginTests() {
-
 		UtLog.logLevel = UtLog.TRACE;
-
 		serverApp = DesktopLauncher.launchServerApp(gameServerConfig);
-
 	}
 
 	@AfterClass
 	public static void endTests() {
-		//Gdx.app.exit();
+		Gdx.app.exit();
 	}
 
 	private Array<GameClient> gameClients = new Array<GameClient>();
@@ -45,9 +42,11 @@ public class GameServerTest {
 
 	@After
 	public void tearDown() throws Exception {
+		Thread.sleep(500);
 		for (GameClient gameClient : gameClients) {
-			//gameClient.dispose();
+			gameClient.dispose();
 		}
+		Thread.sleep(500);
 	}
 
 

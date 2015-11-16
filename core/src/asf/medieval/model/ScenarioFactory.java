@@ -16,7 +16,7 @@ public class ScenarioFactory {
 
 
 
-	public static Scenario scenarioTest()
+	public static Scenario scenarioFlat()
 	{
 		ScenarioRand scenarioRand = new ScenarioRand(new Random(1));
 
@@ -37,7 +37,7 @@ public class ScenarioFactory {
 
 		Scenario scenario = new Scenario(scenarioRand, field);
 
-		steeringTest2(scenario);
+		//steeringTest2(scenario);
 		return scenario;
 	}
 

@@ -21,8 +21,11 @@ import java.io.IOException;
  */
 public class GameClient implements Disposable {
 
+	public String hostName;
+	public int tcpPort;
+	public int udpPort;
 	public Client client;
-	IntMap<Player> players = new IntMap<Player>();
+	public IntMap<Player> players = new IntMap<Player>();
 	public Player player;
 
 	public GameClient () {
@@ -38,6 +41,9 @@ public class GameClient implements Disposable {
 	}
 
 	public void connectToServer(String hostName, int tcpPort, int udpPort, Player player){
+		this.hostName = hostName;
+		this.tcpPort = tcpPort;
+		this.udpPort = udpPort;
 		this.player = player;
 		if(this.player == null) throw new AssertionError("player can not be null");
 
@@ -68,6 +74,10 @@ public class GameClient implements Disposable {
 			UtLog.warning("exception thrown while disposing Client",e);
 		}
 		UtLog.trace("client stopped and disposed");
+	}
+
+	public boolean isConnected(){
+		return client.isConnected();
 	}
 
 	private class MessageListener extends Listener {
@@ -120,7 +130,7 @@ public class GameClient implements Disposable {
 		}
 
 		public void disconnected(Connection connection) {
-			UtLog.trace("disconnected from server", new Exception());
+			UtLog.trace("disconnected from server");
 
 			//System.exit(0);
 		}
