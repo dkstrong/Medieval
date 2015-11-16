@@ -1,6 +1,8 @@
 package asf.medieval.net;
 
 
+import asf.medieval.model.Command;
+import asf.medieval.model.Scenario;
 import asf.medieval.net.message.AddPlayer;
 import asf.medieval.net.message.Login;
 import asf.medieval.net.message.Register;
@@ -27,6 +29,7 @@ public class GameClient implements Disposable {
 	public Client client;
 	public IntMap<Player> players = new IntMap<Player>();
 	public Player player;
+	public Scenario scenario;
 
 	public GameClient () {
 
@@ -79,6 +82,53 @@ public class GameClient implements Disposable {
 	public boolean isConnected(){
 		return client.isConnected();
 	}
+
+	private PendingActions pendingActions;
+	private float frameLength = 0.05f; //50 miliseconds
+	private float accumilatedTime = 0f;
+	private int gameFrame = 0;
+	private int gameFramesPerLocksetpTurn =4;
+
+	private long lockstepFrame=0;
+
+	public void updateGameFrame(float delta)
+	{
+		//Basically same logic as FixedUpdate, but we can scale it by adjusting FrameLength
+		accumilatedTime = accumilatedTime + delta;
+
+		//in case the FPS is too slow, we may need to update the game multiple times a frame
+		while(accumilatedTime > frameLength) {
+			if(gameFrame ==0 )
+			{
+				// increment the lockstep frame and peform actions for the next frame
+				if(pendingActions.hasActions(lockstepFrame + 1)){
+					lockstepFrame++;
+					pendingActions.performActions(lockstepFrame);
+					gameFrame++;
+				}
+
+			}
+			else
+			{
+				// regular game frame, just update the model
+				scenario.update(frameLength);
+				gameFrame++;
+				if(gameFrame == gameFramesPerLocksetpTurn) {
+					gameFrame = 0;
+				}
+			}
+
+			accumilatedTime = accumilatedTime - frameLength;
+		}
+	}
+
+	public void sendCommand(Command command)
+	{
+
+	}
+
+
+
 
 	private class MessageListener extends Listener {
 		public void connected (Connection connection) {

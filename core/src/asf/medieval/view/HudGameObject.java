@@ -1,5 +1,6 @@
 package asf.medieval.view;
 
+import asf.medieval.model.Command;
 import asf.medieval.model.ScenarioFactory;
 import asf.medieval.net.Player;
 import asf.medieval.utility.StretchableImage;
@@ -276,7 +277,11 @@ public class HudGameObject implements GameObject,InputProcessor {
 				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
 
 				for (SoldierGameObject sgo : selectedSoldiers) {
-					ScenarioFactory.seekPosition(sgo.token, lastMoveCommandLocation);
+					Command command = new Command();
+					command.soldierId = sgo.token.id;
+					command.location = new Vector3(lastMoveCommandLocation);
+					world.gameClient.sendCommand(command);
+					//sgo.token.setTarget(lastMoveCommandLocation);
 
 				}
 

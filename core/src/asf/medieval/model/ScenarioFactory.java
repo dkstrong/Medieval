@@ -63,7 +63,7 @@ public class ScenarioFactory {
 	{
 
 
-		character.setTarget(position);
+
 
 		//ScenarioLocation seekTarget = new ScenarioLocation();
 		//seekTarget.vec.set(vec);

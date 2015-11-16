@@ -11,6 +11,8 @@ import com.badlogic.gdx.math.Vector3;
 public class SoldierToken implements Token, SteerAgent {
 	private Scenario scenario;
 
+	public int id;
+
 	public final Vector3 location = new Vector3();
 
 	public float radius = 1;

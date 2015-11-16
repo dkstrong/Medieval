@@ -14,8 +14,6 @@ import com.esotericsoftware.kryonet.EndPoint;
  */
 public class UtNet {
 
-	static public final int port = 54555;
-
 	static public void register (EndPoint endPoint) {
 		Kryo kryo = endPoint.getKryo();
 		kryo.register(Login.class);
@@ -24,6 +22,7 @@ public class UtNet {
 		kryo.register(AddPlayer.class);
 		kryo.register(RemovePlayer.class);
 		kryo.register(Player.class);
+		kryo.register(Action.class);
 	}
 
 

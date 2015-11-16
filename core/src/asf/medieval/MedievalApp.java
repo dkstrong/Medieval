@@ -131,6 +131,7 @@ public class MedievalApp extends ApplicationAdapter {
 
 
 		settings.random = new Random(1);
+		/*
 		settings.gameServerConfig = new GameServerConfig();
 		Client client = new Client();
 		InetAddress inetAddress = client.discoverHost(settings.gameServerConfig.udpPort, 500);
@@ -146,7 +147,7 @@ public class MedievalApp extends ApplicationAdapter {
 		}else{
 			settings.client = true;
 		}
-
+		*/
 
 		loadWorld(settings);
 

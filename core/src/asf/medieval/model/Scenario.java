@@ -36,9 +36,26 @@ public class Scenario {
 
 	}
 
+	public SoldierToken getSoldier(int soldierId)
+	{
+		for (Token token : tokens) {
+			if (token instanceof SoldierToken)
+			{
+				SoldierToken soldierToken = (SoldierToken) token;
+				if(soldierToken.id == soldierId){
+					return soldierToken;
+				}
+			}
+		}
+		return null;
+	}
+	private int lastSoldierId = 0;
+
 	public SoldierToken newSoldier()
 	{
 		SoldierToken soldierToken= new SoldierToken();
+		++lastSoldierId;
+		soldierToken.id = lastSoldierId;
 		soldierToken.init(this);
 		steerGraph.agents.add(soldierToken);
 		tokens.add(soldierToken);
