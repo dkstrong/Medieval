@@ -1,0 +1,5 @@
+<GameServer>
+	<tcpPort>27677</tcpPort>
+	<udpPort>27677</udpPort>
+	<serverLogFileLocation>game_server_27677.log</serverLogFileLocation>
+</GameServer>

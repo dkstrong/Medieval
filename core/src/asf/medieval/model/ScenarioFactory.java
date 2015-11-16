@@ -22,10 +22,7 @@ public class ScenarioFactory {
 
 		int w = 50, h = 50;
 		float magnitude = 1f;
-		Pixmap data = new Pixmap(Gdx.files.internal("heightmap.png"));
-
-		HeightField field = new HeightField(true, data, true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
-		data.dispose();
+		HeightField field = heightFieldFlat();
 		field.corner00.set(-w, 0, -h);
 		field.corner10.set(w, 0, -h);
 		field.corner01.set(-w, 0, h);
@@ -42,6 +39,24 @@ public class ScenarioFactory {
 
 		steeringTest2(scenario);
 		return scenario;
+	}
+
+	private static HeightField heightFieldFromImage(){
+		Pixmap data = new Pixmap(Gdx.files.internal("heightmap.png"));
+
+		HeightField field = new HeightField(true, data, true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+		data.dispose();
+
+		return field;
+	}
+
+	private static HeightField heightFieldFlat(){
+		final float data[] = new float[64*64];
+
+		HeightField field = new HeightField(true, data, 64,64,false, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+
+
+		return field;
 	}
 
 	public static void seekPosition(SoldierToken character, Vector3 position)

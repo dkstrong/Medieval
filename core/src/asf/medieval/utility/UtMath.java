@@ -176,17 +176,6 @@ public class UtMath {
 		store.z =interpolation.apply(startValue.z, endValue.z, scale);
 	}
 
-	public static void normalize(Vector3 vec){
-		float length = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
-		if (length != 1f && length != 0f){
-			length = 1.0f / (float)Math.sqrt(length);
-			vec.x *= length;
-			vec.y *= length;
-			vec.z *= length;
-		}
-
-	}
-
 	public static void multiply(Vector3 vec, float scalar){
 		vec.x*=scalar;
 		vec.y*=scalar;

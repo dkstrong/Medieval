@@ -106,7 +106,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 
 		if(settings.server){
 			try {
-				gameServer = new GameServer(scenario);
+				gameServer = new GameServer(27677,scenario);
 			} catch (IOException e) {
 				// TODO: better// proper handling here..
 				e.printStackTrace();

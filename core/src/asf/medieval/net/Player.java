@@ -9,4 +9,8 @@ public class Player {
 	public String name;
 	public String otherStuff;
 
+	@Override
+	public String toString() {
+		return "Player{"+id+"-"+name+"}";
+	}
 }

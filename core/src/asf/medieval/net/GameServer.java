@@ -2,25 +2,30 @@ package asf.medieval.net;
 
 import asf.medieval.model.Scenario;
 import asf.medieval.net.message.*;
+import asf.medieval.utility.UtLog;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
 /**
  * Created by daniel on 11/15/15.
  */
-public class GameServer {
+public class GameServer implements Disposable {
 	Server server;
 
 	IntMap<PlayerConnection> loggedInPlayerConnections = new IntMap<PlayerConnection>();
 
 	Scenario scenario;
 
-	public GameServer (Scenario scenario) throws IOException {
+	public GameServer (int port, Scenario scenario) throws IOException {
 		this.scenario = scenario;
+		com.esotericsoftware.minlog.Log.set(com.esotericsoftware.minlog.Log.LEVEL_NONE);
 		server = new Server() {
 			protected Connection newConnection () {
 				return new PlayerConnection();
@@ -30,8 +35,21 @@ public class GameServer {
 		UtNet.register(server);
 
 		server.addListener(new MessageListener());
-		server.bind(UtNet.port);
+		server.bind(port);
 		server.start();
+		UtLog.trace("server started");
+	}
+
+	@Override
+	public void dispose() {
+
+		try {
+			server.dispose();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		UtLog.trace("server disposed");
+
 	}
 
 	// This holds per connection state.
@@ -41,10 +59,12 @@ public class GameServer {
 
 	private class MessageListener extends Listener{
 		public void received (Connection c, Object message) {
+			UtLog.trace("received message: " + message.getClass().getName());
 			// We know all connections for this server are actually CharacterConnections.
 			PlayerConnection connection = (PlayerConnection)c;
 
 			if (message instanceof Login) {
+
 				// Ignore if already logged in.
 				if (connection.player != null)
 					return;
@@ -101,7 +121,9 @@ public class GameServer {
 		}
 
 		public void disconnected (Connection c) {
+
 			PlayerConnection connection = (PlayerConnection)c;
+			UtLog.trace("client disconnected: "+connection.player);
 			if (connection.player != null) {
 				loggedInPlayerConnections.remove(connection.player.id);
 

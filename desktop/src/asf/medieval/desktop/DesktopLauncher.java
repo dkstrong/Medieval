@@ -1,5 +1,9 @@
 package asf.medieval.desktop;
 
+import asf.medieval.ServerApp;
+import asf.medieval.net.GameServerConfig;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import asf.medieval.MedievalApp;
@@ -28,5 +32,15 @@ public class DesktopLauncher {
 		config.b = 5;
 		config.a = 0;
 		new LwjglApplication(new MedievalApp(), config);
+	}
+
+	public static ServerApp launchServer(GameServerConfig gameServerConfig) {
+
+		ServerApp serverApp = new ServerApp(gameServerConfig);
+		HeadlessApplicationConfiguration conf = new HeadlessApplicationConfiguration();
+		new HeadlessApplication(serverApp, conf);
+
+		return serverApp;
+
 	}
 }
