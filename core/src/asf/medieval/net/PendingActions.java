@@ -1,8 +1,6 @@
 package asf.medieval.net;
 
 import asf.medieval.model.Command;
-import asf.medieval.model.SoldierToken;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.LongMap;
 
@@ -11,15 +9,15 @@ import com.badlogic.gdx.utils.LongMap;
  */
 public class PendingActions {
 
-	private final GameClient gameClient;
+	private final NetworkedGameClient networkedGameClient;
 
 
 	private final IntMap<LongMap<Action>> receivedActions = new IntMap<LongMap<Action>>(8);
 
-	public PendingActions(GameClient gameClient) {
-		this.gameClient = gameClient;
+	public PendingActions(NetworkedGameClient networkedGameClient) {
+		this.networkedGameClient = networkedGameClient;
 
-		for (Player player : gameClient.players.values()) {
+		for (Player player : networkedGameClient.players.values()) {
 			LongMap<Action> receivedActionsForPlayer = new LongMap<Action>(256);
 			receivedActions.put(player.id, receivedActionsForPlayer);
 		}
@@ -35,7 +33,7 @@ public class PendingActions {
 
 	public boolean hasActions(long lockstepFrame)
 	{
-		for (Player player : gameClient.players.values()) {
+		for (Player player : networkedGameClient.players.values()) {
 			LongMap<Action> receivedActionsForPlayer = receivedActions.get(player.id);
 			Action action = receivedActionsForPlayer.get(lockstepFrame);
 			if(action == null){
@@ -47,19 +45,12 @@ public class PendingActions {
 
 	public void performActions(long lockstepFrame)
 	{
-		for (Player player : gameClient.players.values()) {
+		for (Player player : networkedGameClient.players.values()) {
 			LongMap<Action> receivedActionsForPlayer = receivedActions.get(player.id);
 			Action action = receivedActionsForPlayer.get(lockstepFrame);
 
 			for (Command command : action.commands) {
-				if(command.soldierId > 0){
-					SoldierToken soldierToken = gameClient.scenario.getSoldier(command.soldierId);
-					soldierToken.setTarget(command.location);
-
-				}else{
-					SoldierToken soldierToken = gameClient.scenario.newSoldier();
-					soldierToken.location.set(command.location);
-				}
+				command.performCommand(networkedGameClient.scenario);
 
 			}
 		}

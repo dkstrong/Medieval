@@ -34,5 +34,5 @@ public class ScenarioRand {
 		return start + random.nextFloat() * (end - start);
 	}
 
-	public int sign(){ return 1 | (random.nextInt() >> 31); }
+	public float sign(){ return 1 | (random.nextInt() >> 31); }
 }

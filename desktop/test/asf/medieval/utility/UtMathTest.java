@@ -1,7 +1,5 @@
 package asf.medieval.utility;
 
-import asf.medieval.net.GameClient;
-import com.badlogic.gdx.math.Vector3;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

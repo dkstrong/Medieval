@@ -2,6 +2,8 @@ package asf.medieval.model;
 
 import asf.medieval.ai.SteerGraph;
 import asf.medieval.utility.HeightField;
+import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -66,7 +68,7 @@ public class Scenario {
 
 	public void setRandomNonOverlappingPosition (SoldierToken character, Array<SoldierToken> others,
 							float minDistanceFromBoundary) {
-		int maxTries = Math.max(100, others.size * others.size);
+		int maxTries = UtMath.largest(100, others.size * others.size);
 		SET_NEW_POS:
 		while (--maxTries >= 0) {
 
@@ -79,7 +81,37 @@ public class Scenario {
 			}
 			return;
 		}
-		throw new GdxRuntimeException("Probable infinite loop detected");
+		throw new IllegalStateException("Probable infinite loop detected");
+	}
+
+	public void setNonOverlappingPosition(SoldierToken token, Vector3 location )
+	{
+		// THis is a workaround for the bug where if two tokens are in the same location, one of them
+		// will end up with a location of "NaN" i suppose due to the steering system.
+		// ideally id like to figure out whats causing the NaN and let steering just naturally seperate
+		// the soldiers...
+		token.location.set(location);
+		token.location.y = heightField.getElevation(token.location);
+		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
+		SET_NEW_POS:
+		while (--maxTries >= 0) {
+			for (Token t : tokens) {
+
+				if(t!= token && (t instanceof SoldierToken)){
+					SoldierToken other = (SoldierToken) t;
+					//if(token.location.dst(other.location) <= token.radius){
+					if(token.location.x == other.location.z && token.location.z == other.location.z){
+						token.location.x = location.x + rand.range(-token.radius,token.radius);
+						token.location.z = location.z + rand.range(-token.radius,token.radius);
+						token.location.y = heightField.getElevation(token.location);
+						continue SET_NEW_POS;
+					}
+				}
+			}
+			return;
+		}
+
+		throw new IllegalStateException("Probable infinite loop detected");
 	}
 
 

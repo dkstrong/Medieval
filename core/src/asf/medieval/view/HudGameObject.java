@@ -1,7 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Command;
-import asf.medieval.model.ScenarioFactory;
+import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.net.Player;
 import asf.medieval.utility.StretchableImage;
 import asf.medieval.utility.UtMath;
@@ -17,7 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntMap;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -119,16 +118,17 @@ public class HudGameObject implements GameObject,InputProcessor {
 			gameServerStatusString = world.gameServer.isBound() ? "Server Online" : "Server Offline";
 		}
 
-		if(world.gameClient!=null){
+		if(world.gameClient instanceof NetworkedGameClient){
+			NetworkedGameClient networkedNetworkedGameClient = (NetworkedGameClient)world.gameClient;
 			if(gameServerStatusString== null)
-				gameServerStatusString = world.gameClient.isConnected() ? "Connected to: "+world.gameClient.hostName+":"+world.gameClient.tcpPort : "No Server Connection";
+				gameServerStatusString = networkedNetworkedGameClient.isConnected() ? "Connected to: "+ networkedNetworkedGameClient.hostName+":"+ networkedNetworkedGameClient.tcpPort : "No Server Connection";
 
 			gameClientStatusString="Players:";
-			if(world.gameClient.player.id > 0 && world.gameClient.players.containsKey(world.gameClient.player.id)){
-				gameClientStatusString+= "\n"+String.valueOf(world.gameClient.player);
+			if(networkedNetworkedGameClient.player.id > 0 && networkedNetworkedGameClient.players.containsKey(networkedNetworkedGameClient.player.id)){
+				gameClientStatusString+= "\n"+String.valueOf(networkedNetworkedGameClient.player);
 			}
-			for (Player player : world.gameClient.players.values()) {
-				if(player.id != world.gameClient.player.id){
+			for (Player player : networkedNetworkedGameClient.players.values()) {
+				if(player.id != networkedNetworkedGameClient.player.id){
 					gameClientStatusString+= "\n"+String.valueOf(player);
 				}
 			}
@@ -328,6 +328,11 @@ public class HudGameObject implements GameObject,InputProcessor {
 		{
 			case Input.Keys.SPACE:
 				spacebarDown = false;
+				break;
+			case Input.Keys.I:
+				Command command = new Command();
+				command.location = new Vector3(0,0,0);
+				world.gameClient.sendCommand(command);
 				break;
 		}
 		return false;

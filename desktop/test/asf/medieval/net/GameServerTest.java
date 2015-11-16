@@ -32,7 +32,7 @@ public class GameServerTest {
 		Gdx.app.exit();
 	}
 
-	private Array<GameClient> gameClients = new Array<GameClient>();
+	private Array<NetworkedGameClient> gameClients = new Array<NetworkedGameClient>();
 
 	@Before
 	public void setUp() throws Exception
@@ -43,8 +43,8 @@ public class GameServerTest {
 	@After
 	public void tearDown() throws Exception {
 		Thread.sleep(500);
-		for (GameClient gameClient : gameClients) {
-			gameClient.dispose();
+		for (NetworkedGameClient networkedGameClient : gameClients) {
+			networkedGameClient.dispose();
 		}
 		Thread.sleep(500);
 	}
@@ -56,24 +56,24 @@ public class GameServerTest {
 		Thread.sleep(500);
 		Player player = new Player();
 		player.name = "Test Player: "+gameClients.size;
-		GameClient gameClient =new GameClient();
-		gameClient.connectToServer(hostName, gameServerConfig.tcpPort, gameServerConfig.udpPort, player);
+		NetworkedGameClient networkedGameClient =new NetworkedGameClient();
+		networkedGameClient.connectToServer(hostName, gameServerConfig.tcpPort, gameServerConfig.udpPort, player);
 
-		gameClients.add(gameClient);
+		gameClients.add(networkedGameClient);
 		boolean passedTest = false;
 		int loops = 0;
-		while(gameClient.client.isConnected()){
+		while(networkedGameClient.client.isConnected()){
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 
-			if(gameClient.player.id >0) {
-				passedTest = gameClient.client.getID() == gameClient.player.id;
+			if(networkedGameClient.player.id >0) {
+				passedTest = networkedGameClient.client.getID() == networkedGameClient.player.id;
 				break;
 			}else if(loops++ > 15){
-				gameClient.dispose();
+				networkedGameClient.dispose();
 				passedTest = false;
 				break;
 			}

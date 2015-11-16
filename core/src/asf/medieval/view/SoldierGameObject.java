@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.SoldierToken;
+import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.shape.Box;
 import asf.medieval.view.shape.Shape;
@@ -64,6 +65,7 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 		translation.set(token.location);
 
 
+		//System.out.println(token.id + ": " + token.location);
 
 
 

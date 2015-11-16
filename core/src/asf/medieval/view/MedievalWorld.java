@@ -4,9 +4,11 @@ import asf.medieval.MedievalApp;
 import asf.medieval.model.Scenario;
 import asf.medieval.model.ScenarioFactory;
 import asf.medieval.model.SoldierToken;
+import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.net.GameClient;
 import asf.medieval.net.GameServer;
 import asf.medieval.net.GameServerConfig;
+import asf.medieval.net.OfflineGameClient;
 import asf.medieval.net.Player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -104,7 +106,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		gameObjects = new Array<GameObject>(false, 128, GameObject.class);
 
 
-		scenario = ScenarioFactory.scenarioFlat();
+		scenario = ScenarioFactory.scenarioFlat(settings.random);
 
 		if(settings.server){
 			gameServer = new GameServer();
@@ -114,10 +116,20 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		if(settings.server ||  settings.client){
 
 			String hostname = settings.server ? "localhost" : settings.hostName;
-			gameClient = new GameClient();
+			NetworkedGameClient networkedNetworkedGameClient = new NetworkedGameClient();
 			Player player = new Player();
 			player.name = System.getProperty("user.name");
-			gameClient.connectToServer(hostname,settings.gameServerConfig.tcpPort,settings.gameServerConfig.udpPort,player);
+			networkedNetworkedGameClient.connectToServer(hostname, settings.gameServerConfig.tcpPort, settings.gameServerConfig.udpPort, player);
+			gameClient = networkedNetworkedGameClient;
+		}else{
+			OfflineGameClient offlineGameClient = new OfflineGameClient();
+			offlineGameClient.scenario = scenario;
+			Player player = new Player();
+			player.id = 1;
+			player.name = System.getProperty("user.name");
+			offlineGameClient.player = player;
+			offlineGameClient.players.put(1,player);
+			gameClient = offlineGameClient;
 		}
 
 	}
@@ -176,7 +188,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 			// update
 			if (!paused) {
 				//hudSpatial.updateInput(delta);
-				scenario.update(delta);
+				gameClient.updateGameFrame(delta);
 				for (final GameObject gameObject : gameObjects) {
 					gameObject.update(delta);
 				}
@@ -216,6 +228,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 	}
 
 	public void setPaused(boolean paused) {
+		// TODO: when playing online, user can not actually pause the game, only bring up the pause menu...
 		if (!paused) {
 			if (loading)
 				Gdx.input.setInputProcessor(internalLoadingInputAdapter);

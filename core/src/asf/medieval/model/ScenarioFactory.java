@@ -16,9 +16,9 @@ public class ScenarioFactory {
 
 
 
-	public static Scenario scenarioFlat()
+	public static Scenario scenarioFlat(Random random)
 	{
-		ScenarioRand scenarioRand = new ScenarioRand(new Random(1));
+		ScenarioRand scenarioRand = new ScenarioRand(random);
 
 		int w = 50, h = 50;
 		float magnitude = 1f;
