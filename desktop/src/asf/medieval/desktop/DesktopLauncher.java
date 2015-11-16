@@ -34,7 +34,7 @@ public class DesktopLauncher {
 		new LwjglApplication(new MedievalApp(), config);
 	}
 
-	public static ServerApp launchServer(GameServerConfig gameServerConfig) {
+	public static ServerApp launchServerApp(GameServerConfig gameServerConfig) {
 
 		ServerApp serverApp = new ServerApp(gameServerConfig);
 		HeadlessApplicationConfiguration conf = new HeadlessApplicationConfiguration();

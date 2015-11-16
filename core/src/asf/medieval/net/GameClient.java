@@ -12,8 +12,7 @@ import com.badlogic.gdx.utils.IntMap;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.esotericsoftware.minlog.Log;
 
 import java.io.IOException;
 
@@ -22,87 +21,69 @@ import java.io.IOException;
  */
 public class GameClient implements Disposable {
 
-	public UI ui;
 	public Client client;
+	IntMap<Player> players = new IntMap<Player>();
 	public Player player;
 
-	public GameClient (String hostName, int port, Player player) {
-		this.player = player;
-		if(this.player == null) throw new AssertionError("player can not be null");
-		com.esotericsoftware.minlog.Log.set(com.esotericsoftware.minlog.Log.LEVEL_NONE);
+	public GameClient () {
+
+		com.esotericsoftware.minlog.Log.set(Log.LEVEL_NONE);
 		client = new Client();
-		client.start();
-		UtLog.trace("started client");
 		UtNet.register(client);
+		client.start();
 
 		client.addListener(new Listener.ThreadedListener(new MessageListener()));
 
-		ui = new UI();
+		UtLog.trace("client thread started");
+	}
+
+	public void connectToServer(String hostName, int tcpPort, int udpPort, Player player){
+		this.player = player;
+		if(this.player == null) throw new AssertionError("player can not be null");
 
 		try {
-			client.connect(5000, hostName, port);
+			client.connect(5000, hostName, tcpPort, udpPort);
 			// Server communication after connection can go here, or in Listener#connected().
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			UtLog.warning("exception thrown while Client was connecting to server", ex);
 		}
 
+		UtLog.trace("client connected");
 
 
 	}
 
+	public void disconnectFromServer(){
+		client.close();
+		UtLog.trace("client closed connection");
+	}
 
 
 	@Override
 	public void dispose() {
+		client.stop();
 		try {
 			client.dispose();
 		} catch (IOException e) {
-			e.printStackTrace();
+			UtLog.warning("exception thrown while disposing Client",e);
 		}
-		UtLog.trace("disposed client");
-	}
-
-	static class UI {
-		IntMap<Player> players = new IntMap<Player>();
-
-		public void addPlayer(Player player) {
-			boolean newPlayer = !players.containsKey(player.id);
-			if(newPlayer){
-				players.put(player.id, player);
-				UtLog.info(player.id + "-" + player.name + " added");
-			}else{
-				Player existingPlayer = players.get(player.id);
-				existingPlayer.id = player.id;
-				existingPlayer.name = player.name;
-				UtLog.info(player.id + "-" + player.name + " updated");
-			}
-
-
-		}
-
-		public void removePlayer (Player player) {
-			Player existingPlayer = players.remove(player.id);
-			if (existingPlayer != null){
-				UtLog.info(existingPlayer.id + "-" + existingPlayer.name + " removed");
-			}
-
-		}
+		UtLog.trace("client stopped and disposed");
 	}
 
 	private class MessageListener extends Listener {
 		public void connected (Connection connection) {
-			UtLog.trace("connected to server");
+
 			Login login = new Login();
 			login.player = player;
 			client.sendTCP(login);
-
+			UtLog.trace("sent server login message");
 			// durring game...
 			//MoveCharacter msg = new MoveCharacter();
 			//client.sendTCP(msg);
 		}
 
 		public void received (Connection c, Object message) {
-			UtLog.trace("received message: "+message.getClass().getCanonicalName());
+			UtLog.trace("received message: "+message.getClass().getSimpleName());
 			if (message instanceof RegistrationRequired) {
 				Register register = new Register();
 				register.name = "new name";
@@ -110,17 +91,49 @@ public class GameClient implements Disposable {
 				client.sendTCP(register);
 			}else if (message instanceof AddPlayer) {
 				AddPlayer msg = (AddPlayer)message;
-				ui.addPlayer(msg.character);
+				if(client.getID() == msg.player.id){
+					//this msg is about this local player, update his object
+					player.set(msg.player);
+					UtLog.info("received my own player information, updating my local record");
+				}
+
+				boolean newPlayer = !players.containsKey(msg.player.id);
+				if(newPlayer){
+					players.put(msg.player.id, msg.player);
+					UtLog.info(msg.player.id + "-" + msg.player.name + " added");
+				}else{
+					Player existingPlayer = players.get(msg.player.id);
+					existingPlayer.id = msg.player.id;
+					existingPlayer.name = msg.player.name;
+					UtLog.info(msg.player.id + "-" + msg.player.name + " updated");
+				}
+
+
 			}else if (message instanceof RemovePlayer) {
 				RemovePlayer msg = (RemovePlayer)message;
-				ui.removePlayer(msg.character);
+
+				Player existingPlayer = players.remove(msg.player.id);
+				if (existingPlayer != null){
+					UtLog.info(existingPlayer.id + "-" + existingPlayer.name + " removed");
+				}
 			}
 		}
 
 		public void disconnected(Connection connection) {
-			UtLog.trace("disconnected from server");
+			UtLog.trace("disconnected from server", new Exception());
+
 			//System.exit(0);
 		}
+	}
+
+	public static void main(String[] args) {
+		UtLog.logLevel = UtLog.TRACE;
+		GameClient gameClient = new GameClient();
+		Player player = new Player();
+		player.name ="Gergh";
+		gameClient.connectToServer("localHost", 27677, 27677,player);
+
+
 	}
 
 }

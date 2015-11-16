@@ -3,17 +3,13 @@ package asf.medieval.net;
 import asf.medieval.ServerApp;
 import asf.medieval.desktop.DesktopLauncher;
 import asf.medieval.utility.UtLog;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
@@ -30,7 +26,8 @@ public class GameServerTest {
 
 		UtLog.logLevel = UtLog.TRACE;
 
-		ServerApp serverApp = DesktopLauncher.launchServer(gameServerConfig);
+		serverApp = DesktopLauncher.launchServerApp(gameServerConfig);
+
 	}
 
 	@AfterClass
@@ -57,13 +54,36 @@ public class GameServerTest {
 	@Test
 	public void clientLogin() throws Exception
 	{
+		Thread.sleep(500);
 		Player player = new Player();
 		player.name = "Test Player: "+gameClients.size;
-		GameClient gameClient =new GameClient(hostName, gameServerConfig.tcpPort, player);
+		GameClient gameClient =new GameClient();
+		gameClient.connectToServer(hostName, gameServerConfig.tcpPort, gameServerConfig.udpPort, player);
 
 		gameClients.add(gameClient);
+		boolean passedTest = false;
+		int loops = 0;
+		while(gameClient.client.isConnected()){
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
-		assertTrue(true);
+			if(gameClient.player.id >0) {
+				passedTest = gameClient.client.getID() == gameClient.player.id;
+				break;
+			}else if(loops++ > 15){
+				gameClient.dispose();
+				passedTest = false;
+				break;
+			}
+		}
+
+
+		Thread.sleep(500);
+
+		assertTrue("Client Log in and get assigned an id",passedTest);
 
 
 	}

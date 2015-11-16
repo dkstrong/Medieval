@@ -4,15 +4,7 @@ import asf.medieval.model.Scenario;
 import asf.medieval.model.ScenarioFactory;
 import asf.medieval.net.GameServer;
 import asf.medieval.net.GameServerConfig;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.util.StatusPrinter;
 import com.badlogic.gdx.ApplicationListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -21,12 +13,9 @@ import java.io.IOException;
  */
 public class ServerApp implements ApplicationListener {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ServerApp.class);
-
-	public static boolean printLogFile  = false;
-	private final String gameServerConfigLoc;
-	private GameServerConfig gameServerConfig;
-	private GameServer gameServer;
+	public final String gameServerConfigLoc;
+	public GameServerConfig gameServerConfig;
+	public GameServer gameServer;
 
 	public ServerApp()
 	{
@@ -53,11 +42,8 @@ public class ServerApp implements ApplicationListener {
 
 		//Scenario scenario = ScenarioFactory.scenarioTest();
 
-		try {
-			gameServer = new GameServer(gameServerConfig.tcpPort, null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		gameServer = new GameServer();
+		gameServer.bindServer(gameServerConfig);
 	}
 
 	@Override

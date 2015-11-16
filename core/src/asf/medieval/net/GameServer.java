@@ -1,15 +1,15 @@
 package asf.medieval.net;
 
 import asf.medieval.model.Scenario;
-import asf.medieval.net.message.*;
+import asf.medieval.net.message.AddPlayer;
+import asf.medieval.net.message.Login;
+import asf.medieval.net.message.RemovePlayer;
 import asf.medieval.utility.UtLog;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
@@ -17,14 +17,13 @@ import java.io.*;
  * Created by daniel on 11/15/15.
  */
 public class GameServer implements Disposable {
-	Server server;
+	private Server server;
 
-	IntMap<PlayerConnection> loggedInPlayerConnections = new IntMap<PlayerConnection>();
+	public IntMap<PlayerConnection> loggedInPlayerConnections = new IntMap<PlayerConnection>();
 
-	Scenario scenario;
+	public Scenario scenario;
 
-	public GameServer (int port, Scenario scenario) throws IOException {
-		this.scenario = scenario;
+	public GameServer () {
 		com.esotericsoftware.minlog.Log.set(com.esotericsoftware.minlog.Log.LEVEL_NONE);
 		server = new Server() {
 			protected Connection newConnection () {
@@ -33,22 +32,38 @@ public class GameServer implements Disposable {
 		};
 
 		UtNet.register(server);
-
 		server.addListener(new MessageListener());
-		server.bind(port);
 		server.start();
 		UtLog.trace("server started");
+	}
+
+	public void bindServer(GameServerConfig gameServerConfig)
+	{
+		try {
+			server.bind(gameServerConfig.tcpPort, gameServerConfig.udpPort);
+			UtLog.trace("server bound to port: "+gameServerConfig.tcpPort);
+		} catch (IOException e) {
+			UtLog.warning("server threw exception while binding to port: "+gameServerConfig.tcpPort, e);
+		}
+
+	}
+
+	public void unbindServer()
+	{
+		server.close();
+		UtLog.trace("server unbound connection");
 	}
 
 	@Override
 	public void dispose() {
 
 		try {
+			server.stop();
 			server.dispose();
 		} catch (IOException e) {
-			e.printStackTrace();
+			UtLog.warning("server threw exception while disposing", e);
 		}
-		UtLog.trace("server disposed");
+		UtLog.trace("server stopped and disposed");
 
 	}
 
@@ -59,7 +74,7 @@ public class GameServer implements Disposable {
 
 	private class MessageListener extends Listener{
 		public void received (Connection c, Object message) {
-			UtLog.trace("received message: " + message.getClass().getName());
+			UtLog.trace("received message: " + message.getClass().getSimpleName());
 			// We know all connections for this server are actually CharacterConnections.
 			PlayerConnection connection = (PlayerConnection)c;
 
@@ -90,6 +105,8 @@ public class GameServer implements Disposable {
 				//	return;
 				//}
 
+				UtLog.trace("Accepted player login, informing all users...");
+
 				// valid login, add him to the list and notify
 				// everyone else on the server
 				connection.player = login.player;
@@ -97,7 +114,7 @@ public class GameServer implements Disposable {
 				loggedInPlayerConnections.put(connection.player.id, connection);
 
 				AddPlayer addPlayer = new AddPlayer();
-				addPlayer.character = connection.player;
+				addPlayer.player = connection.player;
 
 				// inform players of new login
 				// also inform new login of existing players
@@ -105,7 +122,7 @@ public class GameServer implements Disposable {
 					loggedInPc.sendTCP(addPlayer);
 					if(loggedInPc.player.id != connection.player.id){
 						AddPlayer informExisting = new AddPlayer();
-						informExisting.character = loggedInPc.player;
+						informExisting.player = loggedInPc.player;
 						connection.sendTCP(informExisting);
 					}
 				}
@@ -123,16 +140,24 @@ public class GameServer implements Disposable {
 		public void disconnected (Connection c) {
 
 			PlayerConnection connection = (PlayerConnection)c;
-			UtLog.trace("client disconnected: "+connection.player);
+			UtLog.trace("one of my clients disconnected: "+connection.player);
 			if (connection.player != null) {
 				loggedInPlayerConnections.remove(connection.player.id);
 
 
 				RemovePlayer removePlayer = new RemovePlayer();
-				removePlayer.character = connection.player;
+				removePlayer.player = connection.player;
 				server.sendToAllTCP(removePlayer);
 			}
 		}
+	}
+
+	public static void main(String[] args) {
+		UtLog.logLevel = UtLog.TRACE;
+		GameServer gameServer = new GameServer();
+		gameServer.bindServer(new GameServerConfig());
+
+
 	}
 
 }

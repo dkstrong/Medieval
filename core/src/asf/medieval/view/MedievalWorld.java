@@ -7,6 +7,7 @@ import asf.medieval.model.ScenarioRand;
 import asf.medieval.model.SoldierToken;
 import asf.medieval.net.GameClient;
 import asf.medieval.net.GameServer;
+import asf.medieval.net.GameServerConfig;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -105,14 +106,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		scenario = ScenarioFactory.scenarioTest();
 
 		if(settings.server){
-			try {
-				gameServer = new GameServer(27677,scenario);
-			} catch (IOException e) {
-				// TODO: better// proper handling here..
-				e.printStackTrace();
-				System.err.println("failed to launch server");
-				Gdx.app.exit();
-			}
+			gameServer = new GameServer();
+			gameServer.bindServer(new GameServerConfig());
 		}
 
 	}

@@ -5,12 +5,16 @@ package asf.medieval.net;
  */
 public class Player {
 
-	public int id, x, y;
+	public int id;
 	public String name;
-	public String otherStuff;
 
 	@Override
 	public String toString() {
 		return "Player{"+id+"-"+name+"}";
+	}
+
+	public void set(Player player){
+		id = player.id;
+		name = player.name;
 	}
 }
