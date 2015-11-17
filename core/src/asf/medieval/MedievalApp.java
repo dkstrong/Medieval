@@ -131,6 +131,17 @@ public class MedievalApp extends ApplicationAdapter {
 
 		settings.random = new Random(1);
 
+		String name = System.getProperty("user.name");
+		if(name.toLowerCase().startsWith("dan")){
+			settings.gameServerConfig = new GameServerConfig();
+			settings.server = true;
+			System.out.println("ima server");
+		}else{
+			settings.hostName = "fox.dkstrong.com";
+			settings.client = true;
+			settings.gameServerConfig = new GameServerConfig();
+		}
+/*
 		if(onlineGame)
 		{
 			settings.gameServerConfig = new GameServerConfig();
@@ -149,7 +160,7 @@ public class MedievalApp extends ApplicationAdapter {
 				settings.client = true;
 				settings.hostName = inetAddress.getHostAddress();
 			}
-		}
+		}*/
 
 
 
