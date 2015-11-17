@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * Created by daniel on 11/15/15.
  */
-public class NetworkedGameClient implements Disposable, GameClient {
+public class NetworkedGameClient implements Disposable, GameClient, GameHost {
 
 	public String hostName;
 	public int tcpPort;
@@ -44,7 +44,7 @@ public class NetworkedGameClient implements Disposable, GameClient {
 		UtNet.register(client);
 		client.start();
 
-		client.addListener(new Listener.ThreadedListener(new MessageListener()));
+		client.addListener(new Listener.ThreadedListener(new MessageListener(this)));
 
 		UtLog.trace("client thread started");
 	}
@@ -91,7 +91,7 @@ public class NetworkedGameClient implements Disposable, GameClient {
 
 	private final IntMap<LongMap<Action>> receivedActions = new IntMap<LongMap<Action>>(8);
 	private LongMap<Action> actionsToSend = new LongMap<Action>(8);
-	private float frameLength = 0.016f; //50 miliseconds .05
+	private float frameLength = 0.05f; //50 miliseconds is .05       60fps is 0.016
 	private float accumilatedTime = 0f;
 	private int gameFrame = 0;
 	private int gameFramesPerLocksetpTurn =4;
@@ -136,6 +136,7 @@ public class NetworkedGameClient implements Disposable, GameClient {
 					newAction.lockstepFrame = lockstepFrame;
 					actionsToSend.put(lockstepFrame,newAction);
 
+					scenario.update(frameLength);
 					gameFrame++;
 				}else{
 					//System.out.println("NO ACTIONS for frame: "+(lockstepFrame+1));
@@ -180,6 +181,17 @@ public class NetworkedGameClient implements Disposable, GameClient {
 
 	}
 
+	public int numLockstepFramesInBuffer()
+	{
+		for(int bufferUsed = 5; bufferUsed >0; bufferUsed--)
+		{
+			if(hasActions(lockstepFrame+bufferUsed)){
+				return bufferUsed;
+			}
+		}
+		return 0;
+	}
+
 	@Override
 	public boolean isAllPlayersReady()
 	{
@@ -198,97 +210,96 @@ public class NetworkedGameClient implements Disposable, GameClient {
 		return true;
 	}
 
+	public void onConnected(Connection connection){
+		Login login = new Login();
+		login.player = player;
+		client.sendTCP(login);
+		UtLog.trace("sent server login message");
+		// durring game...
+		//MoveCharacter msg = new MoveCharacter();
+		//client.sendTCP(msg);
+	}
 
-
-	private class MessageListener extends Listener {
-		public void connected (Connection connection) {
-
-			Login login = new Login();
-			login.player = player;
-			client.sendTCP(login);
-			UtLog.trace("sent server login message");
-			// durring game...
-			//MoveCharacter msg = new MoveCharacter();
-			//client.sendTCP(msg);
+	public void onReceived(Connection c, Object message){
+		if(!(message instanceof FrameworkMessage.KeepAlive)){
+			UtLog.trace("received message: "+message.getClass().getSimpleName());
 		}
 
-		public void received (Connection c, Object message) {
-			if(!(message instanceof FrameworkMessage.KeepAlive)){
-				UtLog.trace("received message: "+message.getClass().getSimpleName());
+		if(message instanceof Action){
+			Action action = (Action) message;
+
+			// store the action received
+			LongMap<Action> receivedActionsForPlayer = receivedActions.get(action.playerId);
+			receivedActionsForPlayer.put(action.lockstepFrame, action);
+
+			// confirm to the server that we received this action
+			if(action.playerId != player.id)
+			{
+				// we dont need to confirm our own actions...
+				ActionConfirmation actionConfirmation = new ActionConfirmation();
+				actionConfirmation.confirmedByPlayerId = player.id;
+				actionConfirmation.playerId = action.playerId;
+				actionConfirmation.lockstepFrame = action.lockstepFrame;
+				client.sendTCP(actionConfirmation);
+			}
+		}else if (message instanceof RegistrationRequired) {
+			Register register = new Register();
+			register.name = "new name";
+			register.otherStuff = "other stuff";
+			client.sendTCP(register);
+		}else if (message instanceof AddPlayer) {
+			AddPlayer msg = (AddPlayer)message;
+			if(client.getID() == msg.player.id){
+				//this msg is about this local player, update his object
+				player.set(msg.player);
+				UtLog.info("received my own player information, updating my local record");
+
+				// TODO: this concept needs to be better merged with the "ReadyToStart".
+				// this should be the ready to start. and the first call "perform actions"
+				// is what kicks off the simlulation..
+
+				Action initialAction = new Action();
+				initialAction.playerId = player.id;
+				initialAction.lockstepFrame = 0;
+				actionsToSend.put(0,initialAction);
 			}
 
-			if(message instanceof Action){
-				Action action = (Action) message;
+			boolean newPlayer = !players.containsKey(msg.player.id);
+			if(newPlayer){
+				players.put(msg.player.id, msg.player);
+				UtLog.info(msg.player.id + "-" + msg.player.name + " added");
 
-				// store the action received
-				LongMap<Action> receivedActionsForPlayer = receivedActions.get(action.playerId);
-				receivedActionsForPlayer.put(action.lockstepFrame, action);
+				// update the receivedActions map to make sure there are
+				// varaibles made for this new player.
+				LongMap<Action> receivedActionsForPlayer = new LongMap<Action>(256);
+				receivedActions.put(msg.player.id, receivedActionsForPlayer);
 
-				// confirm to the server that we received this action
-				if(action.playerId != player.id)
-				{
-					// we dont need to confirm our own actions...
-					ActionConfirmation actionConfirmation = new ActionConfirmation();
-					actionConfirmation.confirmedByPlayerId = player.id;
-					actionConfirmation.playerId = action.playerId;
-					actionConfirmation.lockstepFrame = action.lockstepFrame;
-					client.sendTCP(actionConfirmation);
-				}
-			}else if (message instanceof RegistrationRequired) {
-				Register register = new Register();
-				register.name = "new name";
-				register.otherStuff = "other stuff";
-				client.sendTCP(register);
-			}else if (message instanceof AddPlayer) {
-				AddPlayer msg = (AddPlayer)message;
-				if(client.getID() == msg.player.id){
-					//this msg is about this local player, update his object
-					player.set(msg.player);
-					UtLog.info("received my own player information, updating my local record");
-
-					// TODO: this concept needs to be better merged with the "ReadyToStart".
-					// this should be the ready to start. and the first call "perform actions"
-					// is what kicks off the simlulation..
-
-					Action initialAction = new Action();
-					initialAction.playerId = player.id;
-					initialAction.lockstepFrame = 0;
-					actionsToSend.put(0,initialAction);
-				}
-
-				boolean newPlayer = !players.containsKey(msg.player.id);
-				if(newPlayer){
-					players.put(msg.player.id, msg.player);
-					UtLog.info(msg.player.id + "-" + msg.player.name + " added");
-
-					// update the receivedActions map to make sure there are
-					// varaibles made for this new player.
-					LongMap<Action> receivedActionsForPlayer = new LongMap<Action>(256);
-					receivedActions.put(msg.player.id, receivedActionsForPlayer);
-
-				}else{
-					Player existingPlayer = players.get(msg.player.id);
-					existingPlayer.id = msg.player.id;
-					existingPlayer.name = msg.player.name;
-					UtLog.info(msg.player.id + "-" + msg.player.name + " updated");
-				}
+			}else{
+				Player existingPlayer = players.get(msg.player.id);
+				existingPlayer.id = msg.player.id;
+				existingPlayer.name = msg.player.name;
+				UtLog.info(msg.player.id + "-" + msg.player.name + " updated");
+			}
 
 
-			}else if (message instanceof RemovePlayer) {
-				RemovePlayer msg = (RemovePlayer)message;
+		}else if (message instanceof RemovePlayer) {
+			RemovePlayer msg = (RemovePlayer)message;
 
-				Player existingPlayer = players.remove(msg.player.id);
-				if (existingPlayer != null){
-					UtLog.info(existingPlayer.id + "-" + existingPlayer.name + " removed");
-				}
+			Player existingPlayer = players.remove(msg.player.id);
+			if (existingPlayer != null){
+				UtLog.info(existingPlayer.id + "-" + existingPlayer.name + " removed");
 			}
 		}
+	}
 
-		public void disconnected(Connection connection) {
-			UtLog.trace("disconnected from server");
+	public void onDisconnected(Connection connection){
+		UtLog.trace("disconnected from server");
 
-			//System.exit(0);
-		}
+		//System.exit(0);
+	}
+
+	public void onIdle (Connection connection) {
+		UtLog.trace("idle");
 	}
 
 

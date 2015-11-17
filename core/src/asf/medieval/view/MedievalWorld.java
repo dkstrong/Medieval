@@ -201,6 +201,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 			if (!paused) {
 				//hudSpatial.updateInput(delta);
 				gameClient.updateGameFrame(delta);
+				float modelDelta = 0.05f;
+				float deltaRatio = modelDelta / delta;
+				float adjustedDelta = delta/deltaRatio;
 				for (final GameObject gameObject : gameObjects) {
 					gameObject.update(delta);
 				}

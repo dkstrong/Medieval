@@ -110,6 +110,8 @@ public class HudGameObject implements GameObject,InputProcessor {
 	}
 
 
+	private float requestPingTimer = 5;
+
 	@Override
 	public void render(float delta) {
 		// http://www.badlogicgames.com/forum/viewtopic.php?f=11&t=16813
@@ -129,20 +131,30 @@ public class HudGameObject implements GameObject,InputProcessor {
 		}
 
 		if(world.gameClient instanceof NetworkedGameClient){
-			NetworkedGameClient networkedNetworkedGameClient = (NetworkedGameClient) world.gameClient;
+			NetworkedGameClient networkedGameClient = (NetworkedGameClient) world.gameClient;
 			if(gameServerStatusString== null)
-				gameServerStatusString = networkedNetworkedGameClient.isConnected() ? "Connected to: "+ networkedNetworkedGameClient.hostName+":"+ networkedNetworkedGameClient.tcpPort : "No Server Connection";
+				gameServerStatusString = networkedGameClient.isConnected() ? "Connected to: "+ networkedGameClient.hostName+":"+ networkedGameClient.tcpPort : "No Server Connection";
 
 			gameClientStatusString="Players:";
-			if(networkedNetworkedGameClient.player.id > 0 && networkedNetworkedGameClient.players.containsKey(networkedNetworkedGameClient.player.id)){
-				gameClientStatusString+= "\n"+String.valueOf(networkedNetworkedGameClient.player);
+			if(networkedGameClient.player.id > 0 && networkedGameClient.players.containsKey(networkedGameClient.player.id)){
+				gameClientStatusString+= "\n"+String.valueOf(networkedGameClient.player);
+				requestPingTimer-=delta;
+				if(requestPingTimer <0){
+					requestPingTimer = 15;
+					networkedGameClient.client.updateReturnTripTime();
+				}
+				int returnTripTime = networkedGameClient.client.getReturnTripTime();
+				gameClientStatusString+=" ["+returnTripTime+"]";
 			}
-			for (Player player : networkedNetworkedGameClient.players.values()) {
-				if(player.id != networkedNetworkedGameClient.player.id){
+			for (Player player : networkedGameClient.players.values()) {
+				if(player.id != networkedGameClient.player.id){
 					gameClientStatusString+= "\n"+String.valueOf(player);
 				}
 			}
-			topLeftLabel.setText(String.valueOf(world.gameClient));
+			String topLeftText = String.valueOf(world.gameClient);
+			topLeftText+="\nbuffer: "+networkedGameClient.numLockstepFramesInBuffer();
+			topLeftLabel.setText(topLeftText);
+
 		}else{
 			topLeftLabel.setText("");
 		}
