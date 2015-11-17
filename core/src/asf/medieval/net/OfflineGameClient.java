@@ -21,4 +21,19 @@ public class OfflineGameClient implements GameClient {
 	public void sendCommand(Command command) {
 		command.performCommand(scenario);
 	}
+
+	@Override
+	public void sendReadyAction() {
+		player.loading = 1;
+	}
+
+	@Override
+	public boolean isAllPlayersReady() {
+		return player.loading==1;
+	}
+
+	@Override
+	public String toString() {
+		return "OfflineGameClient{}";
+	}
 }

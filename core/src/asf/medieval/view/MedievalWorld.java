@@ -114,9 +114,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		}
 
 		if(settings.server ||  settings.client){
-
 			String hostname = settings.server ? "localhost" : settings.hostName;
 			NetworkedGameClient networkedNetworkedGameClient = new NetworkedGameClient();
+			networkedNetworkedGameClient.scenario = scenario;
 			Player player = new Player();
 			player.name = System.getProperty("user.name");
 			networkedNetworkedGameClient.connectToServer(hostname, settings.gameServerConfig.tcpPort, settings.gameServerConfig.udpPort, player);
@@ -134,31 +134,44 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 
 	}
 
-	private void startSimulation() {
+	private boolean hasDoneLoading =false;
 
-		app.onSimulationStarted(); // inform the dungeon app to close the loading screen
-		setPaused(false); // call this to apply the gameplay input processors
-		Gdx.gl.glClearColor(100 / 255f, 149 / 255f, 237 / 255f, 1f);
-		pack =  assetManager.get("Packs/Game.atlas", TextureAtlas.class);
-		//sounds.init();
-		//fxManager.init();
-		//dungeonApp.music.setPlaylist(SongId.MainTheme, SongId.Arabesque, SongId.RitualNorm);
-		//dungeonApp.music.playSong(SongId.RitualNorm);
+	private void startSimulation()
+	{
+		if(!hasDoneLoading){
+			hasDoneLoading = true;
 
-		addGameObject(hudGameObject = new HudGameObject(this));
+			hasDoneLoading = true;
+			pack =  assetManager.get("Packs/Game.atlas", TextureAtlas.class);
+			//sounds.init();
+			//fxManager.init();
+			//dungeonApp.music.setPlaylist(SongId.MainTheme, SongId.Arabesque, SongId.RitualNorm);
+			//dungeonApp.music.playSong(SongId.RitualNorm);
 
-		//addGameObject(characterGameObject = new CharacterGameObject(this, mission.characterToken));
-		//cameraManager.setChaseTarget(characterGameObject);
+			addGameObject(hudGameObject = new HudGameObject(this));
+
+			//addGameObject(characterGameObject = new CharacterGameObject(this, mission.characterToken));
+			//cameraManager.setChaseTarget(characterGameObject);
 
 
-		//addGameObject(new SceneGameObject(this));
-		addGameObject(terrainGameObject=new TerrainGameObject(this));
+			//addGameObject(new SceneGameObject(this));
+			addGameObject(terrainGameObject=new TerrainGameObject(this));
 
 
-		scenario.setListener(this);
+			scenario.setListener(this);
 
-		inputMultiplexer.addProcessor(cameraManager.twRtsCamController);
-		inputMultiplexer.addProcessor(hudGameObject);
+			inputMultiplexer.addProcessor(cameraManager.twRtsCamController);
+			inputMultiplexer.addProcessor(hudGameObject);
+
+		}
+
+		gameClient.sendReadyAction();
+		if(gameClient.isAllPlayersReady()){
+			loading = false;
+			app.onSimulationStarted(); // inform the dungeon app to close the loading screen
+			setPaused(false); // call this to apply the gameplay input processors
+			Gdx.gl.glClearColor(100 / 255f, 149 / 255f, 237 / 255f, 1f);
+		}
 	}
 
 	public <T extends GameObject> T addGameObject(T gameObject) {
@@ -180,8 +193,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 		if (loading) {
 			if (paused)
 				Gdx.graphics.requestRendering();
-			if (assetManager.update()) {
-				loading = false;
+			if (hasDoneLoading || assetManager.update()) {
 				startSimulation();
 			}
 		} else {

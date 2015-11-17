@@ -25,11 +25,14 @@ public class HudGameObject implements GameObject,InputProcessor {
 
 	private MedievalWorld world;
 
-	private Container labelContainer;
-	private Label label;
+	private Container topRightLabelContainer;
+	private Label topRightLabel;
 
-	private Container bottomLabelContainer;
-	private Label bottomLabel;
+	private Container bottomLeftLabelContainer;
+	private Label bottomLeftLabel;
+
+	private Container topLeftLabelContainer;
+	private Label topLeftLabel;
 
 	private StretchableImage selectionBox;
 	private final Decal moveCommandDecal = new Decal();
@@ -38,18 +41,24 @@ public class HudGameObject implements GameObject,InputProcessor {
 
 	public HudGameObject(MedievalWorld world) {
 		this.world = world;
-		label = new Label("Hello, there!", world.app.skin);
-		label.setAlignment(Align.topRight, Align.topRight);
-		labelContainer = new Container<Label>(label);
-		labelContainer.align(Align.topRight).pad(10);
-		world.stage.addActor(labelContainer);
+		topRightLabel = new Label("Hello, there!", world.app.skin);
+		topRightLabel.setAlignment(Align.topRight, Align.topRight);
+		topRightLabelContainer = new Container<Label>(topRightLabel);
+		topRightLabelContainer.align(Align.topRight).pad(10);
+		world.stage.addActor(topRightLabelContainer);
 
 
-		bottomLabel = new Label("Hello, there!", world.app.skin);
-		bottomLabel.setAlignment(Align.bottomLeft, Align.bottomLeft);
-		bottomLabelContainer = new Container<Label>(bottomLabel);
-		bottomLabelContainer.align(Align.bottomLeft).pad(10);
-		world.stage.addActor(bottomLabelContainer);
+		bottomLeftLabel = new Label("Hello, there!", world.app.skin);
+		bottomLeftLabel.setAlignment(Align.bottomLeft, Align.bottomLeft);
+		bottomLeftLabelContainer = new Container<Label>(bottomLeftLabel);
+		bottomLeftLabelContainer.align(Align.bottomLeft).pad(10);
+		world.stage.addActor(bottomLeftLabelContainer);
+
+		topLeftLabel = new Label("Hello, there!", world.app.skin);
+		topLeftLabel.setAlignment(Align.topLeft, Align.topLeft);
+		topLeftLabelContainer = new Container<Label>(topLeftLabel);
+		topLeftLabelContainer.align(Align.topLeft).pad(10);
+		world.stage.addActor(topLeftLabelContainer);
 
 		selectionBox = new StretchableImage(world.pack.findRegion("Interface/Hud/selection-box"));
 
@@ -69,8 +78,9 @@ public class HudGameObject implements GameObject,InputProcessor {
 	public void resize(int width, int height) {
 
 
-		labelContainer.setBounds(0, 0, width, height);
-		bottomLabelContainer.setBounds(0, 0, width, height);
+		topRightLabelContainer.setBounds(0, 0, width, height);
+		bottomLeftLabelContainer.setBounds(0, 0, width, height);
+		topLeftLabelContainer.setBounds(0, 0, width, height);
 
 	}
 
@@ -119,7 +129,7 @@ public class HudGameObject implements GameObject,InputProcessor {
 		}
 
 		if(world.gameClient instanceof NetworkedGameClient){
-			NetworkedGameClient networkedNetworkedGameClient = (NetworkedGameClient)world.gameClient;
+			NetworkedGameClient networkedNetworkedGameClient = (NetworkedGameClient) world.gameClient;
 			if(gameServerStatusString== null)
 				gameServerStatusString = networkedNetworkedGameClient.isConnected() ? "Connected to: "+ networkedNetworkedGameClient.hostName+":"+ networkedNetworkedGameClient.tcpPort : "No Server Connection";
 
@@ -132,24 +142,27 @@ public class HudGameObject implements GameObject,InputProcessor {
 					gameClientStatusString+= "\n"+String.valueOf(player);
 				}
 			}
+			topLeftLabel.setText(String.valueOf(world.gameClient));
+		}else{
+			topLeftLabel.setText("");
 		}
 
-		label.setText(
+		topRightLabel.setText(
 
 			"FPS: " + Gdx.graphics.getFramesPerSecond() +
-			"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB" +
-			"\n"+
-			(gameServerStatusString != null ? "\n"+gameServerStatusString : "") +
-			(gameClientStatusString != null ? "\n"+gameClientStatusString : "")
+				"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB" +
+				"\n" +
+				(gameServerStatusString != null ? "\n" + gameServerStatusString : "") +
+				(gameClientStatusString != null ? "\n" + gameClientStatusString : "")
 
 
 		);
 
 
 		if (selectedSoldiers.size < 1){
-			bottomLabel.setText("");
+			bottomLeftLabel.setText("");
 		}else{
-			bottomLabel.setText("Selected: "+selectedSoldiers.size);
+			bottomLeftLabel.setText("Selected: " + selectedSoldiers.size);
 		}
 
 

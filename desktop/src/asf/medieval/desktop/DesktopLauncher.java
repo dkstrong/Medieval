@@ -24,7 +24,7 @@ public class DesktopLauncher {
 
 
 		config.foregroundFPS = 60;
-		config.backgroundFPS = 30;
+		config.backgroundFPS = 60;
 		config.vSyncEnabled = false;
 		config.samples = 0;
 		config.r = 5;
