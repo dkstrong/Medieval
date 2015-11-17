@@ -356,7 +356,7 @@ public class HudGameObject implements GameObject,InputProcessor {
 				break;
 			case Input.Keys.I:
 				Command command = new Command();
-				command.location = new Vector3(0,0,0);
+				command.location = new Vector3(world.cameraManager.twRtsCamController.center);
 				world.gameClient.sendCommand(command);
 				break;
 		}

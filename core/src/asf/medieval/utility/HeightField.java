@@ -2,10 +2,7 @@ package asf.medieval.utility;
 
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
-import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -180,6 +177,25 @@ public class HeightField implements Disposable {
 		mesh.setIndices(indices);
 	}
 
+	public void set(final Pixmap map) {
+		if (map.getWidth() != width || map.getHeight() != height) throw new GdxRuntimeException("Incorrect map size");
+		set(map.getPixels(), map.getFormat());
+	}
+
+	public void set(final ByteBuffer colorData, final Pixmap.Format format) {
+		set(heightColorsToMap(colorData, format, width, height));
+	}
+
+	public void set(float[] data) {
+		set(data, 0);
+	}
+
+	public void set(float[] data, int offset) {
+		if (this.data.length > (data.length - offset)) throw new GdxRuntimeException("Incorrect data size");
+		System.arraycopy(data, offset, this.data, 0, this.data.length);
+		update();
+	}
+
 	public void update() {
 		if (smooth) {
 			if (norPos < 0)
@@ -237,6 +253,30 @@ public class HeightField implements Disposable {
 		mesh.setVertices(vertices);
 	}
 
+	protected void setVertex(int index, VertexInfo info) {
+		index *= stride;
+		if (posPos >= 0) {
+			vertices[index + posPos + 0] = info.position.x;
+			vertices[index + posPos + 1] = info.position.y;
+			vertices[index + posPos + 2] = info.position.z;
+		}
+		if (norPos >= 0) {
+			vertices[index + norPos + 0] = info.normal.x;
+			vertices[index + norPos + 1] = info.normal.y;
+			vertices[index + norPos + 2] = info.normal.z;
+		}
+		if (uvPos >= 0) {
+			vertices[index + uvPos + 0] = info.uv.x;
+			vertices[index + uvPos + 1] = info.uv.y;
+		}
+		if (colPos >= 0) {
+			vertices[index + colPos + 0] = info.color.r;
+			vertices[index + colPos + 1] = info.color.g;
+			vertices[index + colPos + 2] = info.color.b;
+			vertices[index + colPos + 3] = info.color.a;
+		}
+	}
+
 	/**
 	 * Does not set the normal member!
 	 */
@@ -251,6 +291,13 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
+	/**
+	 *
+	 * @param out
+	 * @param x field coordinate x
+	 * @param y field coordinate y
+	 * @return
+	 */
 	public Vector3 getPositionAt(Vector3 out, int x, int y) {
 		final float dx = (float) x / (float) (width - 1);
 		final float dy = (float) y / (float) (height - 1);
@@ -308,100 +355,25 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
-	protected void setVertex(int index, VertexInfo info) {
-		index *= stride;
-		if (posPos >= 0) {
-			vertices[index + posPos + 0] = info.position.x;
-			vertices[index + posPos + 1] = info.position.y;
-			vertices[index + posPos + 2] = info.position.z;
-		}
-		if (norPos >= 0) {
-			vertices[index + norPos + 0] = info.normal.x;
-			vertices[index + norPos + 1] = info.normal.y;
-			vertices[index + norPos + 2] = info.normal.z;
-		}
-		if (uvPos >= 0) {
-			vertices[index + uvPos + 0] = info.uv.x;
-			vertices[index + uvPos + 1] = info.uv.y;
-		}
-		if (colPos >= 0) {
-			vertices[index + colPos + 0] = info.color.r;
-			vertices[index + colPos + 1] = info.color.g;
-			vertices[index + colPos + 2] = info.color.b;
-			vertices[index + colPos + 3] = info.color.a;
-		}
+
+	public void getFieldCoordinate(Vector3 worldCoordinate, Vector2 store){
+		store.x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
+		store.y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
 	}
 
-	public void set(final Pixmap map) {
-		if (map.getWidth() != width || map.getHeight() != height) throw new GdxRuntimeException("Incorrect map size");
-		set(map.getPixels(), map.getFormat());
-	}
+	public float getElevation(Vector3 worldCoordinate) {
+		// convert world coordinates to field coordinates
+		float x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
+		float y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
 
-	public void set(final ByteBuffer colorData, final Pixmap.Format format) {
-		set(heightColorsToMap(colorData, format, width, height));
-	}
-
-	public void set(float[] data) {
-		set(data, 0);
-	}
-
-	public void set(float[] data, int offset) {
-		if (this.data.length > (data.length - offset)) throw new GdxRuntimeException("Incorrect data size");
-		System.arraycopy(data, offset, this.data, 0, this.data.length);
-		update();
-	}
-
-	@Override
-	public void dispose() {
-		mesh.dispose();
-	}
-
-	/**
-	 * Simply creates an array containing only all the red components of the data.
-	 */
-	public static float[] heightColorsToMap(final ByteBuffer data, final Pixmap.Format format, int width, int height) {
-		final int bytesPerColor = (format == Format.RGB888 ? 3 : (format == Format.RGBA8888 ? 4 : 0));
-		if (bytesPerColor == 0) throw new GdxRuntimeException("Unsupported format, should be either RGB8 or RGBA8");
-		if (data.remaining() < (width * height * bytesPerColor)) throw new GdxRuntimeException("Incorrect map size");
-
-		final int startPos = data.position();
-		byte[] source = null;
-		int sourceOffset = 0;
-		if (data.hasArray() && !data.isReadOnly()) {
-			source = data.array();
-			sourceOffset = data.arrayOffset() + startPos;
-		} else {
-			source = new byte[width * height * bytesPerColor];
-			data.get(source);
-			data.position(startPos);
-		}
-
-		float[] dest = new float[width * height];
-		for (int i = 0; i < dest.length; ++i) {
-			int v = source[sourceOffset + i * 3];
-			v = v < 0 ? 256 + v : v;
-			dest[i] = (float) v / 255f;
-		}
-
-		return dest;
-	}
-
-
-	public float getElevation(Vector3 coordinate) {
-
-
-		float x = UtMath.scalarLimitsInterpolation(coordinate.x, corner00.x, corner10.x, 0, width - 1);
-		float y = UtMath.scalarLimitsInterpolation(coordinate.z, corner00.z, corner01.z, 0, height - 1);
-
+		// get the elevation of the 4 nearby fieldmap vertex points, then use interpolation
+		// to estimate the elevation for the world coordiante
 		int x0 = (int) x;
 		int y0 = (int) y;
 		int x1 = x0 + 1;
 		int y1 = y0 + 1;
 		if(x1 >= width) x1 = width-1;
 		if(y1 >= height) y1 = height-1;
-		//System.out.println("x: " + x+", y: "+y);
-		//System.out.println("x0: " + x0+", y0: "+y0);
-		//System.out.println("x1: " + x1+", y1: "+y1);
 
 		Vector3 out = new Vector3();
 
@@ -414,25 +386,26 @@ public class HeightField implements Disposable {
 		getPositionAt(out, x1, y1);
 		float s11 = out.y;
 
-		float elevation = UtMath.interpolateBilinear(x - x0, y - y0, s00, s01, s10, s11);
+		float elevation = UtMath.interpolateBilinear(x - x0,y - y0,
+			s00, s10,
+			s01, s11);
 
 		return elevation;
 	}
-
 
 	/**
 	 * uses a raycast algorithm instead of using bilinear interpolation to estimate the elevation
 	 *
 	 * does not really work and is kind of finnicky.
 	 *
-	 * @param coordinate
+	 * @param worldCoordinate
 	 * @return
 	 */
-	public float getElevationRaycast(Vector3 coordinate) {
+	public float getElevationRaycast(Vector3 worldCoordinate) {
 		Vector3 out = new Vector3();
 
 		Ray ray = new Ray();
-		ray.origin.set(coordinate.x, 100, coordinate.z);
+		ray.origin.set(worldCoordinate.x, 100, worldCoordinate.z);
 		ray.direction.set(0, -1, 0);
 
 		intersectRayMesh(ray, mesh, out);
@@ -497,5 +470,39 @@ public class HeightField implements Disposable {
 	}
 
 
+	@Override
+	public void dispose() {
+		mesh.dispose();
+	}
+
+	/**
+	 * Simply creates an array containing only all the red components of the data.
+	 */
+	public static float[] heightColorsToMap(final ByteBuffer data, final Pixmap.Format format, int width, int height) {
+		final int bytesPerColor = (format == Format.RGB888 ? 3 : (format == Format.RGBA8888 ? 4 : 0));
+		if (bytesPerColor == 0) throw new GdxRuntimeException("Unsupported format, should be either RGB8 or RGBA8");
+		if (data.remaining() < (width * height * bytesPerColor)) throw new GdxRuntimeException("Incorrect map size");
+
+		final int startPos = data.position();
+		byte[] source = null;
+		int sourceOffset = 0;
+		if (data.hasArray() && !data.isReadOnly()) {
+			source = data.array();
+			sourceOffset = data.arrayOffset() + startPos;
+		} else {
+			source = new byte[width * height * bytesPerColor];
+			data.get(source);
+			data.position(startPos);
+		}
+
+		float[] dest = new float[width * height];
+		for (int i = 0; i < dest.length; ++i) {
+			int v = source[sourceOffset + i * 3];
+			v = v < 0 ? 256 + v : v;
+			dest[i] = (float) v / 255f;
+		}
+
+		return dest;
+	}
 
 }

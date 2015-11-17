@@ -18,11 +18,11 @@ public class SoldierToken implements Token, SteerAgent {
 	public float radius = 1;
 	public float height = 7.5f;
 
-	private float maxSpeed = 6.5f;
-	private float maxTurnForce = 10;
-	private float mass = 0.4f;
-	private float avoidanceRadius = 1f;
-	private final Vector3 velocity = new Vector3();
+	public float maxSpeed = 7f;
+	public float maxTurnForce = 10;
+	public float mass = 0.4f;
+	public float avoidanceRadius = 1f;
+	public final Vector3 velocity = new Vector3();
 
 	public Behavior behavior;
 

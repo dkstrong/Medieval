@@ -26,6 +26,7 @@ import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -36,7 +37,7 @@ import java.util.Random;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class MedievalWorld implements Disposable, Scenario.Listener {
+public class MedievalWorld implements Disposable, Scenario.Listener, TwRtsCamController.ElevationProvider {
 
 
 	public static class Settings {
@@ -78,7 +79,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 	public MedievalWorld(MedievalApp app, Settings settings)  {
 		this.app = app;
 		this.settings = settings;
-		cameraManager = new CameraManager();
+		cameraManager = new CameraManager(this);
 		environment = new Environment();
 
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.54f, 0.54f, 0.54f, 1f));
@@ -154,7 +155,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 			//cameraManager.setChaseTarget(characterGameObject);
 
 
-			//addGameObject(new SceneGameObject(this));
+			//addGameObject(new TerrainDebugGameObject(this));
 			addGameObject(terrainGameObject=new TerrainGameObject(this));
 
 
@@ -305,5 +306,13 @@ public class MedievalWorld implements Disposable, Scenario.Listener {
 			}
 			return false;
 		}
+	}
+
+	@Override
+	public float getElevationAt(float x, float z)
+	{
+		// TODO: wasteful vector creation
+		return scenario.heightField.getElevation(new Vector3(x,0,z));
+
 	}
 }

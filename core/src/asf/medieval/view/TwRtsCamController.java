@@ -4,6 +4,7 @@ import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -22,6 +23,7 @@ public class TwRtsCamController implements InputProcessor {
 	}
 
 	private final CameraManager cameraManager;
+	private final ElevationProvider elevationProvider;
 
 	private boolean dragMouse = false;
 	//private Listener listener;
@@ -34,19 +36,23 @@ public class TwRtsCamController implements InputProcessor {
 	public final Vector3 center = new Vector3();
 	private float rot = 0;
 	private float distance = 45;
+	private float minElevation =0;
 
-	public TwRtsCamController(CameraManager cameraManager) {
+	public TwRtsCamController(CameraManager cameraManager,ElevationProvider elevationProvider) {
 		this.cameraManager = cameraManager;
+		this.elevationProvider = elevationProvider;
 
 		setMinMaxValues(CamDegree.FWD, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(CamDegree.SIDE, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(CamDegree.ROT, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
-		setMinMaxValues(CamDegree.ZOOM, 4, 75);
+		setMinMaxValues(CamDegree.ZOOM, 4, 100);
 
-		setMaxSpeed(CamDegree.FWD, 24f, 0.25f);
-		setMaxSpeed(CamDegree.SIDE, 24f, 0.25f);
+		setMaxSpeed(CamDegree.FWD, 24f*2f, 0.25f);
+		setMaxSpeed(CamDegree.SIDE, 24f*2f, 0.25f);
 		setMaxSpeed(CamDegree.ROT, 2f, 0.3f);
 		setMaxSpeed(CamDegree.ZOOM, 60f, 0.25f);
+
+		minElevation = 10;
 	}
 
 	// SIDE and FWD min/max values are ignored, need to fix this..
@@ -107,11 +113,28 @@ public class TwRtsCamController implements InputProcessor {
 		center.x = UtMath.clamp(center.x, minValue[CamDegree.SIDE.ordinal()], maxValue[CamDegree.SIDE.ordinal()]);
 		center.z = UtMath.clamp(center.z, minValue[CamDegree.FWD.ordinal()], maxValue[CamDegree.FWD.ordinal()]);
 
+		final float elevation = elevationProvider.getElevationAt(center.x, center.z);
+		//float targetY = (int) (Math.ceil(elevation / 2f) * 2f);
+		if(elevation < minElevation){
+			center.y = minElevation;
+		}else if(UtMath.range(elevation, center.y) < delta*2f){
+			center.y = elevation;
+		}else{
+			float dir = UtMath.sign(elevation-center.y);
+			center.y += dir*delta*2f;
+		}
+
+
+
 		cameraManager.cam.position.x = center.x + (distance * (float)Math.cos(tilt) * (float)Math.sin(rot));
-		cameraManager.cam.position.y = center.y + (distance * (float)Math.sin(tilt));
+		cameraManager.cam.position.y = center.y + (distance * (float)Math.sin(tilt)); //
 		cameraManager.cam.position.z = center.z + (distance * (float)Math.cos(tilt) * (float)Math.cos(rot));
 
 		//TODO: check height of terrain at this vec.y vec, increase vec.y if terrain is too high
+
+
+		//cameraManager.cam.position.y += elevationAt;
+		//center.y += elevationAt;
 
 		cameraManager.cam.up.set(Vector3.Y);
 		cameraManager.cam.lookAt(center);
@@ -243,6 +266,10 @@ public class TwRtsCamController implements InputProcessor {
 		//accelPeriod[CamDegree.ZOOM.ordinal()] += 13 * amount * Gdx.graphics.getDeltaTime();
 		distance += maxSpeed[CamDegree.ZOOM.ordinal()] * amount * Gdx.graphics.getDeltaTime();
 		return false;
+	}
+
+	public static interface ElevationProvider{
+		public float getElevationAt(float x, float z);
 	}
 
 }

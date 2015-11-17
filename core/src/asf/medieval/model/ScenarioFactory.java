@@ -20,20 +20,7 @@ public class ScenarioFactory {
 	{
 		ScenarioRand scenarioRand = new ScenarioRand(random);
 
-		int w = 50, h = 50;
-		float magnitude = 1f;
-		HeightField field = heightFieldFlat();
-		field.corner00.set(-w, 0, -h);
-		field.corner10.set(w, 0, -h);
-		field.corner01.set(-w, 0, h);
-		field.corner11.set(w, 0, h);
-		field.color00.set(0.75f, 0.75f, 0.75f, 1);
-		field.color01.set(0.75f, 0.75f, 0.75f, 1);
-		field.color10.set(0.75f, 0.75f, 0.75f, 1);
-		field.color11.set(0.75f, 0.75f, 0.75f, 1);
-		field.magnitude.set(0f, magnitude, 0f);
-		field.update();
-
+		HeightField field = heightFieldFromImage();
 
 		Scenario scenario = new Scenario(scenarioRand, field);
 
@@ -47,6 +34,20 @@ public class ScenarioFactory {
 		HeightField field = new HeightField(true, data, true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
 		data.dispose();
 
+		int w = 250, h = 250;
+		float magnitude = 15f;
+		field.uvScale.set(4f,4f);
+		field.corner00.set(-w, 0, -h);
+		field.corner10.set(w, 0, -h);
+		field.corner01.set(-w, 0, h);
+		field.corner11.set(w, 0, h);
+		field.color00.set(0.75f, 0.75f, 0.75f, 1);
+		field.color01.set(0.75f, 0.75f, 0.75f, 1);
+		field.color10.set(0.75f, 0.75f, 0.75f, 1);
+		field.color11.set(0.75f, 0.75f, 0.75f, 1);
+		field.magnitude.set(0f, magnitude, 0f);
+		field.update();
+
 		return field;
 	}
 
@@ -55,6 +56,18 @@ public class ScenarioFactory {
 
 		HeightField field = new HeightField(true, data, 64,64,false, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
 
+		int w = 50, h = 50;
+		float magnitude = 1f;
+		field.corner00.set(-w, 0, -h);
+		field.corner10.set(w, 0, -h);
+		field.corner01.set(-w, 0, h);
+		field.corner11.set(w, 0, h);
+		field.color00.set(0.75f, 0.75f, 0.75f, 1);
+		field.color01.set(0.75f, 0.75f, 0.75f, 1);
+		field.color10.set(0.75f, 0.75f, 0.75f, 1);
+		field.color11.set(0.75f, 0.75f, 0.75f, 1);
+		field.magnitude.set(0f, magnitude, 0f);
+		field.update();
 
 		return field;
 	}

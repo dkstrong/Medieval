@@ -93,6 +93,7 @@ public class Scenario {
 		token.location.set(location);
 		token.location.y = heightField.getElevation(token.location);
 		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
+		final float eps = 0.001f;
 		SET_NEW_POS:
 		while (--maxTries >= 0) {
 			for (Token t : tokens) {
@@ -100,7 +101,7 @@ public class Scenario {
 				if(t!= token && (t instanceof SoldierToken)){
 					SoldierToken other = (SoldierToken) t;
 					//if(token.location.dst(other.location) <= token.radius){
-					if(token.location.x == other.location.z && token.location.z == other.location.z){
+					if(UtMath.abs(token.location.x-other.location.x) <eps && UtMath.abs(token.location.z-other.location.z) <eps){
 						token.location.x = location.x + rand.range(-token.radius,token.radius);
 						token.location.z = location.z + rand.range(-token.radius,token.radius);
 						token.location.y = heightField.getElevation(token.location);

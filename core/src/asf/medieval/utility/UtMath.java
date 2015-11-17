@@ -405,9 +405,9 @@ public class UtMath {
 
 
 
-	public static float interpolateBilinear(float xfrac, float yfrac, float s00, float s01, float s10, float s11)
+	public static float interpolateBilinear(float xfrac, float yfrac, float s00, float s10, float s01, float s11)
 	{
-		return (1 - yfrac) * ((1 - xfrac)*s00 + xfrac*s01) + yfrac * ((1 - xfrac)*s10 + xfrac*s11);
+		return (1 - yfrac) * ((1 - xfrac)*s00 + xfrac*s10) + yfrac * ((1 - xfrac)*s01 + xfrac*s11);
 	}
 
 

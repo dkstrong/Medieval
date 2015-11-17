@@ -73,14 +73,14 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 		if(speed < .75f)
 		{
 			if (!animController.current.animation.id.startsWith("Idle"))
-				animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+				animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.1f);
 		}
 		else
 		{
 			if (!animController.current.animation.id.startsWith("Walk")){
 				animController.animate("Walk", 0, -1, -1, 1, this, 0.2f);
 			}else{
-				animController.current.speed = speed  /token.getMaxSpeed();
+				animController.current.speed = speed  /token.getMaxSpeed() * 0.65f;
 			}
 
 

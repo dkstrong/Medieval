@@ -1,6 +1,5 @@
 package asf.medieval.net;
 
-
 import asf.medieval.model.Command;
 import asf.medieval.model.Scenario;
 import asf.medieval.net.message.Action;

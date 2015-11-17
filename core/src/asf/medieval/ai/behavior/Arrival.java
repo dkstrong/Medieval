@@ -12,7 +12,7 @@ public class Arrival implements Behavior{
 
 	public SteerAgent agent;
 	public final Vector3 target = new Vector3();
-	public float slowingRadiusSqr = 1f;
+	public float slowingRadiusSqr = 1.5f;
 	@Override
 	public void update(float delta) {
 

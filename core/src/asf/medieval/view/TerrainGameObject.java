@@ -25,7 +25,10 @@ public class TerrainGameObject implements GameObject{
 		// Model model = world.assetManager.get("Scenes/Desert/Desert_Mobile_r1.g3db", Model.class);
 
 
+		//"Textures/Terrain/sand512.jpg"
+		//"Textures/Floor/wallTiles.png"
 		Texture texture = new Texture(Gdx.files.internal("Textures/Terrain/sand512.jpg"));
+		texture.setWrap(Texture.TextureWrap.Repeat,Texture.TextureWrap.Repeat);
 
 		ground = new Renderable();
 		ground.environment = world.environment;
@@ -37,35 +40,11 @@ public class TerrainGameObject implements GameObject{
 		ground.material = new Material(TextureAttribute.createDiffuse(texture));
 
 
-		getPositionOnTerrain();
+		//world.addGameObject(new TerrainDebugGameObject(world));
 
 	}
 
-	private void getPositionOnTerrain()
-	{
-		Vector3 coord00 = new Vector3();
-		Vector3 coord10 = new Vector3();
-		Vector3 coordHalf = new Vector3();
 
-		world.scenario.heightField.getPositionAt(coord00, 0,0);
-		world.addGameObject(new DebugPosGameObject(world, coord00,2,Color.YELLOW));
-		System.out.println("0,0: "+ UtMath.round(coord00,2));
-
-		world.scenario.heightField.getPositionAt(coord10, 1,1);
-		world.addGameObject(new DebugPosGameObject(world, coord10,2,Color.YELLOW));
-		System.out.println("1,0: "+ UtMath.round(coord10,2));
-
-		coordHalf.x = (coord00.x + coord10.x)/2f;
-		coordHalf.z = (coord00.z + coord10.z)/2f;
-
-		coordHalf.y = world.scenario.heightField.getElevationRaycast(coordHalf);
-		world.addGameObject(new DebugPosGameObject(world, coordHalf,2, Color.RED));
-
-		coordHalf.y = world.scenario.heightField.getElevation(coordHalf);
-		world.addGameObject(new DebugPosGameObject(world, coordHalf,2, Color.BLUE));
-
-
-	}
 
 
 
@@ -80,7 +59,7 @@ public class TerrainGameObject implements GameObject{
 	public void render(float delta)
 	{
 		//world.shadowBatch.render(ground);
-		world.modelBatch.render(ground); // , world.environment
+		world.modelBatch.render(ground); // environmet variable is set directly on the ground renderable
 
 
 	}
