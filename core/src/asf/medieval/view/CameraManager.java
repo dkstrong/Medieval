@@ -11,7 +11,7 @@ public class CameraManager {
 
 	public final PerspectiveCamera cam;
 
-	public TwRtsCamController twRtsCamController;
+	public RtsCamController rtsCamController;
 
 	private GameObject chaseTarget;
 
@@ -22,7 +22,7 @@ public class CameraManager {
 		//cam.vec.set(0, 11.5f, 25f);  // 50 fov
 		//cam.lookAt(0, 9.5f, -20);
 
-		twRtsCamController = new TwRtsCamController(this, world);
+		rtsCamController = new RtsCamController(this, world);
 		// TODO: camManager needs to act as a middleman for the Cam controllers
 		// so if the camera type changes so will the relevant input processing...
 	}
@@ -46,7 +46,7 @@ public class CameraManager {
 
 	public void update(float delta){
 
-		twRtsCamController.update(delta);
+		rtsCamController.update(delta);
 
 		//System.out.println("cam pos: "+cam.vec);
 	}

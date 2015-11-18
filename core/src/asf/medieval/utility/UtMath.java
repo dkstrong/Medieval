@@ -1,6 +1,9 @@
 package asf.medieval.utility;
 
+import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.math.BigDecimal;
 
@@ -455,6 +458,7 @@ public class UtMath {
 		return Intersector.isPointInTriangle(point, q1,q3,q4) || Intersector.isPointInTriangle(point, q1,q2,q3);
 
 	}
+
 
 
 	private UtMath() {

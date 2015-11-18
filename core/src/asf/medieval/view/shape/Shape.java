@@ -9,7 +9,6 @@ import com.badlogic.gdx.math.collision.Ray;
  * Created by danny on 10/20/14.
  */
 public interface Shape {
-
 	/**
 	 * @param transform the transform matrix of the object that this shape represents
 	 * @param cam

@@ -44,7 +44,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * <p/>
  * base[y * width + x] + magnitude * value[y * width + x]
  * <p/>
- * Use the {@link #getPositionAt(Vector3, int, int)} method to get the coordinate of a specific point on the grid.
+ * Use the {@link #getPositionAt(int, int,Vector3)} method to get the coordinate of a specific point on the grid.
  * <p/>
  * You can set this heightfield using the constructor or one of the `set` methods. E.g. by specifying an array of values or a
  * {@link Pixmap}. The latter can be used to load a HeightMap, which is an image loaded from disc of which each texel is used to
@@ -155,6 +155,7 @@ public class HeightField implements Disposable {
 		setIndices();
 	}
 
+	public short[] indices;
 	private void setIndices() {
 		final int w = width - 1;
 		final int h = height - 1;
@@ -174,11 +175,13 @@ public class HeightField implements Disposable {
 				indices[++i] = (short) c11;
 			}
 		}
+		this.indices = indices;
 		mesh.setIndices(indices);
 	}
 
 	public void set(final Pixmap map) {
-		if (map.getWidth() != width || map.getHeight() != height) throw new GdxRuntimeException("Incorrect map size");
+		if (map.getWidth() != width || map.getHeight() != height)
+			throw new GdxRuntimeException("Incorrect map size");
 		set(map.getPixels(), map.getFormat());
 	}
 
@@ -191,7 +194,8 @@ public class HeightField implements Disposable {
 	}
 
 	public void set(float[] data, int offset) {
-		if (this.data.length > (data.length - offset)) throw new GdxRuntimeException("Incorrect data size");
+		if (this.data.length > (data.length - offset))
+			throw new GdxRuntimeException("Incorrect data size");
 		System.arraycopy(data, offset, this.data, 0, this.data.length);
 		update();
 	}
@@ -210,7 +214,7 @@ public class HeightField implements Disposable {
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
 				VertexInfo v = getVertexAt(vertex00, x, y);
-				getWeightedNormalAt(v.normal, x, y);
+				getWeightedNormalAt(x, y,v.normal);
 				setVertex(y * width + x, v);
 			}
 		}
@@ -280,7 +284,7 @@ public class HeightField implements Disposable {
 	/**
 	 * Does not set the normal member!
 	 */
-	protected VertexInfo getVertexAt(final VertexInfo out, int x, int y) {
+	private VertexInfo getVertexAt(final VertexInfo out, int x, int y) {
 		final float dx = (float) x / (float) (width - 1);
 		final float dy = (float) y / (float) (height - 1);
 		final float a = data[y * width + x];
@@ -291,14 +295,7 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
-	/**
-	 *
-	 * @param out
-	 * @param x field coordinate x
-	 * @param y field coordinate y
-	 * @return
-	 */
-	public Vector3 getPositionAt(Vector3 out, int x, int y) {
+	private Vector3 getPositionAt(int x, int y,Vector3 out) {
 		final float dx = (float) x / (float) (width - 1);
 		final float dy = (float) y / (float) (height - 1);
 		final float a = data[y * width + x];
@@ -307,7 +304,7 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
-	public Vector3 getWeightedNormalAt(Vector3 out, int x, int y) {
+	public Vector3 getWeightedNormalAt(int x, int y,Vector3 out) {
 // This commented code is based on http://www.flipcode.com/archives/Calculating_Vertex_Normals_for_Height_Maps.shtml
 // Note that this approach only works for a heightfield on the XZ plane with a magnitude on the y axis
 // float sx = data[(x < width - 1 ? x + 1 : x) + y * width] + data[(x > 0 ? x-1 : x) + y * width];
@@ -327,11 +324,11 @@ public class HeightField implements Disposable {
 		int faces = 0;
 		out.set(0, 0, 0);
 
-		Vector3 center = getPositionAt(tmpV2, x, y);
-		Vector3 left = x > 0 ? getPositionAt(tmpV3, x - 1, y) : null;
-		Vector3 right = x < (width - 1) ? getPositionAt(tmpV4, x + 1, y) : null;
-		Vector3 bottom = y > 0 ? getPositionAt(tmpV5, x, y - 1) : null;
-		Vector3 top = y < (height - 1) ? getPositionAt(tmpV6, x, y + 1) : null;
+		Vector3 center = getPositionAt(x, y,tmpV2);
+		Vector3 left = x > 0 ? getPositionAt(x - 1, y,tmpV3) : null;
+		Vector3 right = x < (width - 1) ? getPositionAt(x + 1, y,tmpV4) : null;
+		Vector3 bottom = y > 0 ? getPositionAt(x, y - 1,tmpV5) : null;
+		Vector3 top = y < (height - 1) ? getPositionAt(x, y + 1,tmpV6) : null;
 		if (top != null && left != null) {
 			out.add(tmpV7.set(top).sub(center).nor().crs(tmpV8.set(center).sub(left).nor()).nor());
 			faces++;
@@ -355,11 +352,18 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
+	public void getWorldCoordinate(int x, int y, Vector3 store) {
+		final int i = (y * width +x)*stride;
+		store.set(vertices[i], vertices[i + 1], vertices[i + 2]);
+	}
 
-	public void getFieldCoordinate(Vector3 worldCoordinate, Vector2 store){
+
+	public void getFieldCoordinate(Vector3 worldCoordinate, Vector2 store) {
 		store.x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
 		store.y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
 	}
+
+	private Vector3 tempStore = new Vector3();
 
 	public float getElevation(Vector3 worldCoordinate) {
 		// convert world coordinates to field coordinates
@@ -372,21 +376,19 @@ public class HeightField implements Disposable {
 		int y0 = (int) y;
 		int x1 = x0 + 1;
 		int y1 = y0 + 1;
-		if(x1 >= width) x1 = width-1;
-		if(y1 >= height) y1 = height-1;
+		if (x1 >= width) x1 = width - 1;
+		if (y1 >= height) y1 = height - 1;
 
-		Vector3 out = new Vector3();
+		getWorldCoordinate(x0, y0, tempStore);
+		float s00 = tempStore.y;
+		getWorldCoordinate(x1, y0, tempStore);
+		float s10 = tempStore.y;
+		getWorldCoordinate(x0, y1, tempStore);
+		float s01 = tempStore.y;
+		getWorldCoordinate(x1, y1, tempStore);
+		float s11 = tempStore.y;
 
-		getPositionAt(out, x0, y0);
-		float s00 = out.y;
-		getPositionAt(out, x1, y0);
-		float s10 = out.y;
-		getPositionAt(out, x0, y1);
-		float s01 = out.y;
-		getPositionAt(out, x1, y1);
-		float s11 = out.y;
-
-		float elevation = UtMath.interpolateBilinear(x - x0,y - y0,
+		float elevation = UtMath.interpolateBilinear(x - x0, y - y0,
 			s00, s10,
 			s01, s11);
 
@@ -394,9 +396,10 @@ public class HeightField implements Disposable {
 	}
 
 	/**
-	 * uses a raycast algorithm instead of using bilinear interpolation to estimate the elevation
+	 * uses a raycast algorithm instead of using bilinear interpolation to get the elevation
 	 *
-	 * does not really work and is kind of finnicky.
+	 * may be slightly more accurate but its computationaly more expensive
+	 *
 	 *
 	 * @param worldCoordinate
 	 * @return
@@ -408,67 +411,14 @@ public class HeightField implements Disposable {
 		ray.origin.set(worldCoordinate.x, 100, worldCoordinate.z);
 		ray.direction.set(0, -1, 0);
 
-		intersectRayMesh(ray, mesh, out);
-		System.out.println("elevation find: "+out);
+		Intersector.intersectRayTriangles(ray, vertices, indices, stride, out);
 
 		return out.y;
 	}
 
-	public void getCoordinateRaycast(Ray ray,Vector3 store)
-	{
-		store.set(0,0,0);
-
-		intersectRayMesh(ray, mesh, store);
-		System.out.println("coordinate find: "+store);
-
+	public boolean intersect(Ray ray, Vector3 store) {
+		return Intersector.intersectRayTriangles(ray, vertices,indices,stride,store );
 	}
-
-
-	private static boolean intersectRayMesh(Ray ray, Mesh mesh, Vector3 intersectionCoordinate)
-	{
-		boolean intersectionOccured = false;
-		Vector3 tempIntersection = new Vector3();
-
-		float[] verticies = new float[mesh.getNumVertices()* 6];
-		mesh.getVertices(verticies);
-
-		short[] indicies = new short[mesh.getNumIndices()];
-		mesh.getIndices(indicies);
-
-		if (Intersector.intersectRayTriangles(ray, verticies,indicies, 4, tempIntersection)) {
-			intersectionCoordinate.set(tempIntersection);
-			return true;
-		}
-
-		return false;
-
-	}
-
-
-	private static boolean intersectRayMeshes(Ray ray, Array<Mesh> meshes, Vector3 globalIntersection) {
-
-		boolean intersectionOccured = false;
-		Vector3 localIntersection = new Vector3();
-
-		for (Mesh mesh : meshes) {
-			if (intersectRayMesh(ray, mesh, localIntersection)) {
-				if (!intersectionOccured) {
-					globalIntersection.set(localIntersection);
-					intersectionOccured = true;
-				} else {
-					// update globalIntersection only if it is closer to the ray origin
-					if (ray.origin.sub(localIntersection).len() < ray.origin.sub(globalIntersection).len()) {
-						globalIntersection.set(localIntersection);
-					}
-				}
-
-
-			}
-		}
-
-		return intersectionOccured;
-	}
-
 
 	@Override
 	public void dispose() {
@@ -480,8 +430,10 @@ public class HeightField implements Disposable {
 	 */
 	public static float[] heightColorsToMap(final ByteBuffer data, final Pixmap.Format format, int width, int height) {
 		final int bytesPerColor = (format == Format.RGB888 ? 3 : (format == Format.RGBA8888 ? 4 : 0));
-		if (bytesPerColor == 0) throw new GdxRuntimeException("Unsupported format, should be either RGB8 or RGBA8");
-		if (data.remaining() < (width * height * bytesPerColor)) throw new GdxRuntimeException("Incorrect map size");
+		if (bytesPerColor == 0)
+			throw new GdxRuntimeException("Unsupported format, should be either RGB8 or RGBA8");
+		if (data.remaining() < (width * height * bytesPerColor))
+			throw new GdxRuntimeException("Incorrect map size");
 
 		final int startPos = data.position();
 		byte[] source = null;

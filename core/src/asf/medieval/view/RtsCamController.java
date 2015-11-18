@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Vector3;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class TwRtsCamController implements InputProcessor {
+public class RtsCamController implements InputProcessor {
 
 
 
@@ -38,7 +38,7 @@ public class TwRtsCamController implements InputProcessor {
 	private float distance = 45;
 	private float minElevation =0;
 
-	public TwRtsCamController(CameraManager cameraManager,ElevationProvider elevationProvider) {
+	public RtsCamController(CameraManager cameraManager, ElevationProvider elevationProvider) {
 		this.cameraManager = cameraManager;
 		this.elevationProvider = elevationProvider;
 
@@ -52,7 +52,7 @@ public class TwRtsCamController implements InputProcessor {
 		setMaxSpeed(CamDegree.ROT, 2f, 0.3f);
 		setMaxSpeed(CamDegree.ZOOM, 60f, 0.25f);
 
-		minElevation = 10;
+		minElevation = 0;
 	}
 
 	// SIDE and FWD min/max values are ignored, need to fix this..
@@ -117,11 +117,8 @@ public class TwRtsCamController implements InputProcessor {
 		//float targetY = (int) (Math.ceil(elevation / 2f) * 2f);
 		if(elevation < minElevation){
 			center.y = minElevation;
-		}else if(UtMath.range(elevation, center.y) < delta*2f){
-			center.y = elevation;
-		}else{
-			float dir = UtMath.sign(elevation-center.y);
-			center.y += dir*delta*2f;
+		}else {
+			center.y = elevation * 0.45f;
 		}
 
 
@@ -130,7 +127,10 @@ public class TwRtsCamController implements InputProcessor {
 		cameraManager.cam.position.y = center.y + (distance * (float)Math.sin(tilt)); //
 		cameraManager.cam.position.z = center.z + (distance * (float)Math.cos(tilt) * (float)Math.cos(rot));
 
-		//TODO: check height of terrain at this vec.y vec, increase vec.y if terrain is too high
+//		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) + 0.1f;
+//		if(cameraManager.cam.position.y < elevationCam){
+//			cameraManager.cam.position.y = elevationCam;;
+//		}
 
 
 		//cameraManager.cam.position.y += elevationAt;
@@ -153,7 +153,7 @@ public class TwRtsCamController implements InputProcessor {
 
 	public String getDebugString()
 	{
-		String out = "TwRtsCamController: \n"+
+		String out = "RtsCamController: \n"+
 			"\tPosition: "+cameraManager.cam.position+"\n"+
 			"\tCenter: "+center+"\n";
 

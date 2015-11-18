@@ -40,7 +40,7 @@ public class ServerApp implements ApplicationListener {
 
 		// TODO: if game server config has a file location, then apply that to the UtLog here..
 
-		//Scenario scenario = ScenarioFactory.scenarioFlat();
+		//Scenario scenario = ScenarioFactory.scenarioTest();
 
 		gameServer = new GameServer();
 		gameServer.bindServer(gameServerConfig);

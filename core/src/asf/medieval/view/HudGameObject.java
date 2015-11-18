@@ -182,6 +182,7 @@ public class HudGameObject implements GameObject,InputProcessor {
 		{
 			moveCommandDecal.setPosition(lastMoveCommandLocation);
 			moveCommandDecal.translateY(0.05f);
+			//moveCommandDecal.setRotation();
 			world.decalBatch.add(moveCommandDecal);
 		}
 
@@ -221,11 +222,14 @@ public class HudGameObject implements GameObject,InputProcessor {
 	{
 		Ray ray = world.cameraManager.cam.getPickRay(screenX, screenY);
 
+
 		final float distance = -ray.origin.y / ray.direction.y;
 		storeWorldCoord.set(ray.direction).scl(distance).add(ray.origin);
 		storeWorldCoord.y = world.scenario.heightField.getElevation(storeWorldCoord);
 
-		//world.scenario.heightField.getCoordinateRaycast(ray, storeWorldCoord);
+
+		world.scenario.heightField.intersect(ray, storeWorldCoord);
+
 		// In order to have a mesh accurate collision i think id need something like this BIH Tree...
 		/// https://github.com/jMonkeyEngine/jmonkeyengine/tree/master/jme3-core/src/main/java/com/jme3/collision
 
@@ -245,7 +249,8 @@ public class HudGameObject implements GameObject,InputProcessor {
 				// Direct selection
 				Ray ray = getWorldCoord(screenX, screenY, vec1);
 				SoldierGameObject closestSgo = null;
-				float closestDistance = Float.MAX_VALUE;
+				float closestDistance = Float.MAX_VALUE; // this distance value is only useful for comparing shapes.
+				final float groundDst2 = ray.origin.dst2(vec1);
 
 				for (GameObject gameObject : world.gameObjects) {
 					if(gameObject instanceof SoldierGameObject)
@@ -253,7 +258,7 @@ public class HudGameObject implements GameObject,InputProcessor {
 						SoldierGameObject sgo = (SoldierGameObject) gameObject;
 						sgo.selected  = false;
 						float sgoDistance = sgo.intersects(ray);
-						if(sgoDistance > 0 && sgoDistance < closestDistance)
+						if(sgoDistance > 0 && sgoDistance < closestDistance && ray.origin.dst2(sgo.translation) < groundDst2)
 						{
 							closestDistance = sgoDistance;
 							closestSgo = sgo;
@@ -356,7 +361,7 @@ public class HudGameObject implements GameObject,InputProcessor {
 				break;
 			case Input.Keys.I:
 				Command command = new Command();
-				command.location = new Vector3(world.cameraManager.twRtsCamController.center);
+				command.location = new Vector3(world.cameraManager.rtsCamController.center);
 				world.gameClient.sendCommand(command);
 				break;
 		}

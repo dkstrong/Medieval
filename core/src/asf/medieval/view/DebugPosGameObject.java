@@ -25,7 +25,7 @@ public class DebugPosGameObject implements GameObject{
 	public final Vector3 translation = new Vector3();
 	public final Quaternion rotation = new Quaternion();
 
-	private float t = Float.NaN;
+	public float t = Float.NaN;
 
 	public DebugPosGameObject(MedievalWorld world, Vector3 pos, float length, Color color) {
 		this.world = world;
@@ -36,12 +36,18 @@ public class DebugPosGameObject implements GameObject{
 
 		translation.set(pos);
 
-		modelInstance.transform.set(
-			translation.x, translation.y, translation.z,
-			rotation.x, rotation.y, rotation.z, rotation.w,
-			1, 1, 1
-		);
+
 	}
+
+	public DebugPosGameObject(MedievalWorld world, Vector3 pos1,Vector3 pos2, Color color) {
+		this.world = world;
+		Model model = ModelFactory.arrow(pos1, pos2, color);
+
+		modelInstance = new ModelInstance(model);
+
+		translation.y += 0.025f;
+	}
+
 
 	public DebugPosGameObject(MedievalWorld world, Vector3 pos1, Vector3 pos2) {
 		this.world = world;
@@ -50,12 +56,10 @@ public class DebugPosGameObject implements GameObject{
 		modelInstance = new ModelInstance(model);
 
 		translation.y += 0.1f;
-		modelInstance.transform.set(
-			translation.x, translation.y, translation.z,
-			rotation.x, rotation.y, rotation.z, rotation.w,
-			1, 1, 1
-		);
 	}
+
+
+
 
 	public DebugPosGameObject(MedievalWorld world, Vector3 pos1, Vector3 pos2, Vector3 pos3, Vector3 pos4) {
 		this.world = world;
@@ -70,11 +74,6 @@ public class DebugPosGameObject implements GameObject{
 		modelInstance = new ModelInstance(model);
 
 		translation.y += 0.025f;
-		modelInstance.transform.set(
-			translation.x, translation.y, translation.z,
-			rotation.x, rotation.y, rotation.z, rotation.w,
-			1, 1, 1
-		);
 	}
 
 	public DebugPosGameObject(MedievalWorld world, Vector3 pos, Shape shape) {
@@ -107,20 +106,23 @@ public class DebugPosGameObject implements GameObject{
 		}
 
 		translation.set(pos).add(shape.getCenter());
+	}
+
+	@Override
+	public void update(float delta) {
 		modelInstance.transform.set(
 			translation.x, translation.y, translation.z,
 			rotation.x, rotation.y, rotation.z, rotation.w,
 			1, 1, 1
 		);
-	}
 
-	@Override
-	public void update(float delta) {
 		t -= delta;
 		if(t<0){
 			modelInstance.model.dispose();
 			world.removeGameObject(this);
 		}
+
+
 
 	}
 

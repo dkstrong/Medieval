@@ -1,6 +1,8 @@
 package asf.medieval.model;
 
 import asf.medieval.utility.HeightField;
+import asf.medieval.utility.OpenSimplexNoise;
+import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -16,16 +18,53 @@ public class ScenarioFactory {
 
 
 
-	public static Scenario scenarioFlat(Random random)
+	public static Scenario scenarioTest(Random random)
 	{
 		ScenarioRand scenarioRand = new ScenarioRand(random);
 
-		HeightField field = heightFieldFromImage();
+		HeightField field = heightFieldFromOpenSimplexNoise(scenarioRand);
+		//HeightField field = heightFieldFromImage();
 
 		Scenario scenario = new Scenario(scenarioRand, field);
 
 		//steeringTest2(scenario);
 		return scenario;
+	}
+	private static HeightField heightFieldFromOpenSimplexNoise(ScenarioRand scenarioRand){
+		final int fieldWidth = 64;
+		final int fieldHeight = 64;
+		final float data[] = new float[fieldWidth*fieldHeight];
+
+		final double featureSize = 20d;
+
+		OpenSimplexNoise noise = new OpenSimplexNoise(scenarioRand.random.nextLong());
+		for (int x = 0; x < fieldWidth; x++){
+			for (int y = 0; y < fieldHeight; y++){
+				//data[y * fieldWidth + x] = (float) noise.eval(x / featureSize, y / featureSize);
+				data[y * fieldWidth + x] = UtMath.smallest((float)noise.eval(x / featureSize, y / featureSize), 0.999f);
+			}
+		}
+
+
+
+
+		HeightField field = new HeightField(true, data, fieldWidth,fieldHeight,true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+
+		int w = 50, h = 50;
+		float magnitude = 10f;
+		field.uvScale.set(4f,4f);
+		field.corner00.set(-w, 0, -h);
+		field.corner10.set(w, 0, -h);
+		field.corner01.set(-w, 0, h);
+		field.corner11.set(w, 0, h);
+		field.color00.set(0.75f, 0.75f, 0.75f, 1);
+		field.color01.set(0.75f, 0.75f, 0.75f, 1);
+		field.color10.set(0.75f, 0.75f, 0.75f, 1);
+		field.color11.set(0.75f, 0.75f, 0.75f, 1);
+		field.magnitude.set(0f, magnitude, 0f);
+		field.update();
+
+		return field;
 	}
 
 	private static HeightField heightFieldFromImage(){
@@ -35,7 +74,7 @@ public class ScenarioFactory {
 		data.dispose();
 
 		int w = 250, h = 250;
-		float magnitude = 15f;
+		float magnitude = .15f;
 		field.uvScale.set(4f,4f);
 		field.corner00.set(-w, 0, -h);
 		field.corner10.set(w, 0, -h);

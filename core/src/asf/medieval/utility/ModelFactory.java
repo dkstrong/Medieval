@@ -74,7 +74,6 @@ public class ModelFactory {
 
 	}
 
-
 	public static Model rect(Vector3 pos1, Vector3 pos2, Vector3 pos3, Vector3 pos4, Color color){
 		ModelBuilder modelBuilder = new ModelBuilder();
 		BlendingAttribute blendingAttribute = new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);

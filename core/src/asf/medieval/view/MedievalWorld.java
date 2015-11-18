@@ -37,7 +37,7 @@ import java.util.Random;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class MedievalWorld implements Disposable, Scenario.Listener, TwRtsCamController.ElevationProvider {
+public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamController.ElevationProvider {
 
 
 	public static class Settings {
@@ -107,7 +107,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, TwRtsCamCon
 		gameObjects = new Array<GameObject>(false, 128, GameObject.class);
 
 
-		scenario = ScenarioFactory.scenarioFlat(settings.random);
+		scenario = ScenarioFactory.scenarioTest(settings.random);
 
 		if(settings.server){
 			gameServer = new GameServer();
@@ -161,7 +161,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, TwRtsCamCon
 
 			scenario.setListener(this);
 
-			inputMultiplexer.addProcessor(cameraManager.twRtsCamController);
+			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
 			inputMultiplexer.addProcessor(hudGameObject);
 
 		}
@@ -216,7 +216,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, TwRtsCamCon
 			Gdx.gl.glClearColor(100 / 255f, 149 / 255f, 237 / 255f, 1f); // shadow light or shadow batch seems to reset the clear color- so do it every time...
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-			shadowLight.begin(cameraManager.twRtsCamController.center, cameraManager.cam.direction);
+			shadowLight.begin(cameraManager.rtsCamController.center, cameraManager.cam.direction);
 			shadowBatch.begin(shadowLight.getCamera());
 
 			modelBatch.begin(cameraManager.cam);
