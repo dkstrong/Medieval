@@ -16,7 +16,6 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -213,7 +212,7 @@ public class HeightField implements Disposable {
 	private void updateSmooth() {
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
-				VertexInfo v = getVertexAt(vertex00, x, y);
+				VertexInfo v = getVertexAt(x, y, vertex00);
 				getWeightedNormalAt(x, y,v.normal);
 				setVertex(y * width + x, v);
 			}
@@ -224,7 +223,7 @@ public class HeightField implements Disposable {
 	private void updateSimple() {
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
-				setVertex(y * width + x, getVertexAt(vertex00, x, y));
+				setVertex(y * width + x, getVertexAt(x, y, vertex00));
 			}
 		}
 		mesh.setVertices(vertices);
@@ -239,10 +238,10 @@ public class HeightField implements Disposable {
 				final int c10 = c00 + 1;
 				final int c01 = c00 + w * 2;
 				final int c11 = c10 + w * 2;
-				VertexInfo v00 = getVertexAt(vertex00, x, y);
-				VertexInfo v10 = getVertexAt(vertex10, x + 1, y);
-				VertexInfo v01 = getVertexAt(vertex01, x, y + 1);
-				VertexInfo v11 = getVertexAt(vertex11, x + 1, y + 1);
+				VertexInfo v00 = getVertexAt(x, y, vertex00);
+				VertexInfo v10 = getVertexAt(x + 1, y, vertex10);
+				VertexInfo v01 = getVertexAt(x, y + 1, vertex01);
+				VertexInfo v11 = getVertexAt(x + 1, y + 1, vertex11);
 				v01.normal.set(v01.position).sub(v00.position).nor().crs(tmpV1.set(v11.position).sub(v01.position).nor());
 				v10.normal.set(v10.position).sub(v11.position).nor().crs(tmpV1.set(v00.position).sub(v10.position).nor());
 				v00.normal.set(v01.normal).lerp(v10.normal, .5f);
@@ -284,7 +283,7 @@ public class HeightField implements Disposable {
 	/**
 	 * Does not set the normal member!
 	 */
-	private VertexInfo getVertexAt(final VertexInfo out, int x, int y) {
+	private VertexInfo getVertexAt(int x, int y, final VertexInfo out) {
 		final float dx = (float) x / (float) (width - 1);
 		final float dy = (float) y / (float) (height - 1);
 		final float a = data[y * width + x];
@@ -304,7 +303,7 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
-	public Vector3 getWeightedNormalAt(int x, int y,Vector3 out) {
+	private Vector3 getWeightedNormalAt(int x, int y,Vector3 out) {
 // This commented code is based on http://www.flipcode.com/archives/Calculating_Vertex_Normals_for_Height_Maps.shtml
 // Note that this approach only works for a heightfield on the XZ plane with a magnitude on the y axis
 // float sx = data[(x < width - 1 ? x + 1 : x) + y * width] + data[(x > 0 ? x-1 : x) + y * width];
@@ -352,73 +351,85 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
-	public void getWorldCoordinate(int x, int y, Vector3 store) {
-		final int i = (y * width +x)*stride;
+	//
+	//    The below methods require that the mesh has already been computed
+	//    They read the vertex data directly, so the verts need to have been made already..
+	//
+
+	/**
+	 * same as getPositionAt(), but more effecient
+	 * @param fieldX
+	 * @param fieldY
+	 * @param store
+	 * @return
+	 */
+	private Vector3 getWorldCoordinate(int fieldX, int fieldY, Vector3 store) {
+		final int i = (fieldY * width +fieldX)*stride;
 		store.set(vertices[i], vertices[i + 1], vertices[i + 2]);
+		return store;
 	}
 
-
-	public void getFieldCoordinate(Vector3 worldCoordinate, Vector2 store) {
-		store.x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
-		store.y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
+	private Vector3 getWorldCoordinate(float fieldX, float fieldY, Vector3 store) {
+		store.set(fieldX,getElevationField(fieldX,fieldY),fieldY);
+		return store;
 	}
 
-	private Vector3 tempStore = new Vector3();
+	private float getElevationField(int fieldX, int fieldY){
+		final int i = (fieldY * width +fieldX)*stride;
+		return vertices[i + 1];
+	}
 
-	public float getElevation(Vector3 worldCoordinate) {
-		// convert world coordinates to field coordinates
-		float x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
-		float y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
-
-		// get the elevation of the 4 nearby fieldmap vertex points, then use interpolation
-		// to estimate the elevation for the world coordiante
-		int x0 = (int) x;
-		int y0 = (int) y;
+	private float getElevationField(float fieldX, float fieldY)
+	{
+		int x0 = (int) fieldX;
+		int y0 = (int) fieldY;
 		int x1 = x0 + 1;
 		int y1 = y0 + 1;
 		if (x1 >= width) x1 = width - 1;
 		if (y1 >= height) y1 = height - 1;
 
-		getWorldCoordinate(x0, y0, tempStore);
-		float s00 = tempStore.y;
-		getWorldCoordinate(x1, y0, tempStore);
-		float s10 = tempStore.y;
-		getWorldCoordinate(x0, y1, tempStore);
-		float s01 = tempStore.y;
-		getWorldCoordinate(x1, y1, tempStore);
-		float s11 = tempStore.y;
+		float s00 = getElevationField(x0, y0);
+		float s10 = getElevationField(x1, y0);
+		float s01 = getElevationField(x0, y1);
+		float s11 = getElevationField(x1, y1);
 
-		float elevation = UtMath.interpolateBilinear(x - x0, y - y0,
-			s00, s10,
-			s01, s11);
-
-		return elevation;
+		return UtMath.interpolateBilinear(fieldX - x0, fieldY - y0, s00, s10, s01, s11);
 	}
 
-	/**
-	 * uses a raycast algorithm instead of using bilinear interpolation to get the elevation
-	 *
-	 * may be slightly more accurate but its computationaly more expensive
-	 *
-	 *
-	 * @param worldCoordinate
-	 * @return
-	 */
-	public float getElevationRaycast(Vector3 worldCoordinate) {
-		Vector3 out = new Vector3();
+	public Vector3 getWeightedNormalAt(Vector3 worldCoordinate,Vector3 store) {
+		// convert world coordinates to field coordinates
+		float x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
+		float y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
+		int x0 = (int) x;
+		int y0 = (int) y;
+		return getWeightedNormalAt(x0, y0, store);
+	}
 
-		Ray ray = new Ray();
-		ray.origin.set(worldCoordinate.x, 100, worldCoordinate.z);
-		ray.direction.set(0, -1, 0);
+	public float getElevation(Vector3 worldCoordinate)
+	{
+		// convert world coordinates to field coordinates
+		float x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
+		float y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
+		return getElevationField(x,y);
+	}
 
-		Intersector.intersectRayTriangles(ray, vertices, indices, stride, out);
-
-		return out.y;
+	public float getElevation(float worldX, float worldZ)
+	{
+		// convert world coordinates to field coordinates
+		float x = UtMath.scalarLimitsInterpolation(worldX, corner00.x, corner10.x, 0, width - 1);
+		float y = UtMath.scalarLimitsInterpolation(worldZ, corner00.z, corner01.z, 0, height - 1);
+		return getElevationField(x,y);
 	}
 
 	public boolean intersect(Ray ray, Vector3 store) {
 		return Intersector.intersectRayTriangles(ray, vertices,indices,stride,store );
 	}
+
+	//
+	//
+	//  End methods that requiring verts having been made
+	//
+	//
 
 	@Override
 	public void dispose() {

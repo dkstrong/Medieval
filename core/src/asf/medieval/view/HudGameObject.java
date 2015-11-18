@@ -181,8 +181,11 @@ public class HudGameObject implements GameObject,InputProcessor {
 		if(spacebarDown || forceSpacebarTimer>0)
 		{
 			moveCommandDecal.setPosition(lastMoveCommandLocation);
-			moveCommandDecal.translateY(0.05f);
-			//moveCommandDecal.setRotation();
+			world.scenario.heightField.getWeightedNormalAt(lastMoveCommandLocation, vec1);
+			moveCommandDecal.setRotation(vec1, Vector3.Y);
+			vec1.scl(0.11f);
+			moveCommandDecal.translate(vec1);
+
 			world.decalBatch.add(moveCommandDecal);
 		}
 
@@ -223,15 +226,13 @@ public class HudGameObject implements GameObject,InputProcessor {
 		Ray ray = world.cameraManager.cam.getPickRay(screenX, screenY);
 
 
-		final float distance = -ray.origin.y / ray.direction.y;
-		storeWorldCoord.set(ray.direction).scl(distance).add(ray.origin);
-		storeWorldCoord.y = world.scenario.heightField.getElevation(storeWorldCoord);
+		// this just gets the intersection point of the ray to the ground plane (y==0)
+		//final float distance = -ray.origin.y / ray.direction.y;
+		//storeWorldCoord.set(ray.direction).scl(distance).add(ray.origin);
 
 
 		world.scenario.heightField.intersect(ray, storeWorldCoord);
 
-		// In order to have a mesh accurate collision i think id need something like this BIH Tree...
-		/// https://github.com/jMonkeyEngine/jmonkeyengine/tree/master/jme3-core/src/main/java/com/jme3/collision
 
 		return ray;
 	}
@@ -247,10 +248,12 @@ public class HudGameObject implements GameObject,InputProcessor {
 			if(!mouseLeftDrag)
 			{
 				// Direct selection
-				Ray ray = getWorldCoord(screenX, screenY, vec1);
+				Ray ray = world.cameraManager.cam.getPickRay(screenX, screenY);
+				final boolean intersectsTerrain = world.scenario.heightField.intersect(ray, vec1);
+				final float groundDst2 = intersectsTerrain ? ray.origin.dst2(vec1) : Float.MAX_VALUE;
+
 				SoldierGameObject closestSgo = null;
-				float closestDistance = Float.MAX_VALUE; // this distance value is only useful for comparing shapes.
-				final float groundDst2 = ray.origin.dst2(vec1);
+				float closestDistance = Float.MAX_VALUE; // this distance value is only useful for comparing shapes intersections
 
 				for (GameObject gameObject : world.gameObjects) {
 					if(gameObject instanceof SoldierGameObject)

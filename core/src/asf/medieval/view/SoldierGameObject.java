@@ -97,6 +97,7 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 	}
 
 
+	private static Vector3 vec1 = new Vector3();
 	@Override
 	public void render(float delta) {
 		modelInstance.transform.set(
@@ -110,7 +111,10 @@ public class SoldierGameObject implements GameObject, AnimationController.Animat
 		if(selected)
 		{
 			selectionDecal.setPosition(translation);
-			selectionDecal.translateY(0.05f);
+			world.scenario.heightField.getWeightedNormalAt(translation, vec1);
+			selectionDecal.setRotation(vec1, Vector3.Y);
+			vec1.scl(0.1f);
+			selectionDecal.translate(vec1);
 			world.decalBatch.add(selectionDecal);
 		}
 	}

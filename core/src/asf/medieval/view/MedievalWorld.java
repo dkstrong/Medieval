@@ -311,8 +311,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	@Override
 	public float getElevationAt(float x, float z)
 	{
-		// TODO: wasteful vector creation
-		return scenario.heightField.getElevation(new Vector3(x,0,z));
+		return scenario.heightField.getElevation(x,z);
 
 	}
 }
