@@ -2,7 +2,7 @@ package asf.medieval.view;
 
 import asf.medieval.model.Command;
 import asf.medieval.net.NetworkedGameClient;
-import asf.medieval.net.Player;
+import asf.medieval.model.Player;
 import asf.medieval.utility.StretchableImage;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
@@ -21,7 +21,7 @@ import com.badlogic.gdx.utils.Array;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class HudGameObject implements GameObject,InputProcessor {
+public class HudView implements View,InputProcessor {
 
 	private MedievalWorld world;
 
@@ -37,9 +37,9 @@ public class HudGameObject implements GameObject,InputProcessor {
 	private StretchableImage selectionBox;
 	private final Decal moveCommandDecal = new Decal();
 
-	private Array<SelectableGameObject> selectedSoldiers = new Array<SelectableGameObject>(true, 8, SelectableGameObject.class);
+	private Array<SelectableView> selectedSoldiers = new Array<SelectableView>(true, 8, SelectableView.class);
 
-	public HudGameObject(MedievalWorld world) {
+	public HudView(MedievalWorld world) {
 		this.world = world;
 		topRightLabel = new Label("Hello, there!", world.app.skin);
 		topRightLabel.setAlignment(Align.topRight, Align.topRight);
@@ -252,13 +252,13 @@ public class HudGameObject implements GameObject,InputProcessor {
 				final boolean intersectsTerrain = world.scenario.heightField.intersect(ray, vec1);
 				final float groundDst2 = intersectsTerrain ? ray.origin.dst2(vec1) : Float.MAX_VALUE;
 
-				SelectableGameObject closestSgo = null;
+				SelectableView closestSgo = null;
 				float closestDistance = Float.MAX_VALUE; // this distance value is only useful for comparing shapes intersections
 
-				for (GameObject gameObject : world.gameObjects) {
-					if(gameObject instanceof SelectableGameObject)
+				for (View view : world.gameObjects) {
+					if(view instanceof SelectableView)
 					{
-						SelectableGameObject sgo = (SelectableGameObject) gameObject;
+						SelectableView sgo = (SelectableView) view;
 						sgo.setSelected(false);
 
 						float sgoDistance = sgo.intersects(ray);
@@ -286,12 +286,12 @@ public class HudGameObject implements GameObject,InputProcessor {
 				getWorldCoord(mouseLeftDragEndCoords.x, mouseLeftDragEndCoords.y, vec3);
 				getWorldCoord(mouseLeftDragEndCoords.x, mouseLeftDragStartCoords.y, vec4);
 
-				//world.addGameObject(new DebugPosGameObject(world, vec1, vec2,vec3,vec4));
+				//world.addGameObject(new DebugShapeView(world, vec1, vec2,vec3,vec4));
 
-				for (GameObject gameObject : world.gameObjects) {
-					if(gameObject instanceof SelectableGameObject)
+				for (View view : world.gameObjects) {
+					if(view instanceof SelectableView)
 					{
-						SelectableGameObject sgo = (SelectableGameObject) gameObject;
+						SelectableView sgo = (SelectableView) view;
 						sgo.setSelected(UtMath.isPointInQuadrilateral(sgo.getTranslation(), vec1, vec2, vec3, vec4));
 						if(sgo.isSelected()){
 							selectedSoldiers.add(sgo);
@@ -310,11 +310,11 @@ public class HudGameObject implements GameObject,InputProcessor {
 				forceSpacebarTimer = 3f;
 				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
 
-				for (SelectableGameObject sgo : selectedSoldiers) {
-					if(sgo instanceof SoldierGameObject)
+				for (SelectableView sgo : selectedSoldiers) {
+					if(sgo instanceof SoldierView)
 					{
 						Command command = new Command();
-						command.tokenId = ((SoldierGameObject) sgo).token.id;
+						command.tokenId = ((SoldierView) sgo).token.id;
 						command.location = new Vector3(lastMoveCommandLocation);
 						world.gameClient.sendCommand(command);
 						//sgo.token.setTarget(lastMoveCommandLocation);

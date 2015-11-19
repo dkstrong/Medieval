@@ -1,6 +1,7 @@
 package asf.medieval.net;
 
 import asf.medieval.model.Command;
+import asf.medieval.model.Player;
 import asf.medieval.model.Scenario;
 import com.badlogic.gdx.utils.IntMap;
 
@@ -19,7 +20,7 @@ public class OfflineGameClient implements GameClient {
 
 	@Override
 	public void sendCommand(Command command) {
-		command.performCommand(scenario);
+		command.performCommand(player.id,scenario);
 	}
 
 	@Override

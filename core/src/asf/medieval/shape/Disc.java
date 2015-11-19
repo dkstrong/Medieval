@@ -1,4 +1,4 @@
-package asf.medieval.view.shape;
+package asf.medieval.shape;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;

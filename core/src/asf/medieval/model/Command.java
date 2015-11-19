@@ -10,7 +10,7 @@ public class Command {
 	public Vector3 location;
 	public boolean structure;
 
-	public void performCommand(Scenario scenario)
+	public void performCommand(int playerId, Scenario scenario)
 	{
 		if(tokenId > 0){
 			// move command
@@ -20,10 +20,9 @@ public class Command {
 		}else{
 			// spawn command
 			if(structure){
-				StructureToken token = scenario.newStructure(location);
+				StructureToken token = scenario.newStructure(playerId,location);
 			}else{
-				SoldierToken token = scenario.newSoldier();
-				scenario.setNonOverlappingPosition(token, location);
+				SoldierToken token = scenario.newSoldier(playerId, location);
 			}
 		}
 	}

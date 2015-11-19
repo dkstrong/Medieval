@@ -2,6 +2,7 @@ package asf.medieval.net;
 
 import asf.medieval.ServerApp;
 import asf.medieval.desktop.DesktopLauncher;
+import asf.medieval.model.Player;
 import asf.medieval.utility.UtLog;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;

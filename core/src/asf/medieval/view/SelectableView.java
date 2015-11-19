@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by daniel on 11/18/15.
  */
-public interface SelectableGameObject {
+public interface SelectableView {
 
 	/**
 	 * @return -1 on no intersection,

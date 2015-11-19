@@ -1,6 +1,6 @@
 package asf.medieval.net.message;
 
-import asf.medieval.net.Player;
+import asf.medieval.model.Player;
 
 /**
  * sent by the client to server to login, contains

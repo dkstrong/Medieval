@@ -1,6 +1,6 @@
 package asf.medieval.net.message;
 
-import asf.medieval.net.Player;
+import asf.medieval.model.Player;
 
 /**
  * Created by daniel on 11/15/15.

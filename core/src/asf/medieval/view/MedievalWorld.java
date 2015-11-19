@@ -11,7 +11,7 @@ import asf.medieval.net.GameClient;
 import asf.medieval.net.GameServer;
 import asf.medieval.net.GameServerConfig;
 import asf.medieval.net.OfflineGameClient;
-import asf.medieval.net.Player;
+import asf.medieval.model.Player;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import com.badlogic.gdx.Gdx;
@@ -20,10 +20,8 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.TextureLoader;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -79,9 +77,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	public GameClient gameClient;
 
 	public final Scenario scenario;
-	protected final Array<GameObject> gameObjects;
-	private HudGameObject hudGameObject;
-	public TerrainGameObject terrainGameObject;
+	protected final Array<View> gameObjects;
+	private HudView hudGameObject;
+	public TerrainView terrainGameObject;
 
 	public MedievalWorld(MedievalApp app, Settings settings)  {
 		this.app = app;
@@ -111,8 +109,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
+		assetManager.load("Models/skydome.g3db", Model.class);
 		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
 		assetManager.load("Models/Church/Church.g3db", Model.class);
+
+		//assetManager.load("Models/skydome.g3db", Model.class);
 
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
 		terrainParameter.seed = settings.random.nextLong();
@@ -123,7 +124,10 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Models/Terrain/terrain.txt", Terrain.class,terrainParameter);
 		assetManager.load(terrainAssetDescriptor);
 
-		gameObjects = new Array<GameObject>(false, 128, GameObject.class);
+
+
+
+		gameObjects = new Array<View>(false, 128, View.class);
 
 
 		scenario =new Scenario(new ScenarioRand(settings.random) );
@@ -168,14 +172,14 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//dungeonApp.music.setPlaylist(SongId.MainTheme, SongId.Arabesque, SongId.RitualNorm);
 			//dungeonApp.music.playSong(SongId.RitualNorm);
 
-			addGameObject(hudGameObject = new HudGameObject(this));
+			addGameObject(hudGameObject = new HudView(this));
 
 			//addGameObject(characterGameObject = new CharacterGameObject(this, mission.characterToken));
 			//cameraManager.setChaseTarget(characterGameObject);
 
 
-			//addGameObject(new TerrainDebugGameObject(this));
-			addGameObject(terrainGameObject=new TerrainGameObject(this));
+			//addGameObject(new TerrainDebugView(this));
+			addGameObject(terrainGameObject=new TerrainView(this));
 
 			scenario.heightField = terrainGameObject.terrain.field;
 			scenario.setListener(this);
@@ -194,22 +198,37 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		}
 	}
 
-	public <T extends GameObject> T addGameObject(T gameObject) {
+	public <T extends View> T addGameObject(T gameObject) {
 		gameObjects.add(gameObject);
 		return gameObject;
 	}
 
-	public void removeGameObject(GameObject gameObject) {
-		gameObjects.removeValue(gameObject, true);
+	public void removeGameObject(View view) {
+		gameObjects.removeValue(view, true);
+	}
+
+	@Override
+	public void onNewPlayer(Player player) {
+
+	}
+
+	@Override
+	public void onUpdatePlayer(Player player) {
+
+	}
+
+	@Override
+	public void onRemovePlayer(Player player) {
+
 	}
 
 	@Override
 	public void onNewToken(Token token) {
 
 		if(token instanceof SoldierToken){
-			addGameObject(new SoldierGameObject(this,(SoldierToken)token));
+			addGameObject(new SoldierView(this,(SoldierToken)token));
 		}else if(token instanceof StructureToken){
-			addGameObject(new StructureGameObject(this,(StructureToken)token));
+			addGameObject(new StructureView(this,(StructureToken)token));
 		}
 
 	}
@@ -229,8 +248,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 				float modelDelta = 0.05f;
 				float deltaRatio = modelDelta / delta;
 				float adjustedDelta = delta/deltaRatio;
-				for (final GameObject gameObject : gameObjects) {
-					gameObject.update(delta);
+				for (final View view : gameObjects) {
+					view.update(delta);
 				}
 			}
 			cameraManager.update(delta);
@@ -247,8 +266,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//fxManager.beginRender();
 
 			final float effectiveDelta = paused ? 0 : delta;
-			for (final GameObject gameObject : gameObjects) {
-				gameObject.render(effectiveDelta);
+			for (final View view : gameObjects) {
+				view.render(effectiveDelta);
 			}
 
 

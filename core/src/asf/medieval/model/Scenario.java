@@ -5,6 +5,7 @@ import asf.medieval.terrain.HeightField;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -15,6 +16,8 @@ public class Scenario {
 	protected final ScenarioRand rand;
 	public transient HeightField heightField;
 	protected final SteerGraph steerGraph = new SteerGraph();
+
+	protected IntMap<Player> players = new IntMap<Player>(2);
 
 	protected Array<Token> tokens = new Array<Token>(false, 256, Token.class);
 
@@ -27,10 +30,42 @@ public class Scenario {
 		if (this.listener == null)
 			return;
 
+		for (Player player : players.values()) {
+			listener.onNewPlayer(player);
+		}
+
 		for (Token token : tokens) {
 			listener.onNewToken(token);
 		}
 
+	}
+
+	public void addPlayer(Player player){
+		Player existingPlayer = players.get(player.id);
+
+		if(existingPlayer == null)
+		{
+			Player newPlayer = player.cpy();
+			players.put(newPlayer.id, newPlayer);
+			if(listener!=null)
+				listener.onNewPlayer(newPlayer);
+		}
+		else
+		{
+			existingPlayer.set(player);
+			if(listener!=null)
+				listener.onUpdatePlayer(existingPlayer);
+		}
+	}
+
+	public void removePlayer(Player player){
+		Player removedPlayed = players.remove(player.id);
+		if(removedPlayed!=null && listener!=null)
+			listener.onRemovePlayer(removedPlayed);
+	}
+
+	public Player getPlayer(int id){
+		return players.get(id);
 	}
 
 	public SoldierToken getSoldier(int soldierId)
@@ -49,25 +84,31 @@ public class Scenario {
 
 	private int lastTokenId = 0;
 
-	public SoldierToken newSoldier()
+	public SoldierToken newSoldier(int owner, Vector3 location)
 	{
-		SoldierToken soldierToken= new SoldierToken();
-		++lastTokenId;
-		soldierToken.id = lastTokenId;
-		soldierToken.init(this);
-		steerGraph.agents.add(soldierToken);
-		tokens.add(soldierToken);
-		if(listener!=null)
-			listener.onNewToken(soldierToken);
-		return soldierToken;
-	}
-
-	public StructureToken newStructure(Vector3 location)
-	{
-		StructureToken token= new StructureToken();
-		token.location.set(location);
+		SoldierToken token= new SoldierToken();
 		++lastTokenId;
 		token.id = lastTokenId;
+		token.location.set(location);
+		token.owner = players.get(owner);
+		token.init(this);
+		steerGraph.agents.add(token);
+		tokens.add(token);
+
+		setNonOverlappingPosition(token, location);
+
+		if(listener!=null)
+			listener.onNewToken(token);
+		return token;
+	}
+
+	public StructureToken newStructure(int owner, Vector3 location)
+	{
+		StructureToken token= new StructureToken();
+		++lastTokenId;
+		token.id = lastTokenId;
+		token.owner = players.get(owner);
+		token.location.set(location);
 		token.init(this);
 		steerGraph.agents.add(token);
 		tokens.add(token);
@@ -136,6 +177,9 @@ public class Scenario {
 	}
 
 	public static interface Listener {
+		public void onNewPlayer(Player player);
+		public void onUpdatePlayer(Player player);
+		public void onRemovePlayer(Player player);
 		public void onNewToken(Token token);
 	}
 }

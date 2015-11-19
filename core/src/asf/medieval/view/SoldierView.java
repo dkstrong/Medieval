@@ -2,10 +2,8 @@ package asf.medieval.view;
 
 import asf.medieval.model.SoldierToken;
 import asf.medieval.model.Token;
-import asf.medieval.utility.UtLog;
-import asf.medieval.utility.UtMath;
-import asf.medieval.view.shape.Box;
-import asf.medieval.view.shape.Shape;
+import asf.medieval.shape.Box;
+import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -19,7 +17,7 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class SoldierGameObject implements GameObject, SelectableGameObject, AnimationController.AnimationListener {
+public class SoldierView implements View, SelectableView, AnimationController.AnimationListener {
 	private MedievalWorld world;
 	public final SoldierToken token;
 	public final Shape shape;
@@ -34,7 +32,7 @@ public class SoldierGameObject implements GameObject, SelectableGameObject, Anim
 	private static final String[] idle = new String[]{"Idle", "Idle", "Idle"};
 	private static final String[] walk = new String[]{"Walk"};
 
-	public SoldierGameObject(MedievalWorld world, SoldierToken soldierToken) {
+	public SoldierView(MedievalWorld world, SoldierToken soldierToken) {
 		this.world = world;
 		this.token = soldierToken;
 

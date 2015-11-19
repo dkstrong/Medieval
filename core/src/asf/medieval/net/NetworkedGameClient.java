@@ -1,6 +1,7 @@
 package asf.medieval.net;
 
 import asf.medieval.model.Command;
+import asf.medieval.model.Player;
 import asf.medieval.model.Scenario;
 import asf.medieval.net.message.Action;
 import asf.medieval.net.message.ActionConfirmation;
@@ -253,10 +254,10 @@ public class NetworkedGameClient implements Disposable, GameClient, GameHost {
 				player.set(msg.player);
 				UtLog.info("received my own player information, updating my local record");
 
+				// create the initial action to send so there is always and action to send...
 				// TODO: this concept needs to be better merged with the "ReadyToStart".
 				// this should be the ready to start. and the first call "perform actions"
 				// is what kicks off the simlulation..
-
 				Action initialAction = new Action();
 				initialAction.playerId = player.id;
 				initialAction.lockstepFrame = 0;
@@ -280,6 +281,7 @@ public class NetworkedGameClient implements Disposable, GameClient, GameHost {
 				UtLog.info(msg.player.id + "-" + msg.player.name + " updated");
 			}
 
+			scenario.addPlayer(msg.player);
 
 		}else if (message instanceof RemovePlayer) {
 			RemovePlayer msg = (RemovePlayer)message;
@@ -288,6 +290,8 @@ public class NetworkedGameClient implements Disposable, GameClient, GameHost {
 			if (existingPlayer != null){
 				UtLog.info(existingPlayer.id + "-" + existingPlayer.name + " removed");
 			}
+
+			scenario.removePlayer(msg.player);
 		}
 	}
 

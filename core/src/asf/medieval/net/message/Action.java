@@ -17,7 +17,7 @@ public class Action {
 	public void performAction(Scenario scenario) {
 		if (commands != null) {
 			for (Command command : commands) {
-				command.performCommand(scenario);
+				command.performCommand(playerId,scenario);
 
 			}
 		}

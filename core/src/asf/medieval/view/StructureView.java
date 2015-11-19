@@ -1,16 +1,13 @@
 package asf.medieval.view;
 
-import asf.medieval.model.SoldierToken;
 import asf.medieval.model.StructureToken;
 import asf.medieval.model.Token;
-import asf.medieval.view.shape.Box;
-import asf.medieval.view.shape.Shape;
+import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
@@ -18,7 +15,7 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class StructureGameObject implements GameObject, SelectableGameObject, AnimationController.AnimationListener {
+public class StructureView implements View, SelectableView, AnimationController.AnimationListener {
 	private MedievalWorld world;
 	public final StructureToken token;
 	public final Shape shape;
@@ -32,13 +29,13 @@ public class StructureGameObject implements GameObject, SelectableGameObject, An
 
 	private final String openAnim;
 
-	public StructureGameObject(MedievalWorld world, StructureToken structureToken) {
+	public StructureView(MedievalWorld world, StructureToken structureToken) {
 		this.world = world;
 		this.token = structureToken;
 
 		shape = token.shape;
 
-		//world.addGameObject(new DebugPosGameObject(world,token.location,shape));
+		//world.addGameObject(new DebugShapeView(world,token.location,shape));
 
 		Model model = world.assetManager.get("Models/Church/Church.g3db");
 		modelInstance = new ModelInstance(model);

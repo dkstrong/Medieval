@@ -3,12 +3,12 @@ package asf.medieval.view;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class TerrainDebugGameObject implements GameObject{
+public class TerrainDebugView implements View {
 
 
 	private MedievalWorld world;
 
-	public TerrainDebugGameObject(MedievalWorld world) {
+	public TerrainDebugView(MedievalWorld world) {
 		this.world = world;
 
 	}

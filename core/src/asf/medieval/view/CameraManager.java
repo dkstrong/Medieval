@@ -13,7 +13,7 @@ public class CameraManager {
 
 	public RtsCamController rtsCamController;
 
-	private GameObject chaseTarget;
+	private View chaseTarget;
 
 	public CameraManager(MedievalWorld world) {
 

@@ -1,5 +1,6 @@
 package asf.medieval.net;
 
+import asf.medieval.model.Player;
 import asf.medieval.model.Scenario;
 import asf.medieval.net.message.Action;
 import asf.medieval.net.message.ActionConfirmation;
