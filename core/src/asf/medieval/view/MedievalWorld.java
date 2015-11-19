@@ -2,20 +2,28 @@ package asf.medieval.view;
 
 import asf.medieval.MedievalApp;
 import asf.medieval.model.Scenario;
-import asf.medieval.model.ScenarioFactory;
+import asf.medieval.model.ScenarioRand;
 import asf.medieval.model.SoldierToken;
+import asf.medieval.model.StructureToken;
+import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.net.GameClient;
 import asf.medieval.net.GameServer;
 import asf.medieval.net.GameServerConfig;
 import asf.medieval.net.OfflineGameClient;
 import asf.medieval.net.Player;
+import asf.medieval.terrain.Terrain;
+import asf.medieval.terrain.TerrainLoader;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.TextureLoader;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -26,7 +34,6 @@ import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -96,6 +103,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		modelBatch = new ModelBatch();
 		assetManager = new AssetManager();
+
+		assetManager.setLoader(Terrain.class, new TerrainLoader(new InternalFileHandleResolver()));
 		inputMultiplexer = new InputMultiplexer(internalLoadingInputAdapter, stage);
 
 		Gdx.input.setInputProcessor(internalLoadingInputAdapter);
@@ -103,11 +112,21 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
 		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
+		assetManager.load("Models/Church/Church.g3db", Model.class);
+
+		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
+		terrainParameter.seed = settings.random.nextLong();
+		terrainParameter.heightmapName = "Models/Terrain/heightmap.png";
+		//"Textures/Terrain/sand512.jpg"
+		//"Textures/Floor/wallTiles.png"
+		terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg";
+		AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Models/Terrain/terrain.txt", Terrain.class,terrainParameter);
+		assetManager.load(terrainAssetDescriptor);
 
 		gameObjects = new Array<GameObject>(false, 128, GameObject.class);
 
 
-		scenario = ScenarioFactory.scenarioTest(settings.random);
+		scenario =new Scenario(new ScenarioRand(settings.random) );
 
 		if(settings.server){
 			gameServer = new GameServer();
@@ -158,7 +177,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//addGameObject(new TerrainDebugGameObject(this));
 			addGameObject(terrainGameObject=new TerrainGameObject(this));
 
-
+			scenario.heightField = terrainGameObject.terrain.field;
 			scenario.setListener(this);
 
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
@@ -185,9 +204,14 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	}
 
 	@Override
-	public void onNewSoldier(SoldierToken soldierToken) {
+	public void onNewToken(Token token) {
 
-		addGameObject(new SoldierGameObject(this,soldierToken));
+		if(token instanceof SoldierToken){
+			addGameObject(new SoldierGameObject(this,(SoldierToken)token));
+		}else if(token instanceof StructureToken){
+			addGameObject(new StructureGameObject(this,(StructureToken)token));
+		}
+
 	}
 
 	public void render(final float delta) {
@@ -269,6 +293,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 	@Override
 	public void dispose() {
+		if(gameServer!= null)
+			gameServer.dispose();
+
+		if(gameClient instanceof NetworkedGameClient)
+			((NetworkedGameClient) gameClient).dispose();
+
 		decalBatch.dispose();
 		shadowLight.dispose();
 		shadowBatch.dispose();

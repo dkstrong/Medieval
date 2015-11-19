@@ -1,12 +1,8 @@
 package asf.medieval;
 
-import asf.medieval.model.Scenario;
-import asf.medieval.model.ScenarioFactory;
 import asf.medieval.net.GameServer;
 import asf.medieval.net.GameServerConfig;
 import com.badlogic.gdx.ApplicationListener;
-
-import java.io.IOException;
 
 /**
  * Created by daniel on 11/15/15.

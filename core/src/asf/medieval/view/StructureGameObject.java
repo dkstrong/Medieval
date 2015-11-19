@@ -1,9 +1,8 @@
 package asf.medieval.view;
 
 import asf.medieval.model.SoldierToken;
+import asf.medieval.model.StructureToken;
 import asf.medieval.model.Token;
-import asf.medieval.utility.UtLog;
-import asf.medieval.utility.UtMath;
 import asf.medieval.view.shape.Box;
 import asf.medieval.view.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
@@ -19,9 +18,9 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class SoldierGameObject implements GameObject, SelectableGameObject, AnimationController.AnimationListener {
+public class StructureGameObject implements GameObject, SelectableGameObject, AnimationController.AnimationListener {
 	private MedievalWorld world;
-	public final SoldierToken token;
+	public final StructureToken token;
 	public final Shape shape;
 	private ModelInstance modelInstance;
 	private AnimationController animController;
@@ -31,20 +30,25 @@ public class SoldierGameObject implements GameObject, SelectableGameObject, Anim
 	public boolean selected = false;
 	private final Decal selectionDecal = new Decal();
 
-	private static final String[] idle = new String[]{"Idle", "Idle", "Idle"};
-	private static final String[] walk = new String[]{"Walk"};
+	private final String openAnim;
 
-	public SoldierGameObject(MedievalWorld world, SoldierToken soldierToken) {
+	public StructureGameObject(MedievalWorld world, StructureToken structureToken) {
 		this.world = world;
-		this.token = soldierToken;
+		this.token = structureToken;
 
-		shape = new Box( token.radius, token.height/2f, token.radius, 0, token.height/2f, 0);
+		shape = token.shape;
 
-		Model model = world.assetManager.get("Models/Characters/Skeleton.g3db");
+		//world.addGameObject(new DebugPosGameObject(world,token.location,shape));
+
+		Model model = world.assetManager.get("Models/Church/Church.g3db");
 		modelInstance = new ModelInstance(model);
 		if (modelInstance.animations.size > 0) {
 			animController = new AnimationController(modelInstance);
-			animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+			openAnim = modelInstance.animations.get(0).id;
+
+			//animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+		}else{
+			openAnim = null;
 		}
 		//rotation.setEulerAngles(180f, 0, 0);
 
@@ -55,46 +59,29 @@ public class SoldierGameObject implements GameObject, SelectableGameObject, Anim
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(token.radius *3.5f, token.radius *3.5f);
+		selectionDecal.setDimensions(token.avoidanceRadius *3.5f, token.avoidanceRadius *3.5f);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
 	}
+
+	private boolean triggerAnim = false;
 
 	@Override
 	public void update(float delta) {
 		translation.set(token.location);
 
 
-		//System.out.println(token.id + ": " + token.location);
-
-
-
-		float speed = token.getVelocity().len();
-		if(speed < .75f)
+		if (animController != null)
 		{
-			if (!animController.current.animation.id.startsWith("Idle"))
-				animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.1f);
-		}
-		else
-		{
-			if (!animController.current.animation.id.startsWith("Walk")){
-				animController.animate("Walk", 0, -1, -1, 1, this, 0.2f);
-			}else{
-				animController.current.speed = speed  /token.getMaxSpeed() * 0.65f;
+			if(triggerAnim ){
+				triggerAnim = false;
+				animController.setAnimation(openAnim,1,1,this);
 			}
 
-
-			Vector3 dir = token.getVelocity().cpy();
-			dir.x *= -1f; // TODO: why do i need to flip the x direction !?!?!
-			dir.y  =0;
-			dir.nor();
-			rotation.setFromCross(dir, Vector3.Z);
+			animController.update(delta);
 		}
 
-
-		if (animController != null)
-			animController.update(delta);
 	}
 
 
@@ -151,12 +138,10 @@ public class SoldierGameObject implements GameObject, SelectableGameObject, Anim
 
 	@Override
 	public void onEnd(AnimationController.AnimationDesc animation) {
-		//animController.animate("SomethingElse", 0, -1, 1, 1, this, 0.2f);
+		animController.setAnimation(openAnim,1,-1,this);
 	}
 
 	@Override
 	public void onLoop(AnimationController.AnimationDesc animation) {
-		if (animation.animation.id.startsWith("Idle"))
-			animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
 	}
 }

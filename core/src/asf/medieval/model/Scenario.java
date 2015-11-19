@@ -1,11 +1,10 @@
 package asf.medieval.model;
 
 import asf.medieval.ai.SteerGraph;
-import asf.medieval.utility.HeightField;
+import asf.medieval.terrain.HeightField;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -14,14 +13,13 @@ public class Scenario {
 	protected transient Listener listener;
 
 	protected final ScenarioRand rand;
-	public HeightField heightField;
+	public transient HeightField heightField;
 	protected final SteerGraph steerGraph = new SteerGraph();
 
 	protected Array<Token> tokens = new Array<Token>(false, 256, Token.class);
 
-	public Scenario(ScenarioRand rand, HeightField heightField) {
+	public Scenario(ScenarioRand rand) {
 		this.rand = rand;
-		this.heightField = heightField;
 	}
 
 	public void setListener(Listener listener) {
@@ -30,10 +28,7 @@ public class Scenario {
 			return;
 
 		for (Token token : tokens) {
-			if (token instanceof SoldierToken)
-			{
-				listener.onNewSoldier((SoldierToken) token);
-			}
+			listener.onNewToken(token);
 		}
 
 	}
@@ -51,19 +46,34 @@ public class Scenario {
 		}
 		return null;
 	}
-	private int lastSoldierId = 0;
+
+	private int lastTokenId = 0;
 
 	public SoldierToken newSoldier()
 	{
 		SoldierToken soldierToken= new SoldierToken();
-		++lastSoldierId;
-		soldierToken.id = lastSoldierId;
+		++lastTokenId;
+		soldierToken.id = lastTokenId;
 		soldierToken.init(this);
 		steerGraph.agents.add(soldierToken);
 		tokens.add(soldierToken);
 		if(listener!=null)
-			listener.onNewSoldier(soldierToken);
+			listener.onNewToken(soldierToken);
 		return soldierToken;
+	}
+
+	public StructureToken newStructure(Vector3 location)
+	{
+		StructureToken token= new StructureToken();
+		token.location.set(location);
+		++lastTokenId;
+		token.id = lastTokenId;
+		token.init(this);
+		steerGraph.agents.add(token);
+		tokens.add(token);
+		if(listener!=null)
+			listener.onNewToken(token);
+		return token;
 	}
 
 	public void setRandomNonOverlappingPosition (SoldierToken character, Array<SoldierToken> others,
@@ -126,6 +136,6 @@ public class Scenario {
 	}
 
 	public static interface Listener {
-		public void onNewSoldier(SoldierToken soldierToken);
+		public void onNewToken(Token token);
 	}
 }

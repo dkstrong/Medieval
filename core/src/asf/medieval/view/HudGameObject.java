@@ -37,7 +37,7 @@ public class HudGameObject implements GameObject,InputProcessor {
 	private StretchableImage selectionBox;
 	private final Decal moveCommandDecal = new Decal();
 
-	private Array<SoldierGameObject> selectedSoldiers = new Array<SoldierGameObject>(true, 16, SoldierGameObject.class);
+	private Array<SelectableGameObject> selectedSoldiers = new Array<SelectableGameObject>(true, 8, SelectableGameObject.class);
 
 	public HudGameObject(MedievalWorld world) {
 		this.world = world;
@@ -252,16 +252,17 @@ public class HudGameObject implements GameObject,InputProcessor {
 				final boolean intersectsTerrain = world.scenario.heightField.intersect(ray, vec1);
 				final float groundDst2 = intersectsTerrain ? ray.origin.dst2(vec1) : Float.MAX_VALUE;
 
-				SoldierGameObject closestSgo = null;
+				SelectableGameObject closestSgo = null;
 				float closestDistance = Float.MAX_VALUE; // this distance value is only useful for comparing shapes intersections
 
 				for (GameObject gameObject : world.gameObjects) {
-					if(gameObject instanceof SoldierGameObject)
+					if(gameObject instanceof SelectableGameObject)
 					{
-						SoldierGameObject sgo = (SoldierGameObject) gameObject;
-						sgo.selected  = false;
+						SelectableGameObject sgo = (SelectableGameObject) gameObject;
+						sgo.setSelected(false);
+
 						float sgoDistance = sgo.intersects(ray);
-						if(sgoDistance > 0 && sgoDistance < closestDistance && ray.origin.dst2(sgo.translation) < groundDst2)
+						if(sgoDistance > 0 && sgoDistance < closestDistance && ray.origin.dst2(sgo.getTranslation()) < groundDst2)
 						{
 							closestDistance = sgoDistance;
 							closestSgo = sgo;
@@ -270,7 +271,7 @@ public class HudGameObject implements GameObject,InputProcessor {
 				}
 
 				if(closestSgo!=null){
-					closestSgo.selected = true;
+					closestSgo.setSelected(true);
 					selectedSoldiers.add(closestSgo);
 				}
 			}
@@ -288,11 +289,11 @@ public class HudGameObject implements GameObject,InputProcessor {
 				//world.addGameObject(new DebugPosGameObject(world, vec1, vec2,vec3,vec4));
 
 				for (GameObject gameObject : world.gameObjects) {
-					if(gameObject instanceof SoldierGameObject)
+					if(gameObject instanceof SelectableGameObject)
 					{
-						SoldierGameObject sgo = (SoldierGameObject) gameObject;
-						sgo.selected  = UtMath.isPointInQuadrilateral(sgo.translation, vec1, vec2, vec3, vec4);
-						if(sgo.selected){
+						SelectableGameObject sgo = (SelectableGameObject) gameObject;
+						sgo.setSelected(UtMath.isPointInQuadrilateral(sgo.getTranslation(), vec1, vec2, vec3, vec4));
+						if(sgo.isSelected()){
 							selectedSoldiers.add(sgo);
 						}
 					}
@@ -309,12 +310,15 @@ public class HudGameObject implements GameObject,InputProcessor {
 				forceSpacebarTimer = 3f;
 				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
 
-				for (SoldierGameObject sgo : selectedSoldiers) {
-					Command command = new Command();
-					command.soldierId = sgo.token.id;
-					command.location = new Vector3(lastMoveCommandLocation);
-					world.gameClient.sendCommand(command);
-					//sgo.token.setTarget(lastMoveCommandLocation);
+				for (SelectableGameObject sgo : selectedSoldiers) {
+					if(sgo instanceof SoldierGameObject)
+					{
+						Command command = new Command();
+						command.tokenId = ((SoldierGameObject) sgo).token.id;
+						command.location = new Vector3(lastMoveCommandLocation);
+						world.gameClient.sendCommand(command);
+						//sgo.token.setTarget(lastMoveCommandLocation);
+					}
 
 				}
 
@@ -366,6 +370,12 @@ public class HudGameObject implements GameObject,InputProcessor {
 				Command command = new Command();
 				command.location = new Vector3(world.cameraManager.rtsCamController.center);
 				world.gameClient.sendCommand(command);
+				break;
+			case Input.Keys.B:
+				Command buildCommand = new Command();
+				buildCommand.location = new Vector3(world.cameraManager.rtsCamController.center);
+				buildCommand.structure = true;
+				world.gameClient.sendCommand(buildCommand);
 				break;
 		}
 		return false;
