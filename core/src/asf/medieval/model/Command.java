@@ -1,5 +1,6 @@
 package asf.medieval.model;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -7,7 +8,7 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Command {
 	public int tokenId;
-	public Vector3 location;
+	public Vector2 location;
 	public boolean structure;
 
 	public void performCommand(int playerId, Scenario scenario)

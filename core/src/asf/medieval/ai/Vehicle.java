@@ -2,6 +2,7 @@ package asf.medieval.ai;
 
 import asf.medieval.ai.behavior.Behavior;
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public abstract class Vehicle implements SteerAgent {
 	private float maxTurnForce;// = 2;
 	private float mass;// = 1;
 	private float avoidanceRadius;
-	private final Vector3 velocity = new Vector3();
+	private final Vector2 velocity = new Vector2();
 	//
 	//private SteerGraph steerGraph;
 	public Behavior behavior;
@@ -43,7 +44,7 @@ public abstract class Vehicle implements SteerAgent {
 		this.avoidanceRadius = avoidanceRadius;
 	}
 
-	private final Vector3 force = new Vector3();
+	private final Vector2 force = new Vector2();
 	public void updateVelocity(SteerGraph steerGraph, float delta) {
 
 
@@ -54,18 +55,18 @@ public abstract class Vehicle implements SteerAgent {
 		}
 		else
 		{
-			force.set(0,0,0);
+			force.set(0,0);
 		}
 
 		UtMath.truncate(force, maxTurnForce * delta);
 
 
 		if (mass < Float.MIN_VALUE) {
-			UtMath.scaleAdd(force.nor(), maxSpeed, Vector3.Zero);
+			UtMath.scaleAdd(force.nor(), maxSpeed, Vector2.Zero);
 			//force.nor().scaleAdd(maxSpeed, Vector3.Zero);
 			velocity.set(force);
 		} else {
-			Vector3 acceleration = force.scl(1f/mass);
+			Vector2 acceleration = force.scl(1f/mass);
 			velocity.add(acceleration);
 			UtMath.truncate(velocity, maxSpeed);
 		}
@@ -77,27 +78,27 @@ public abstract class Vehicle implements SteerAgent {
 
 
 
-	public Vector3 getVelocity() {
+	public Vector2 getVelocity() {
 		return velocity;
 	}
 
-	public Vector3 getVelocity(float delta) {
-		Vector3 velCpy = velocity.cpy();
+	public Vector2 getVelocity(float delta) {
+		Vector2 velCpy = velocity.cpy();
 		velCpy.scl(delta);
 		//velCpy.rotation *= delta;
 		return velCpy;
 	}
 
-	public void setVelocity(Vector3 velocity) {
+	public void setVelocity(Vector2 velocity) {
 		this.velocity.set(velocity);
 	}
 
 
 	@Override
-	public Vector3 getFutureLocation(float tpf) {
+	public Vector2 getFutureLocation(float tpf) {
 
-		Vector3 loc = getLocation().cpy();
-		Vector3 velocityScaled = getVelocity(tpf);
+		Vector2 loc = getLocation().cpy();
+		Vector2 velocityScaled = getVelocity(tpf);
 
 		loc.add(velocityScaled);
 		//loc.rotation += velocityScaled.rotation;

@@ -4,6 +4,7 @@ import asf.medieval.ai.SteerGraph;
 import asf.medieval.shape.Box;
 import asf.medieval.terrain.HeightField;
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
@@ -81,16 +82,19 @@ public class Scenario {
 
 	private int lastTokenId = 0;
 
-	public Token newSoldier(int owner, Vector3 location)
+	public Token newSoldier(int owner, Vector2 location)
 	{
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
+		token.owner = players.get(owner);
+		if(token.owner == null){
+			System.out.println("null owner!: "+owner);
+		}
 		token.modelId = owner == 1 ? ModelId.Skeleton : ModelId.Jimmy;
 		token.shape = new Box(1f, 7.5f);
 		token.location.set(location);
-		token.owner = players.get(owner);
 		token.attack = new AttackComponent(token);
 		token.damage = new DamageComponent(token);
 		token.agent = new InfantryAgent(token);
@@ -104,7 +108,7 @@ public class Scenario {
 		return token;
 	}
 
-	public Token newStructure(int owner, Vector3 location)
+	public Token newStructure(int owner, Vector2 location)
 	{
 		Token token= new Token();
 		++lastTokenId;
@@ -126,13 +130,12 @@ public class Scenario {
 		return token;
 	}
 
-	public void setRandomNonOverlappingPosition (Token character, Array<Token> others,
-							float minDistanceFromBoundary) {
+	public void setRandomNonOverlappingPosition (Token character, Array<Token> others, float minDistanceFromBoundary) {
 		int maxTries = UtMath.largest(100, others.size * others.size);
 		SET_NEW_POS:
 		while (--maxTries >= 0) {
 
-			character.location.set(rand.range(-50f,50f),0,rand.range(-50f,50f));
+			character.location.set(rand.range(-50f,50f),rand.range(-50f,50f));
 
 			for (int i = 0; i < others.size; i++) {
 				Token other = others.get(i);
@@ -144,14 +147,13 @@ public class Scenario {
 		throw new IllegalStateException("Probable infinite loop detected");
 	}
 
-	public void setNonOverlappingPosition(Token token, Vector3 location )
+	public void setNonOverlappingPosition(Token token, Vector2 location )
 	{
 		// THis is a workaround for the bug where if two tokens are in the same location, one of them
 		// will end up with a location of "NaN" i suppose due to the steering system.
 		// ideally id like to figure out whats causing the NaN and let steering just naturally seperate
 		// the soldiers...
 		token.location.set(location);
-		token.location.y = heightField.getElevation(token.location);
 		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
 		final float eps = 0.001f;
 		SET_NEW_POS:
@@ -161,10 +163,9 @@ public class Scenario {
 				if(t!= token){
 					Token other =  t;
 					//if(token.location.dst(other.location) <= token.radius){
-					if(UtMath.abs(token.location.x-other.location.x) <eps && UtMath.abs(token.location.z-other.location.z) <eps){
+					if(UtMath.abs(token.location.x-other.location.x) <eps && UtMath.abs(token.location.y-other.location.y) <eps){
 						token.location.x = location.x + rand.range(-token.shape.radius,token.shape.radius);
-						token.location.z = location.z + rand.range(-token.shape.radius,token.shape.radius);
-						token.location.y = heightField.getElevation(token.location);
+						token.location.y = location.y + rand.range(-token.shape.radius,token.shape.radius);
 						continue SET_NEW_POS;
 					}
 				}

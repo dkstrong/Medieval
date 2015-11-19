@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
@@ -59,13 +60,18 @@ public class StructureView implements View, SelectableView, AnimationController.
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
+		float angle = token.agent.getVelocity().angleRad(Vector2.Y);
+		rotation.setFromAxisRad(0,1,0,angle);
+
+		translation.set(token.location.x,token.elevation,token.location.y);
+
 	}
 
 	private boolean triggerAnim = false;
 
 	@Override
 	public void update(float delta) {
-		translation.set(token.location);
+
 
 
 		if (animController != null)

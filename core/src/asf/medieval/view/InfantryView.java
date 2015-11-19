@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
@@ -82,7 +83,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 
 	@Override
 	public void update(float delta) {
-		translation.set(token.location);
+		translation.set(token.location.x,token.elevation,token.location.y);
 
 
 		//System.out.println(token.id + ": " + token.location);
@@ -107,12 +108,15 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 				animController.current.speed = speed  /agent.getMaxSpeed() * 0.65f;
 			}
 
-
+			float angle = agent.getVelocity().angleRad(Vector2.Y);
+			rotation.setFromAxisRad(0,1,0,angle);
+			/*
 			Vector3 dir = agent.getVelocity().cpy();
 			dir.x *= -1f; // TODO: why do i need to flip the x direction !?!?!
 			dir.y  =0;
 			dir.nor();
 			rotation.setFromCross(dir, Vector3.Z);
+			*/
 		}
 
 

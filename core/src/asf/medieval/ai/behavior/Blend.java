@@ -1,6 +1,7 @@
 package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -9,7 +10,7 @@ import com.badlogic.gdx.utils.Array;
  */
 public class Blend implements Behavior{
 
-	private Vector3 steeringOut = new Vector3();
+	private Vector2 steeringOut = new Vector2();
 
 	public SteerAgent agent;
 
@@ -38,7 +39,7 @@ public class Blend implements Behavior{
 
 	@Override
 	public void update(float delta) {
-		steeringOut.set(0,0,0);
+		steeringOut.set(0,0);
 		for (WeightedBehavior wb : weightedBehaviors) {
 			wb.behavior.update(delta);
 			steeringOut.mulAdd(wb.behavior.getForce(),wb.weight);
@@ -47,7 +48,7 @@ public class Blend implements Behavior{
 	}
 
 	@Override
-	public Vector3 getForce() {
+	public Vector2 getForce() {
 		return steeringOut;
 	}
 

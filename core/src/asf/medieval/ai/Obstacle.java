@@ -1,5 +1,6 @@
 package asf.medieval.ai;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -8,17 +9,17 @@ import com.badlogic.gdx.math.Vector3;
 public abstract class Obstacle implements SteerAgent{
 
 	private float avoidanceRadius;
-	private final Vector3 velocity = new Vector3(0,0,0);
+	private final Vector2 velocity = new Vector2(0,0);
 
 	public Obstacle(float avoidanceRadius) {
 		this.avoidanceRadius = avoidanceRadius;
 	}
 
-	public Vector3 getVelocity() {
+	public Vector2 getVelocity() {
 		return velocity;
 	}
 
-	public Vector3 getFutureLocation(float tpf) {
+	public Vector2 getFutureLocation(float tpf) {
 		return getLocation();
 	}
 

@@ -10,6 +10,8 @@ import asf.medieval.ai.behavior.Seek;
 import asf.medieval.ai.behavior.Separation;
 import asf.medieval.ai.behavior.Wander;
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -23,10 +25,10 @@ public class InfantryAgent implements SteerAgent {
 	public float maxTurnForce = 10;
 	public float mass = 0.4f;
 	public float avoidanceRadius = 1f;
-	public final Vector3 velocity = new Vector3();
+	public final Vector2 velocity = new Vector2();
 	public Behavior behavior;
 
-	private final Vector3 force = new Vector3();
+	private final Vector2 force = new Vector2();
 
 	public InfantryAgent(Token token) {
 		this.token = token;
@@ -38,12 +40,12 @@ public class InfantryAgent implements SteerAgent {
 		{
 			behavior.update(delta);
 			force.set(behavior.getForce());
-			force.y =0;
+			//force.y =0;
 
 		}
 		else
 		{
-			force.set(0,0,0);
+			force.set(0,0);
 		}
 
 
@@ -70,14 +72,14 @@ public class InfantryAgent implements SteerAgent {
 			//rotTo.lookAt(velocity.normalize(), Vector3f.UNIT_Y);
 			//spatial.setLocalRotation(rotTo);
 		}
-		token.location.y = token.scenario.heightField.getElevation(token.location);
+
 	}
 
 	public void clearTarget() {
 		behavior = null;
 	}
 
-	public void setTarget(Vector3 staticTarget) {
+	public void setTarget(Vector2 staticTarget) {
 
 		Seek seek = new Seek();
 		seek.agent = this;
@@ -154,20 +156,20 @@ public class InfantryAgent implements SteerAgent {
 	}
 
 	@Override
-	public Vector3 getVelocity() {
+	public Vector2 getVelocity() {
 		return velocity;
 	}
 
-	public Vector3 getVelocity(float delta) {
+	public Vector2 getVelocity(float delta) {
 		return velocity.cpy().scl(delta);
 	}
 
 
 	@Override
-	public Vector3 getLocation() { return token.location; }
+	public Vector2 getLocation() { return token.location; }
 
 	@Override
-	public Vector3 getFutureLocation(float delta) {
+	public Vector2 getFutureLocation(float delta) {
 		return getLocation().cpy().add(getVelocity(delta));
 	}
 

@@ -3,6 +3,7 @@ package asf.medieval.ai.behavior;
 import asf.medieval.ai.SteerAgent;
 import asf.medieval.utility.JmePlane;
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -19,7 +20,7 @@ import java.util.List;
  */
 public class Avoid implements Behavior{
 
-	private Vector3 steeringOut = new Vector3();
+	private Vector2 steeringOut = new Vector2();
 
 	public SteerAgent agent;
 
@@ -31,14 +32,14 @@ public class Avoid implements Behavior{
 
 	@Override
 	public void update(float delta) {
-		Vector3 temp1= new Vector3();
+		Vector2 temp1= new Vector2();
 		float cautionRange = agent.getMaxSpeed() / agent.getMaxTurnForce();  // " speed / turnSpeed"
 		cautionRange = cautionRange + agent.getAvoidanceRadius();
 
 		// TODO: libgdx plane should be able to do this
 		// but the math is slightly different and i wont to test with the Jme Plane first
 		JmePlane plane = tempPlane;
-		plane.normal.set(agent.getVelocity());
+		plane.normal.set(agent.getVelocity().x,0,agent.getVelocity().y);
 		plane.constant = 1;
 
 		Array<SteerAgent> obstacles = getObstacles(agent, 5);
@@ -48,8 +49,9 @@ public class Avoid implements Behavior{
 				continue;
 			}
 
-			Vector3 relativeLocation = temp1.set(obstacle.getLocation()).sub(agent.getLocation());
-			if (plane.whichSide(relativeLocation) != JmePlane.Side.Positive) {
+			Vector2 relativeLocation = temp1.set(obstacle.getLocation()).sub(agent.getLocation());
+			Vector3 relLoc3d = new Vector3(relativeLocation.x,0,relativeLocation.y);
+			if (plane.whichSide(relLoc3d) != JmePlane.Side.Positive) {
 				//me.setObstacleCautionRange(cautionRange, false);
 				//continue; //obstacle is behind me, ignore it
 			}
@@ -59,7 +61,7 @@ public class Avoid implements Behavior{
 				//me.setObstacleCautionRange(cautionRange, true);
 
 				float len2 = relativeLocation.len2();
-				Vector3 force = relativeLocation.nor();
+				Vector2 force = relativeLocation.nor();
 				//return force.negate().mult(1 / len2).mult(0.125f);
 				steeringOut.set(force.scl(-1f).scl(1 / len2).scl(obstacle.getAvoidanceRadius() / agent.getAvoidanceRadius()));
 				return;
@@ -73,7 +75,7 @@ public class Avoid implements Behavior{
 
 
 		// no obstacles to avoid, no force to apply..
-		steeringOut.set(0, 0, 0);
+		steeringOut.set(0, 0);
 	}
 
 	private Array<SteerAgent> getObstacles(SteerAgent me, float withinRadius) {
@@ -85,7 +87,7 @@ public class Avoid implements Behavior{
 		for (SteerAgent agent : nearbyAgents) {
 			if (agent == me) {
 				continue;
-			} else if (!agent.getVelocity().equals(Vector3.Zero)) {
+			} else if (!agent.getVelocity().equals(Vector2.Zero)) {
 				continue;
 			}
 
@@ -102,7 +104,7 @@ public class Avoid implements Behavior{
 	}
 
 	@Override
-	public Vector3 getForce() {
+	public Vector2 getForce() {
 		return steeringOut;
 	}
 
@@ -122,7 +124,7 @@ public class Avoid implements Behavior{
 	 *
 	 * @author Brent Owens
 	 */
-	private Vector3 calculateAvoidForceOld(SteerAgent me, List<SteerAgent> obstacles, float tpf) {
+	private Vector2 calculateAvoidForceOld(SteerAgent me, List<SteerAgent> obstacles, float tpf) {
 		// a turn force less than the speed will increase the range of the
 		// collision cylinder. If the turn force is larger than the speed,
 		// then the cylinder. This is just a rough, linear, approximation
@@ -130,7 +132,7 @@ public class Avoid implements Behavior{
 		float cautionRange = me.getMaxSpeed() / me.getMaxTurnForce() * tpf;  // " speed / turnSpeed"
 
 		JmePlane plane = new JmePlane();
-		plane.normal.set(me.getVelocity());
+		plane.normal.set(me.getVelocity().x,0,me.getVelocity().y);
 		plane.constant =1;
 
 		float r1 = cautionRange + me.getAvoidanceRadius();
@@ -139,10 +141,11 @@ public class Avoid implements Behavior{
 			if (obstacle == me) {
 				continue;
 			}
-			Vector3 temp1 = new Vector3();
-			Vector3 relativeLocation = temp1.set(obstacle.getLocation()).sub(me.getLocation());
+			Vector2 temp1 = new Vector2();
+			Vector2 relativeLocation = temp1.set(obstacle.getLocation()).sub(me.getLocation());
+			Vector3 relLoc3d = new Vector3(relativeLocation.x,0,relativeLocation.y);
 
-			if (plane.whichSide(relativeLocation) != JmePlane.Side.Positive) {
+			if (plane.whichSide(relLoc3d) != JmePlane.Side.Positive) {
 
 				continue; // if it is behind, ignore it
 			}
@@ -157,7 +160,7 @@ public class Avoid implements Behavior{
 
 				// Project onto the back-plane(defined using the velocity vector as the normal for the plane)
 				// and test the radius width intersection
-				Vector3 projPoint = plane.getClosestPoint(relativeLocation);
+				Vector3 projPoint = plane.getClosestPoint(relLoc3d);
 
 
 
@@ -173,6 +176,6 @@ public class Avoid implements Behavior{
 
 
 
-		return Vector3.Zero; // no collision
+		return Vector2.Zero; // no collision
 	}
 }

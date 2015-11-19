@@ -10,6 +10,7 @@ import asf.medieval.ai.behavior.Seek;
 import asf.medieval.ai.behavior.Separation;
 import asf.medieval.ai.behavior.Wander;
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -26,7 +27,6 @@ public class StructureAgent implements SteerAgent {
 	public StructureAgent(Token token) {
 		this.token = token;
 		avoidanceRadius = token.shape.radius;
-		token.location.y = token.scenario.heightField.getElevation(token.location);
 	}
 
 	public void update(float delta)
@@ -35,19 +35,19 @@ public class StructureAgent implements SteerAgent {
 	}
 
 	@Override
-	public Vector3 getVelocity() {
-		return Vector3.Zero;
+	public Vector2 getVelocity() {
+		return Vector2.Zero;
 	}
 
-	public Vector3 getVelocity(float delta) {
-		return Vector3.Zero.cpy().scl(delta);
+	public Vector2 getVelocity(float delta) {
+		return Vector2.Zero.cpy().scl(delta);
 	}
 
 	@Override
-	public Vector3 getLocation() { return token.location; }
+	public Vector2 getLocation() { return token.location; }
 
 	@Override
-	public Vector3 getFutureLocation(float delta) {
+	public Vector2 getFutureLocation(float delta) {
 		return getLocation().cpy().add(getVelocity(delta));
 	}
 

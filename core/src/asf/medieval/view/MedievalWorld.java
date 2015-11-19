@@ -32,6 +32,7 @@ import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
@@ -206,7 +207,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	}
 
 	private void onAllPlayersReady(){
-		scenario.newSoldier(2, Vector3.Zero);
+		scenario.newSoldier(1, new Vector2(10,10));
+		scenario.newSoldier(1, new Vector2(10,12));
+		scenario.newSoldier(1, new Vector2(14,14));
+
+		scenario.newSoldier(2, Vector2.Zero);
+
 	}
 
 	public <T extends View> T addGameObject(T gameObject) {

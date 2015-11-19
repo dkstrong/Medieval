@@ -1,6 +1,7 @@
 package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -13,7 +14,7 @@ public class Pursuit implements Behavior{
 	public SteerAgent agent;
 	public SteerAgent target;
 
-	private Vector3 force = new Vector3();
+	private Vector2 force = new Vector2();
 
 	@Override
 	public void update(float delta) {
@@ -27,7 +28,7 @@ public class Pursuit implements Behavior{
 		float distance = agent.getLocation().dst(target.getLocation());
 		float t = distance / agent.getMaxSpeed();
 
-		Vector3 targetLocation = target.getFutureLocation(t);
+		Vector2 targetLocation = target.getFutureLocation(t);
 
 		// does a basic seek to the future location of the target
 		force.set(targetLocation).sub(agent.getLocation());
@@ -37,7 +38,7 @@ public class Pursuit implements Behavior{
 
 	private void oldVersion(float delta)
 	{
-		Vector3 targetLocation = target.getFutureLocation(delta);
+		Vector2 targetLocation = target.getFutureLocation(delta);
 		// calculate speed difference to see how far ahead we need to leed
 		float speedDiff = target.getMaxSpeed() - agent.getMaxSpeed();
 		float desiredSpeed = (target.getMaxSpeed() + speedDiff) * delta;
@@ -50,7 +51,7 @@ public class Pursuit implements Behavior{
 	}
 
 	@Override
-	public Vector3 getForce() {
+	public Vector2 getForce() {
 		return force;
 	}
 }

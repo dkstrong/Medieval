@@ -1,6 +1,7 @@
 package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -11,5 +12,5 @@ public interface Behavior {
 
 	public void update(float delta);
 
-	public Vector3 getForce();
+	public Vector2 getForce();
 }

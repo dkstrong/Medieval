@@ -25,12 +25,15 @@ public class AttackComponent {
 				Token newTarget = null;
 				for (int i = 0; i < token.scenario.tokens.size; i++) {
 					Token other = 	token.scenario.tokens.items[i];
+					if(token == other) continue;
+					if(token.owner.team == other.owner.team) continue;
+
 					// TODO: also compare velocities (unless both characters have the same velocity- the one with
 					// higher velocity gets attack precedence
 					// also maybe consider in height and give height precedence
 					// also precedence when attacking a target that is already in combat.
 					// maybe also consider the direction theyre facing and so on.
-					if(other != token && other.location.dst(token.location) < token.shape.radius + other.shape.radius)
+					if(other.location.dst(token.location) < token.shape.radius + other.shape.radius)
 					{
 						newTarget = other;
 					}

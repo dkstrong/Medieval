@@ -192,6 +192,12 @@ public class UtMath {
 		vec.z = vec.z * scalar + add.z;
 	}
 
+	public static void scaleAdd(Vector2 vec, float scalar, Vector2 add)
+	{
+		vec.x = vec.x * scalar + add.x;
+		vec.y = vec.y * scalar + add.y;
+	}
+
 	public static float sqr(float fValue) {
 		return fValue * fValue;
 	}
@@ -215,6 +221,17 @@ public class UtMath {
 		float i = max / vector.len();
 		i = i < 1.0f ? i : 1.0f;
 		vector.scl(i);
+	}
+
+	public static void truncate(Vector2 source, float limit) {
+
+		if (source.len2() <= UtMath.sqr(limit)) {
+			//return source;
+		} else {
+			source.nor().scl(limit);
+			//UtMath.scaleAdd(source.nor(), limit, Vector3.Zero);
+			//source.nor().scaleAdd(limit, Vector3.Zero);
+		}
 	}
 
 
@@ -457,6 +474,19 @@ public class UtMath {
 
 		return Intersector.isPointInTriangle(point, q1,q3,q4) || Intersector.isPointInTriangle(point, q1,q2,q3);
 
+	}
+
+	public static Vector2 toVector2(Vector3 vec3, Vector2 store){
+		store.x = vec3.x;
+		store.y = vec3.z;
+		return store;
+	}
+
+	public static Vector3 toVector3(Vector2 vec2, Vector3 store){
+		store.x = vec2.x;
+		store.y = 0;
+		store.z = vec2.y;
+		return store;
 	}
 
 

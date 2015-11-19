@@ -1,6 +1,7 @@
 package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -10,10 +11,10 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Flee implements Behavior{
 
-	private Vector3 force = new Vector3();
+	private Vector2 force = new Vector2();
 
 	public SteerAgent agent;
-	public final Vector3 target = new Vector3();
+	public final Vector2 target = new Vector2();
 
 	@Override
 	public void update(float delta) {
@@ -23,7 +24,7 @@ public class Flee implements Behavior{
 	}
 
 	@Override
-	public Vector3 getForce() {
+	public Vector2 getForce() {
 		return force;
 	}
 }

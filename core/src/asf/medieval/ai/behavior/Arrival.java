@@ -1,6 +1,7 @@
 package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -8,11 +9,11 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Arrival implements Behavior{
 
-	private Vector3 force = new Vector3();
+	private Vector2 force = new Vector2();
 
 	public SteerAgent agent;
-	public final Vector3 target = new Vector3();
-	public float slowingRadiusSqr = 1f;
+	public final Vector2 target = new Vector2();
+	public float slowingRadiusSqr = 1.5f;
 	@Override
 	public void update(float delta) {
 
@@ -24,7 +25,8 @@ public class Arrival implements Behavior{
 		{
 			// inside the slowing area, scale down the force
 			force.scl(distSqr/slowingRadiusSqr);
-			force.set(agent.getVelocity()).scl(-3f);
+			// not apart of the intial algorithm, but is needed to actually stop...
+			force.set(agent.getVelocity()).scl(-2.5f);
 		}
 
 		force.sub(agent.getVelocity());
@@ -32,7 +34,7 @@ public class Arrival implements Behavior{
 	}
 
 	@Override
-	public Vector3 getForce() {
+	public Vector2 getForce() {
 		return force;
 	}
 }

@@ -315,7 +315,7 @@ public class HudView implements View,InputProcessor {
 					{
 						Command command = new Command();
 						command.tokenId = ((InfantryView) sgo).token.id;
-						command.location = new Vector3(lastMoveCommandLocation);
+						command.location = UtMath.toVector2(lastMoveCommandLocation, new Vector2());
 						world.gameClient.sendCommand(command);
 						//sgo.token.setTarget(lastMoveCommandLocation);
 					}
@@ -368,12 +368,12 @@ public class HudView implements View,InputProcessor {
 				break;
 			case Input.Keys.I:
 				Command command = new Command();
-				command.location = new Vector3(world.cameraManager.rtsCamController.center);
+				command.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
 				world.gameClient.sendCommand(command);
 				break;
 			case Input.Keys.B:
 				Command buildCommand = new Command();
-				buildCommand.location = new Vector3(world.cameraManager.rtsCamController.center);
+				buildCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
 				buildCommand.structure = true;
 				world.gameClient.sendCommand(buildCommand);
 				break;

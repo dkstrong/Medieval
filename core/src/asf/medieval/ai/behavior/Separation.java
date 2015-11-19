@@ -2,6 +2,7 @@ package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -15,7 +16,7 @@ import java.util.List;
 public class Separation implements Behavior{
 
 
-	private Vector3 steeringOut = new Vector3();
+	private Vector2 steeringOut = new Vector2();
 
 	public SteerAgent agent;
 
@@ -35,12 +36,12 @@ public class Separation implements Behavior{
 	 *
 	 */
 
-	private Vector3 temp1 = new Vector3();
-	private Vector3 temp2 = new Vector3();
+	private Vector2 temp1 = new Vector2();
+	private Vector2 temp2 = new Vector2();
 	@Override
 	public void update(float delta) {
-		Vector3 location = agent.getLocation();
-		Vector3 steering = temp1.set(0, 0, 0);
+		Vector2 location = agent.getLocation();
+		Vector2 steering = temp1.set(0, 0);
 
 		Array<SteerAgent> neighbours = getNeighbors(agent, 5);
 
@@ -49,7 +50,7 @@ public class Separation implements Behavior{
 				continue;
 			}
 
-			Vector3 loc = temp2.set(o.getLocation()).sub(location);
+			Vector2 loc = temp2.set(o.getLocation()).sub(location);
 			float len2 = loc.len2();
 			loc.nor();
 			steering.add(loc.scl(-1f).scl(1f / len2).scl(0.25f));
@@ -86,7 +87,7 @@ public class Separation implements Behavior{
 
 
 	@Override
-	public Vector3 getForce() {
+	public Vector2 getForce() {
 		return steeringOut;
 	}
 }

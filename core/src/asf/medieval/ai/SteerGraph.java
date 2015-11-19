@@ -3,6 +3,7 @@ package asf.medieval.ai;
 import asf.medieval.ai.behavior.Behavior;
 import asf.medieval.utility.JmePlane;
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -21,7 +22,7 @@ public class SteerGraph {
 
 	public boolean isObstructed(SteerAgent me, float tpf) {
 
-		Vector3 futureLoc = me.getFutureLocation(tpf);
+		Vector2 futureLoc = me.getFutureLocation(tpf);
 
 		if (futureLoc.equals(me.getLocation())) {
 			//not moving, done here

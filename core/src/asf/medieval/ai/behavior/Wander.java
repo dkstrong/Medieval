@@ -2,6 +2,7 @@ package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -9,14 +10,14 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Wander implements Behavior {
 
-	private Vector3 force = new Vector3();
+	private Vector2 force = new Vector2();
 
 	public SteerAgent agent;
 	public float circleDistance = 10;
 	public float circleRadius = 1;
 	public float angleChange;
 
-	private final Vector3 displacement = new Vector3();
+	private final Vector2 displacement = new Vector2();
 	private float wanderAngle;
 
 	public Wander() {
@@ -31,7 +32,7 @@ public class Wander implements Behavior {
 		force.set(agent.getVelocity()).nor().scl(circleDistance);
 
 		// Calculate the displacement force
-		displacement.set(0,0,-1).scl(circleRadius);
+		displacement.set(0,-1).scl(circleRadius);
 
 		// Randomly change the vector direction  by making it change its current angle
 		setAngle(displacement, wanderAngle);
@@ -46,14 +47,14 @@ public class Wander implements Behavior {
 	}
 
 
-	private static void setAngle(Vector3 vector, float value) {
+	private static void setAngle(Vector2 vector, float value) {
 		float len = vector.len();
 		vector.x = (float)Math.cos(value) * len;
-		vector.z = (float)Math.sin(value) * len;
+		vector.y = (float)Math.sin(value) * len;
 	}
 
 	@Override
-	public Vector3 getForce() {
+	public Vector2 getForce() {
 		return force;
 	}
 }
