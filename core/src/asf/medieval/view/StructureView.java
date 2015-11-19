@@ -1,6 +1,5 @@
 package asf.medieval.view;
 
-import asf.medieval.model.StructureToken;
 import asf.medieval.model.Token;
 import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,7 +16,7 @@ import com.badlogic.gdx.math.collision.Ray;
  */
 public class StructureView implements View, SelectableView, AnimationController.AnimationListener {
 	private MedievalWorld world;
-	public final StructureToken token;
+	public final Token token;
 	public final Shape shape;
 	private ModelInstance modelInstance;
 	private AnimationController animController;
@@ -29,13 +28,13 @@ public class StructureView implements View, SelectableView, AnimationController.
 
 	private final String openAnim;
 
-	public StructureView(MedievalWorld world, StructureToken structureToken) {
+	public StructureView(MedievalWorld world, Token structureToken) {
 		this.world = world;
 		this.token = structureToken;
 
 		shape = token.shape;
 
-		//world.addGameObject(new DebugShapeView(world,token.location,shape));
+		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
 
 		Model model = world.assetManager.get("Models/Church/Church.g3db");
 		modelInstance = new ModelInstance(model);
@@ -56,7 +55,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(token.avoidanceRadius *3.5f, token.avoidanceRadius *3.5f);
+		selectionDecal.setDimensions(token.shape.radius *3.5f, token.shape.radius *3.5f);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 

@@ -1,10 +1,10 @@
 package asf.medieval.view;
 
 import asf.medieval.MedievalApp;
+import asf.medieval.model.InfantryAgent;
 import asf.medieval.model.Scenario;
 import asf.medieval.model.ScenarioRand;
-import asf.medieval.model.SoldierToken;
-import asf.medieval.model.StructureToken;
+import asf.medieval.model.StructureAgent;
 import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.net.GameClient;
@@ -225,10 +225,10 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	@Override
 	public void onNewToken(Token token) {
 
-		if(token instanceof SoldierToken){
-			addGameObject(new SoldierView(this,(SoldierToken)token));
-		}else if(token instanceof StructureToken){
-			addGameObject(new StructureView(this,(StructureToken)token));
+		if(token.steerAgent instanceof InfantryAgent){
+			addGameObject(new InfantryView(this,token));
+		}else if(token.steerAgent instanceof StructureAgent){
+			addGameObject(new StructureView(this,token));
 		}
 
 	}

@@ -10,12 +10,7 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by danny on 10/20/14.
  */
-public final class Sphere implements Shape {
-
-	private static final Vector3 position = new Vector3();
-	private final Vector3 center = new Vector3();
-	private final Vector3 dimensions = new Vector3();
-	private float radius;
+public final class Sphere extends Shape {
 
 	public Sphere(float radius) {
 		set(radius);
@@ -64,20 +59,5 @@ public final class Sphere implements Shape {
 			return -1f;
 		float dist2 = position.dst2(ray.origin.x + ray.direction.x * len, ray.origin.y + ray.direction.y * len, ray.origin.z + ray.direction.z * len);
 		return (dist2 <= radius * radius) ? dist2 : -1f;
-	}
-
-
-	public float getRadius() {
-		return radius;
-	}
-
-	@Override
-	public Vector3 getCenter() {
-		return center;
-	}
-
-	@Override
-	public Vector3 getDimensions() {
-		return dimensions;
 	}
 }

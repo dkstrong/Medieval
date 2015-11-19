@@ -14,15 +14,16 @@ public class Command {
 	{
 		if(tokenId > 0){
 			// move command
-			SoldierToken soldierToken = scenario.getSoldier(tokenId);
-			soldierToken.setTarget(location);
+			Token token = scenario.getSoldier(tokenId);
+			InfantryAgent agent = (InfantryAgent)token.steerAgent;
+			agent.setTarget(location);
 
 		}else{
 			// spawn command
 			if(structure){
-				StructureToken token = scenario.newStructure(playerId,location);
+				Token token = scenario.newStructure(playerId,location);
 			}else{
-				SoldierToken token = scenario.newSoldier(playerId, location);
+				Token token = scenario.newSoldier(playerId, location);
 			}
 		}
 	}

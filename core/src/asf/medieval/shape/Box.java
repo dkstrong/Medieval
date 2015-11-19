@@ -11,10 +11,16 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by danny on 10/20/14.
  */
-public class Box implements Shape {
-	private final static Vector3 position = new Vector3();
-	private final Vector3 center = new Vector3();
-	private final Vector3 dimensions = new Vector3();
+public class Box extends Shape {
+
+	public Box(final float radius, final float height)
+	{
+		dimensions.set(radius*2f, height, radius*2f);
+
+		center.set(0,height/2f,0);
+
+		this.radius = radius;
+	}
 
 	public Box(final float xExtent, final float yExtent, final float zExtent, final float xCenter, final float yCenter, final float zCenter)
 	{
@@ -23,6 +29,8 @@ public class Box implements Shape {
 		center.x = xCenter;
 		center.y = yCenter;
 		center.z = zCenter;
+
+		radius = xExtent > zExtent ? xExtent : zExtent;
 	}
 
 	public Box(Vector3 min, Vector3 max) {
@@ -31,6 +39,11 @@ public class Box implements Shape {
 		center.x = (max.x + min.x) / 2f;
 		center.y = (max.y + min.y) / 2f;
 		center.z = (max.z + min.z) / 2f;
+
+		final float xExtent = dimensions.x/2f;
+		final float zExtent = dimensions.z/2f;
+
+		radius = xExtent > zExtent ? xExtent : zExtent;
 	}
 
 	/**
@@ -45,16 +58,27 @@ public class Box implements Shape {
 		modelInstance.calculateBoundingBox(bb);
 		bb.getCenter(center);
 		bb.getDimensions(dimensions);
+
+		final float xExtent = dimensions.x/2f;
+		final float zExtent = dimensions.z/2f;
+
+		radius = xExtent > zExtent ? xExtent : zExtent;
 	}
 
 	public Box(Box box) {
 		dimensions.set(box.dimensions);
 		center.set(box.center);
+		radius = box.radius;
 	}
 
 	@Override
 	public boolean isVisible(Matrix4 transform, Camera cam) {
 		return cam.frustum.boundsInFrustum(transform.getTranslation(position).add(center), dimensions);
+	}
+
+	@Override
+	public boolean isVisible(Vector3 translation, Camera cam) {
+		return cam.frustum.boundsInFrustum(position.set(translation).add(center), dimensions);
 	}
 
 	@Override
@@ -65,21 +89,6 @@ public class Box implements Shape {
 			return position.dst2(ray.origin.x + ray.direction.x * len, ray.origin.y + ray.direction.y * len, ray.origin.z + ray.direction.z * len);
 		}
 		return -1f;
-	}
-
-	@Override
-	public boolean isVisible(Vector3 translation, Camera cam) {
-		return cam.frustum.boundsInFrustum(position.set(translation).add(center), dimensions);
-	}
-
-	@Override
-	public Vector3 getCenter() {
-		return center;
-	}
-
-	@Override
-	public Vector3 getDimensions() {
-		return dimensions;
 	}
 
 	public Box cpy() {

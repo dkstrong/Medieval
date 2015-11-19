@@ -7,6 +7,8 @@ import com.badlogic.gdx.math.Vector3;
  */
 public interface SteerAgent {
 
+	public void update(float delta);
+
 	public Vector3 getVelocity();
 
 	public Vector3 getLocation();
@@ -14,10 +16,10 @@ public interface SteerAgent {
 	/**
 	 * used with prediction steering like persue and evade
 	 *
-	 * @param tpf
+	 * @param delta
 	 * @return
 	 */
-	public Vector3 getFutureLocation(float tpf);
+	public Vector3 getFutureLocation(float delta);
 
 	/**
 	 * used with obstacle avoidance steering

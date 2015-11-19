@@ -311,10 +311,10 @@ public class HudView implements View,InputProcessor {
 				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
 
 				for (SelectableView sgo : selectedSoldiers) {
-					if(sgo instanceof SoldierView)
+					if(sgo instanceof InfantryView)
 					{
 						Command command = new Command();
-						command.tokenId = ((SoldierView) sgo).token.id;
+						command.tokenId = ((InfantryView) sgo).token.id;
 						command.location = new Vector3(lastMoveCommandLocation);
 						world.gameClient.sendCommand(command);
 						//sgo.token.setTarget(lastMoveCommandLocation);

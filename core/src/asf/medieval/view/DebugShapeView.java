@@ -46,21 +46,21 @@ public class DebugShapeView implements View {
 		if(shape instanceof Box)
 		{
 			Box box = (Box) shape;
-			Vector3 dim = box.getDimensions();
+			Vector3 dim = box.dimensions;
 			Model model = ModelFactory.box(dim.x, dim.y,dim.z, Color.BLUE);
 			modelInstance = new ModelInstance(model);
 		}
 		else if(shape instanceof Sphere)
 		{
 			Sphere sphere = (Sphere) shape;
-			Model model = ModelFactory.sphere(sphere.getRadius(), Color.BLUE);
+			Model model = ModelFactory.sphere(sphere.radius, Color.BLUE);
 			modelInstance = new ModelInstance(model);
 
 		}
 		else if(shape instanceof Disc)
 		{
 			Disc disc = (Disc) shape;
-			Model model = ModelFactory.cylinder(disc.getRadius(), .1f, Color.BLUE);
+			Model model = ModelFactory.cylinder(disc.radius, .1f, Color.BLUE);
 			modelInstance = new ModelInstance(model);
 		}
 		else
@@ -68,7 +68,7 @@ public class DebugShapeView implements View {
 			throw new UnsupportedOperationException(String.valueOf(shape));
 		}
 
-		translation.set(pos).add(shape.getCenter());
+		translation.set(pos).add(shape.center);
 		return this;
 	}
 

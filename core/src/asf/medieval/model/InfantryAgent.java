@@ -1,53 +1,44 @@
 package asf.medieval.model;
 
 import asf.medieval.ai.SteerAgent;
-import asf.medieval.ai.behavior.*;
+import asf.medieval.ai.behavior.Arrival;
+import asf.medieval.ai.behavior.Avoid;
+import asf.medieval.ai.behavior.Behavior;
+import asf.medieval.ai.behavior.Blend;
+import asf.medieval.ai.behavior.Pursuit;
+import asf.medieval.ai.behavior.Seek;
+import asf.medieval.ai.behavior.Separation;
+import asf.medieval.ai.behavior.Wander;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * Created by Daniel Strong on 11/11/2015.
+ * Created by daniel on 11/18/15.
  */
-public class SoldierToken implements Token, SteerAgent {
-	private Scenario scenario;
-	public Player owner;
-	public int id;
+public class InfantryAgent implements SteerAgent {
 
-	public final Vector3 location = new Vector3();
-
-	public float radius = 1;
-	public float height = 7.5f;
+	public Token token;
 
 	public float maxSpeed = 7f;
 	public float maxTurnForce = 10;
 	public float mass = 0.4f;
 	public float avoidanceRadius = 1f;
 	public final Vector3 velocity = new Vector3();
-
 	public Behavior behavior;
-
-
-	@Override
-	public void init(Scenario scenario) {
-		this.scenario = scenario;
-
-	}
-
-	@Override
-	public void update(float delta) {
-		updateVelocityAndLocation(delta);
-	}
 
 	private final Vector3 force = new Vector3();
 
+	public InfantryAgent(Token token) {
+		this.token = token;
+	}
 
-	private void updateVelocityAndLocation(float delta)
+	public void update(float delta)
 	{
 		if(behavior != null)
 		{
 			behavior.update(delta);
 			force.set(behavior.getForce());
-				force.y =0;
+			force.y =0;
 
 		}
 		else
@@ -73,15 +64,14 @@ public class SoldierToken implements Token, SteerAgent {
 			//if (!canStepIntoOtherAgents && agent.isObstructed(tpf)) {
 			//        setVelocity(velocity.negate());
 			//}
-			location.mulAdd(velocity, delta);
+			token.location.mulAdd(velocity, delta);
 
 			//Quaternion rotTo = spatial.getLocalRotation().clone();
 			//rotTo.lookAt(velocity.normalize(), Vector3f.UNIT_Y);
 			//spatial.setLocalRotation(rotTo);
 		}
-		location.y = scenario.heightField.getElevation(location);
+		token.location.y = token.scenario.heightField.getElevation(token.location);
 	}
-
 
 	public void clearTarget() {
 		behavior = null;
@@ -102,16 +92,16 @@ public class SoldierToken implements Token, SteerAgent {
 
 		Avoid avoid = new Avoid();
 		avoid.agent = this;
-		avoid.nearbyAgents = scenario.steerGraph.agents;
+		avoid.nearbyAgents = token.scenario.steerGraph.agents;
 
 		Separation separation = new Separation();
 		separation.agent = this;
-		separation.nearbyAgents = scenario.steerGraph.agents;
+		separation.nearbyAgents = token.scenario.steerGraph.agents;
 
 		Blend blend = new Blend();
 		blend.agent = this;
 		blend.add(arrival,0.25f);
-		blend.add(avoid,0.25f);
+		blend.add(avoid,4.25f);
 		blend.add(separation,4f);
 		blend.calcWeights();
 
@@ -125,11 +115,11 @@ public class SoldierToken implements Token, SteerAgent {
 
 		Avoid avoid = new Avoid();
 		avoid.agent = this;
-		avoid.nearbyAgents = scenario.steerGraph.agents;
+		avoid.nearbyAgents = token.scenario.steerGraph.agents;
 
 		Separation separation = new Separation();
 		separation.agent = this;
-		separation.nearbyAgents = scenario.steerGraph.agents;
+		separation.nearbyAgents = token.scenario.steerGraph.agents;
 
 		Blend blend = new Blend();
 		blend.agent = this;
@@ -140,7 +130,6 @@ public class SoldierToken implements Token, SteerAgent {
 		behavior = blend;
 	}
 
-
 	@Override
 	public Vector3 getVelocity() {
 		return velocity;
@@ -150,10 +139,9 @@ public class SoldierToken implements Token, SteerAgent {
 		return velocity.cpy().scl(delta);
 	}
 
+
 	@Override
-	public Vector3 getLocation() {
-		return location;
-	}
+	public Vector3 getLocation() { return token.location; }
 
 	@Override
 	public Vector3 getFutureLocation(float delta) {

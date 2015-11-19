@@ -1,6 +1,7 @@
 package asf.medieval.model;
 
 import asf.medieval.ai.SteerGraph;
+import asf.medieval.shape.Box;
 import asf.medieval.terrain.HeightField;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector3;
@@ -68,15 +69,11 @@ public class Scenario {
 		return players.get(id);
 	}
 
-	public SoldierToken getSoldier(int soldierId)
+	public Token getSoldier(int tokenId)
 	{
 		for (Token token : tokens) {
-			if (token instanceof SoldierToken)
-			{
-				SoldierToken soldierToken = (SoldierToken) token;
-				if(soldierToken.id == soldierId){
-					return soldierToken;
-				}
+			if(token.id == tokenId){
+				return token;
 			}
 		}
 		return null;
@@ -84,15 +81,18 @@ public class Scenario {
 
 	private int lastTokenId = 0;
 
-	public SoldierToken newSoldier(int owner, Vector3 location)
+	public Token newSoldier(int owner, Vector3 location)
 	{
-		SoldierToken token= new SoldierToken();
+		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
+		token.scenario = this;
+		token.modelId = ModelId.Skeleton;
+		token.shape = new Box(1f, 7.5f);
 		token.location.set(location);
 		token.owner = players.get(owner);
-		token.init(this);
-		steerGraph.agents.add(token);
+		token.steerAgent = new InfantryAgent(token);
+		steerGraph.agents.add(token.steerAgent);
 		tokens.add(token);
 
 		setNonOverlappingPosition(token, location);
@@ -102,22 +102,29 @@ public class Scenario {
 		return token;
 	}
 
-	public StructureToken newStructure(int owner, Vector3 location)
+	public Token newStructure(int owner, Vector3 location)
 	{
-		StructureToken token= new StructureToken();
+		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
+		token.scenario = this;
+		token.modelId = ModelId.Church;
+		float width = 9.5f;
+		float height = 10f;
+		float depth = 10.2f;
+		token.shape = new Box( width, height, depth, width*0.05f, height, -depth*0.75f);
 		token.owner = players.get(owner);
 		token.location.set(location);
-		token.init(this);
-		steerGraph.agents.add(token);
+		token.steerAgent = new StructureAgent(token);
+		steerGraph.agents.add(token.steerAgent);
 		tokens.add(token);
+
 		if(listener!=null)
 			listener.onNewToken(token);
 		return token;
 	}
 
-	public void setRandomNonOverlappingPosition (SoldierToken character, Array<SoldierToken> others,
+	public void setRandomNonOverlappingPosition (Token character, Array<Token> others,
 							float minDistanceFromBoundary) {
 		int maxTries = UtMath.largest(100, others.size * others.size);
 		SET_NEW_POS:
@@ -126,8 +133,8 @@ public class Scenario {
 			character.location.set(rand.range(-50f,50f),0,rand.range(-50f,50f));
 
 			for (int i = 0; i < others.size; i++) {
-				SoldierToken other = (SoldierToken)others.get(i);
-				if (character.location.dst(other.location) <= character.radius + other.radius + minDistanceFromBoundary)
+				Token other = others.get(i);
+				if (character.location.dst(other.location) <= character.shape.radius + other.shape.radius + minDistanceFromBoundary)
 					continue SET_NEW_POS;
 			}
 			return;
@@ -135,7 +142,7 @@ public class Scenario {
 		throw new IllegalStateException("Probable infinite loop detected");
 	}
 
-	public void setNonOverlappingPosition(SoldierToken token, Vector3 location )
+	public void setNonOverlappingPosition(Token token, Vector3 location )
 	{
 		// THis is a workaround for the bug where if two tokens are in the same location, one of them
 		// will end up with a location of "NaN" i suppose due to the steering system.
@@ -149,12 +156,12 @@ public class Scenario {
 		while (--maxTries >= 0) {
 			for (Token t : tokens) {
 
-				if(t!= token && (t instanceof SoldierToken)){
-					SoldierToken other = (SoldierToken) t;
+				if(t!= token){
+					Token other =  t;
 					//if(token.location.dst(other.location) <= token.radius){
 					if(UtMath.abs(token.location.x-other.location.x) <eps && UtMath.abs(token.location.z-other.location.z) <eps){
-						token.location.x = location.x + rand.range(-token.radius,token.radius);
-						token.location.z = location.z + rand.range(-token.radius,token.radius);
+						token.location.x = location.x + rand.range(-token.shape.radius,token.shape.radius);
+						token.location.z = location.z + rand.range(-token.shape.radius,token.shape.radius);
 						token.location.y = heightField.getElevation(token.location);
 						continue SET_NEW_POS;
 					}

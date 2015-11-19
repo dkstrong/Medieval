@@ -1,8 +1,7 @@
 package asf.medieval.view;
 
-import asf.medieval.model.SoldierToken;
+import asf.medieval.model.InfantryAgent;
 import asf.medieval.model.Token;
-import asf.medieval.shape.Box;
 import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -17,9 +16,10 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class SoldierView implements View, SelectableView, AnimationController.AnimationListener {
+public class InfantryView implements View, SelectableView, AnimationController.AnimationListener {
 	private MedievalWorld world;
-	public final SoldierToken token;
+	public final Token token;
+	public final InfantryAgent agent;
 	public final Shape shape;
 	private ModelInstance modelInstance;
 	private AnimationController animController;
@@ -32,11 +32,13 @@ public class SoldierView implements View, SelectableView, AnimationController.An
 	private static final String[] idle = new String[]{"Idle", "Idle", "Idle"};
 	private static final String[] walk = new String[]{"Walk"};
 
-	public SoldierView(MedievalWorld world, SoldierToken soldierToken) {
+	public InfantryView(MedievalWorld world, Token soldierToken) {
 		this.world = world;
 		this.token = soldierToken;
+		agent = (InfantryAgent)token.steerAgent;
+		shape = token.shape;
 
-		shape = new Box( token.radius, token.height/2f, token.radius, 0, token.height/2f, 0);
+		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
 
 		Model model = world.assetManager.get("Models/Characters/Skeleton.g3db");
 		modelInstance = new ModelInstance(model);
@@ -53,7 +55,7 @@ public class SoldierView implements View, SelectableView, AnimationController.An
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(token.radius *3.5f, token.radius *3.5f);
+		selectionDecal.setDimensions(token.shape.radius *3.5f, token.shape.radius *3.5f);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
@@ -68,7 +70,7 @@ public class SoldierView implements View, SelectableView, AnimationController.An
 
 
 
-		float speed = token.getVelocity().len();
+		float speed = agent.getVelocity().len();
 		if(speed < .75f)
 		{
 			if (!animController.current.animation.id.startsWith("Idle"))
@@ -79,11 +81,11 @@ public class SoldierView implements View, SelectableView, AnimationController.An
 			if (!animController.current.animation.id.startsWith("Walk")){
 				animController.animate("Walk", 0, -1, -1, 1, this, 0.2f);
 			}else{
-				animController.current.speed = speed  /token.getMaxSpeed() * 0.65f;
+				animController.current.speed = speed  /agent.getMaxSpeed() * 0.65f;
 			}
 
 
-			Vector3 dir = token.getVelocity().cpy();
+			Vector3 dir = agent.getVelocity().cpy();
 			dir.x *= -1f; // TODO: why do i need to flip the x direction !?!?!
 			dir.y  =0;
 			dir.nor();

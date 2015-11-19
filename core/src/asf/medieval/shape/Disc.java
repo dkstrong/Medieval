@@ -10,11 +10,7 @@ import com.badlogic.gdx.math.collision.Ray;
 /**
  * Created by danny on 10/20/14.
  */
-public class Disc implements Shape {
-	private final static Vector3 position = new Vector3();
-	private final Vector3 center = new Vector3();
-	private final Vector3 dimensions = new Vector3();
-	private float radius;
+public class Disc extends Shape {
 
 	public Disc(float radius) {
 		this.radius = radius;
@@ -45,19 +41,5 @@ public class Disc implements Shape {
 		final float len = (position.y - ray.origin.y) / ray.direction.y;
 		final float dist2 = position.dst2(ray.origin.x + len * ray.direction.x, ray.origin.y + len * ray.direction.y, ray.origin.z + len * ray.direction.z);
 		return (dist2 < radius * radius) ? dist2 : -1f;
-	}
-
-	public float getRadius() {
-		return radius;
-	}
-
-	@Override
-	public Vector3 getCenter() {
-		return center;
-	}
-
-	@Override
-	public Vector3 getDimensions() {
-		return dimensions;
 	}
 }
