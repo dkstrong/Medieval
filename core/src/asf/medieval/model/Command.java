@@ -15,7 +15,7 @@ public class Command {
 		if(tokenId > 0){
 			// move command
 			Token token = scenario.getSoldier(tokenId);
-			InfantryAgent agent = (InfantryAgent)token.steerAgent;
+			InfantryAgent agent = (InfantryAgent)token.agent;
 			agent.setTarget(location);
 
 		}else{

@@ -1,12 +1,14 @@
 package asf.medieval.view;
 
 import asf.medieval.model.InfantryAgent;
+import asf.medieval.model.ModelId;
 import asf.medieval.model.Token;
 import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
+import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
@@ -29,24 +31,41 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	public boolean selected = false;
 	private final Decal selectionDecal = new Decal();
 
-	private static final String[] idle = new String[]{"Idle", "Idle", "Idle"};
-	private static final String[] walk = new String[]{"Walk"};
+	private String[] idle = new String[]{"Idle"};
+	private final String[] walk = new String[]{"Walk"};
+	private final String[] attack = new String[]{"Attack"};
+	private final String[] hit = new String[]{"Hit"};
+	private final String[] die = new String[]{"Die"};
 
 	public InfantryView(MedievalWorld world, Token soldierToken) {
 		this.world = world;
 		this.token = soldierToken;
-		agent = (InfantryAgent)token.steerAgent;
+		agent = (InfantryAgent)token.agent;
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
+		String asset = "Models/Characters/Skeleton.g3db";
+		if(token.modelId == ModelId.Jimmy)
+		{
+			asset = "Models/Jimmy/Jimmy_r1.g3db";
+			idle = new String[]{"Idle01","Idle02","Idle03"};
+			walk[0] = "MoveForward";
+			attack[0] = "FlareThrow";
+			hit[0] = "FlareRelease";
+			die[0] = "TurtleOnDizzyWithFall";
+		}
 
-		Model model = world.assetManager.get("Models/Characters/Skeleton.g3db");
+
+		Model model = world.assetManager.get(asset);
+
 		modelInstance = new ModelInstance(model);
 		if (modelInstance.animations.size > 0) {
 			animController = new AnimationController(modelInstance);
 			animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+
 		}
 		//rotation.setEulerAngles(180f, 0, 0);
+
 
 
 
@@ -78,8 +97,12 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		}
 		else
 		{
-			if (!animController.current.animation.id.startsWith("Walk")){
-				animController.animate("Walk", 0, -1, -1, 1, this, 0.2f);
+			if (!animController.current.animation.id.startsWith(walk[0])){
+				if(token.modelId == ModelId.Skeleton)
+					animController.animate(walk[0], 0, -1, -1, 1, this, 0.2f);
+				else{
+					animController.animate(walk[0], 0, -1, 1, 1, this, 0.2f);
+				}
 			}else{
 				animController.current.speed = speed  /agent.getMaxSpeed() * 0.65f;
 			}

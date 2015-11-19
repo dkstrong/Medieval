@@ -12,7 +12,7 @@ public class Arrival implements Behavior{
 
 	public SteerAgent agent;
 	public final Vector3 target = new Vector3();
-	public float slowingRadiusSqr = 1.5f;
+	public float slowingRadiusSqr = 1f;
 	@Override
 	public void update(float delta) {
 
@@ -24,6 +24,7 @@ public class Arrival implements Behavior{
 		{
 			// inside the slowing area, scale down the force
 			force.scl(distSqr/slowingRadiusSqr);
+			force.set(agent.getVelocity()).scl(-3f);
 		}
 
 		force.sub(agent.getVelocity());

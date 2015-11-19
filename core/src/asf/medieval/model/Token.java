@@ -2,7 +2,6 @@ package asf.medieval.model;
 
 import asf.medieval.ai.SteerAgent;
 import asf.medieval.shape.Shape;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -15,12 +14,20 @@ public class Token {
 	public ModelId modelId;
 	public final Vector3 location = new Vector3();
 	public Shape shape;
-	public SteerAgent steerAgent;
+	public SteerAgent agent;
+	public AttackComponent attack;
+	public DamageComponent damage;
 
 	public void update(float delta)
 	{
-		if(steerAgent!=null)
-			steerAgent.update(delta);
+		if(attack != null)
+			attack.update(delta);
+
+		if(damage != null)
+			damage.update(delta);
+
+		if(agent !=null)
+			agent.update(delta);
 
 	}
 }

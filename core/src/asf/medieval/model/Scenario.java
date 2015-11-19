@@ -87,12 +87,14 @@ public class Scenario {
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
-		token.modelId = ModelId.Skeleton;
+		token.modelId = owner == 1 ? ModelId.Skeleton : ModelId.Jimmy;
 		token.shape = new Box(1f, 7.5f);
 		token.location.set(location);
 		token.owner = players.get(owner);
-		token.steerAgent = new InfantryAgent(token);
-		steerGraph.agents.add(token.steerAgent);
+		token.attack = new AttackComponent(token);
+		token.damage = new DamageComponent(token);
+		token.agent = new InfantryAgent(token);
+		steerGraph.agents.add(token.agent);
 		tokens.add(token);
 
 		setNonOverlappingPosition(token, location);
@@ -115,8 +117,8 @@ public class Scenario {
 		token.shape = new Box( width, height, depth, width*0.05f, height, -depth*0.75f);
 		token.owner = players.get(owner);
 		token.location.set(location);
-		token.steerAgent = new StructureAgent(token);
-		steerGraph.agents.add(token.steerAgent);
+		token.agent = new StructureAgent(token);
+		steerGraph.agents.add(token.agent);
 		tokens.add(token);
 
 		if(listener!=null)

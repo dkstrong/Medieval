@@ -130,6 +130,29 @@ public class InfantryAgent implements SteerAgent {
 		behavior = blend;
 	}
 
+	public void setTargetAttack(SteerAgent agentTarget)
+	{
+		Pursuit seek = new Pursuit();
+		seek.agent = this;
+		seek.target = agentTarget;
+
+		Avoid avoid = new Avoid();
+		avoid.agent = this;
+		avoid.nearbyAgents = token.scenario.steerGraph.agents;
+
+		Separation separation = new Separation();
+		separation.agent = this;
+		separation.nearbyAgents = token.scenario.steerGraph.agents;
+
+		Blend blend = new Blend();
+		blend.agent = this;
+		blend.add(seek,1);
+		blend.add(avoid,1);
+		blend.add(separation,1);
+
+		behavior = blend;
+	}
+
 	@Override
 	public Vector3 getVelocity() {
 		return velocity;

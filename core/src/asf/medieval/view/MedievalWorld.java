@@ -32,6 +32,7 @@ import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -112,6 +113,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		assetManager.load("Models/skydome.g3db", Model.class);
 		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
 		assetManager.load("Models/Church/Church.g3db", Model.class);
+		assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
 
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
@@ -153,6 +155,10 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			player.name = System.getProperty("user.name");
 			offlineGameClient.player = player;
 			offlineGameClient.players.put(1,player);
+			Player computerPlayer = new Player();
+			computerPlayer.id = 2;
+			computerPlayer.name="Computer";
+			offlineGameClient.players.put(2,computerPlayer);
 			gameClient = offlineGameClient;
 		}
 
@@ -195,7 +201,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			app.onSimulationStarted(); // inform the dungeon app to close the loading screen
 			setPaused(false); // call this to apply the gameplay input processors
 			Gdx.gl.glClearColor(100 / 255f, 149 / 255f, 237 / 255f, 1f);
+			onAllPlayersReady();
 		}
+	}
+
+	private void onAllPlayersReady(){
+		scenario.newSoldier(2, Vector3.Zero);
 	}
 
 	public <T extends View> T addGameObject(T gameObject) {
@@ -225,9 +236,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	@Override
 	public void onNewToken(Token token) {
 
-		if(token.steerAgent instanceof InfantryAgent){
+		if(token.agent instanceof InfantryAgent){
 			addGameObject(new InfantryView(this,token));
-		}else if(token.steerAgent instanceof StructureAgent){
+		}else if(token.agent instanceof StructureAgent){
 			addGameObject(new StructureView(this,token));
 		}
 
