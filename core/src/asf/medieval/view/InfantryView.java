@@ -1,10 +1,9 @@
 package asf.medieval.view;
 
-import asf.medieval.model.InfantryAgent;
+import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.ModelId;
 import asf.medieval.model.Token;
 import asf.medieval.shape.Shape;
-import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -14,7 +13,6 @@ import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
@@ -24,7 +22,7 @@ import com.badlogic.gdx.math.collision.Ray;
 public class InfantryView implements View, SelectableView, AnimationController.AnimationListener {
 	private MedievalWorld world;
 	public final Token token;
-	public final InfantryAgent agent;
+	public final InfantryController agent;
 	public final Shape shape;
 	private ModelInstance modelInstance;
 	private AnimationController animController;
@@ -43,7 +41,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	public InfantryView(MedievalWorld world, Token soldierToken) {
 		this.world = world;
 		this.token = soldierToken;
-		agent = (InfantryAgent)token.agent;
+		agent = (InfantryController)token.agent;
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));

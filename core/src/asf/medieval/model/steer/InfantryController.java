@@ -1,39 +1,37 @@
-package asf.medieval.model;
+package asf.medieval.model.steer;
 
-import asf.medieval.ai.SteerAgent;
-import asf.medieval.ai.behavior.Arrive;
-import asf.medieval.ai.behavior.ArriveCombat;
-import asf.medieval.ai.behavior.Avoid;
-import asf.medieval.ai.behavior.Behavior;
-import asf.medieval.ai.behavior.Blend;
-import asf.medieval.ai.behavior.FaceAgent;
-import asf.medieval.ai.behavior.FaceVelocity;
-import asf.medieval.ai.behavior.PostBehavior;
-import asf.medieval.ai.behavior.Pursuit;
-import asf.medieval.ai.behavior.Seek;
-import asf.medieval.ai.behavior.Separation;
-import asf.medieval.ai.behavior.Wander;
+import asf.medieval.model.Token;
+import asf.medieval.model.steer.SteerController;
+import asf.medieval.model.steer.behavior.Arrive;
+import asf.medieval.model.steer.behavior.ArriveCombat;
+import asf.medieval.model.steer.behavior.Avoid;
+import asf.medieval.model.steer.behavior.Behavior;
+import asf.medieval.model.steer.behavior.Blend;
+import asf.medieval.model.steer.behavior.FaceAgent;
+import asf.medieval.model.steer.behavior.FaceVelocity;
+import asf.medieval.model.steer.behavior.PostBehavior;
+import asf.medieval.model.steer.behavior.Pursuit;
+import asf.medieval.model.steer.behavior.Seek;
+import asf.medieval.model.steer.behavior.Separation;
+import asf.medieval.model.steer.behavior.Wander;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by daniel on 11/18/15.
  */
-public class InfantryAgent implements SteerAgent {
+public class InfantryController extends SteerController {
 
-	public Token token;
-
-	public float maxSpeed = 7f;
-	public float maxTurnForce = 10;
-	public float mass = 0.4f;
-	public float avoidanceRadius = 1f;
-	public final Vector2 velocity = new Vector2();
 	public Behavior behavior;
 	public PostBehavior postBehavior;
 
 
-	public InfantryAgent(Token token) {
+	public InfantryController(Token token) {
 		this.token = token;
+		maxSpeed = 7f;
+		maxTurnForce = 10;
+		mass = 0.4f;
+		avoidanceRadius = 1f;
 	}
 
 	private final Vector2 force = new Vector2();
@@ -116,7 +114,7 @@ public class InfantryAgent implements SteerAgent {
 		postBehavior = new FaceVelocity(token);
 	}
 
-	public void setTarget(SteerAgent agentTarget) {
+	public void setTarget(SteerController agentTarget) {
 		Pursuit seek = new Pursuit();
 		seek.agent = this;
 		seek.target = agentTarget;
@@ -141,7 +139,7 @@ public class InfantryAgent implements SteerAgent {
 		postBehavior = new FaceVelocity(token);
 	}
 
-	public void setCombatTarget(SteerAgent agentTarget) {
+	public void setCombatTarget(SteerController agentTarget) {
 		ArriveCombat arrive = new ArriveCombat();
 		arrive.agent = this;
 		arrive.targetAgent = agentTarget;
@@ -189,39 +187,4 @@ public class InfantryAgent implements SteerAgent {
 
 	}
 
-	@Override
-	public Vector2 getVelocity() {
-		return velocity;
-	}
-
-	public Vector2 getVelocity(float delta) {
-		return velocity.cpy().scl(delta);
-	}
-
-
-	@Override
-	public Vector2 getLocation() {
-		return token.location;
-	}
-
-	@Override
-	public Vector2 getFutureLocation(float delta) {
-		return getLocation().cpy().add(getVelocity(delta));
-	}
-
-
-	@Override
-	public float getAvoidanceRadius() {
-		return avoidanceRadius;
-	}
-
-	@Override
-	public float getMaxSpeed() {
-		return maxSpeed;
-	}
-
-	@Override
-	public float getMaxTurnForce() {
-		return maxTurnForce;
-	}
 }

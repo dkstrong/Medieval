@@ -1,12 +1,9 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-
-import java.util.List;
 
 /**
  * avoid neighbors (SteeringAgents with velocity != Zero)
@@ -18,9 +15,9 @@ public class Separation implements Behavior{
 
 	private Vector2 steeringOut = new Vector2();
 
-	public SteerAgent agent;
+	public SteerController agent;
 
-	public Array<SteerAgent> nearbyAgents = new Array<SteerAgent>(false, 16, SteerAgent.class);
+	public Array<SteerController> nearbyAgents = new Array<SteerController>(false, 16, SteerController.class);
 
 	/**
 	 * Separation steering behavior gives a character the ability to maintain a certain separation distance from others nearby. This can be used to prevent characters from crowding together.
@@ -43,9 +40,9 @@ public class Separation implements Behavior{
 		Vector2 location = agent.getLocation();
 		Vector2 steering = temp1.set(0, 0);
 
-		Array<SteerAgent> neighbours = getNeighbors(agent, 5);
+		Array<SteerController> neighbours = getNeighbors(agent, 5);
 
-		for (SteerAgent o : neighbours) {
+		for (SteerController o : neighbours) {
 			if (o == agent) {
 				continue;
 			}
@@ -60,16 +57,18 @@ public class Separation implements Behavior{
 	}
 
 
-	private Array<SteerAgent> getNeighbors(SteerAgent me, float withinRadius) {
-		Array<SteerAgent> nearbyNeighbors = new Array<SteerAgent>();
+	private Array<SteerController> getNeighbors(SteerController me, float withinRadius) {
+		Array<SteerController> nearbyNeighbors = new Array<SteerController>();
 		nearbyNeighbors.clear();
 
 		float r2 = UtMath.sqr(withinRadius);
 
-		for (SteerAgent agent : nearbyAgents) {
+		for (SteerController agent : nearbyAgents) {
 			if (agent == me) {
 				continue;
 			} else if (agent.getVelocity().equals(Vector2.Zero)) {
+				continue;
+			}else if(agent.token.owner.team != me.token.owner.team){
 				continue;
 			}
 

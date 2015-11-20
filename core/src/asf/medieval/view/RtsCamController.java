@@ -114,8 +114,8 @@ public class RtsCamController implements InputProcessor {
 		final float cosTilt = (float)Math.cos(tilt);
 		final float sinTilt = (float)Math.sin(tilt);
 
-		center.x += offX * -cosRot + offZ * sinRot;
-		center.z += offX * -sinRot + offZ * cosRot;
+		center.x += offX * cosRot + offZ * sinRot; // cos(rot) == cos(-rot)
+		center.z += offX * -sinRot+ offZ * cosRot;
 
 		center.x = UtMath.clamp(center.x, minValue[SIDE], maxValue[SIDE]);
 		center.z = UtMath.clamp(center.z, minValue[FWD], maxValue[FWD]);
@@ -127,6 +127,8 @@ public class RtsCamController implements InputProcessor {
 		}else {
 			center.y = elevation * 0.45f;
 		}
+
+
 
 		cameraManager.cam.position.x = center.x + (distance * cosTilt * sinRot);
 		cameraManager.cam.position.y = center.y + (distance * sinTilt);

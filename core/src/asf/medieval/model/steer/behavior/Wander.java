@@ -1,9 +1,8 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by daniel on 11/13/15.
@@ -12,7 +11,7 @@ public class Wander implements Behavior {
 
 	private Vector2 force = new Vector2();
 
-	public SteerAgent agent;
+	public SteerController agent;
 	public float circleDistance = 10;
 	public float circleRadius = 1;
 	public float angleChange;

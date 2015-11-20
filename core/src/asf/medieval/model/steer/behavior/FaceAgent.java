@@ -1,6 +1,6 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import asf.medieval.model.Token;
 import com.badlogic.gdx.math.Vector2;
 
@@ -10,9 +10,9 @@ import com.badlogic.gdx.math.Vector2;
 public class FaceAgent implements PostBehavior {
 	public Token token;
 
-	public SteerAgent target;
+	public SteerController target;
 
-	public FaceAgent(Token token, SteerAgent target) {
+	public FaceAgent(Token token, SteerController target) {
 		this.token = token;
 		this.target = target;
 	}

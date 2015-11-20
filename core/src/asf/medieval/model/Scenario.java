@@ -1,6 +1,8 @@
 package asf.medieval.model;
 
-import asf.medieval.ai.SteerGraph;
+import asf.medieval.model.steer.InfantryController;
+import asf.medieval.model.steer.SteerGraph;
+import asf.medieval.model.steer.StructureController;
 import asf.medieval.shape.Box;
 import asf.medieval.terrain.HeightField;
 import asf.medieval.utility.UtMath;
@@ -12,15 +14,15 @@ import com.badlogic.gdx.utils.IntMap;
  * Created by Daniel Strong on 11/11/2015.
  */
 public class Scenario {
-	protected transient Listener listener;
+	private transient Listener listener;
 
-	protected final ScenarioRand rand;
+	public final ScenarioRand rand;
 	public transient HeightField heightField;
-	protected final SteerGraph steerGraph = new SteerGraph();
+	public final SteerGraph steerGraph = new SteerGraph();
 
-	protected IntMap<Player> players = new IntMap<Player>(2);
+	public IntMap<Player> players = new IntMap<Player>(2);
 
-	protected Array<Token> tokens = new Array<Token>(false, 256, Token.class);
+	public Array<Token> tokens = new Array<Token>(false, 256, Token.class);
 
 	public Scenario(ScenarioRand rand) {
 		this.rand = rand;
@@ -93,7 +95,7 @@ public class Scenario {
 		token.location.set(location);
 		token.attack = new AttackController(token);
 		token.damage = new DamageController(token);
-		token.agent = new InfantryAgent(token);
+		token.agent = new InfantryController(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);
 
@@ -119,7 +121,7 @@ public class Scenario {
 		token.owner = players.get(owner);
 		token.location.set(location);
 		token.elevation = heightField.getElevation(location.x,location.y);
-		token.agent = new StructureAgent(token);
+		token.agent = new StructureController(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);
 

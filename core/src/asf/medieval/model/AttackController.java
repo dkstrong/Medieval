@@ -1,5 +1,7 @@
 package asf.medieval.model;
 
+import asf.medieval.model.steer.InfantryController;
+
 /**
  * Created by daniel on 11/19/15.
  */
@@ -48,7 +50,7 @@ public class AttackController {
 				float dmg = meleeAttack - target.damage.meleeDefense;
 				if(dmg < 1) dmg = 1;
 
-				((InfantryAgent)token.agent).clearTarget();
+				((InfantryController)token.agent).clearTarget();
 
 				target.damage.health -= dmg;
 				//System.out.println("Wham! "+token.modelId+" attacked "+target.modelId);
@@ -69,7 +71,7 @@ public class AttackController {
 		attackU = 0;
 		attackDuration = 2f;
 
-		((InfantryAgent) token.agent).setCombatTarget(target.agent);
+		((InfantryController) token.agent).setCombatTarget(target.agent);
 
 		if(target.damage != null){
 			target.damage.attackedBy(token);
@@ -78,7 +80,7 @@ public class AttackController {
 	}
 
 	public void clearAttackTarget(){
-		((InfantryAgent)token.agent).clearTarget();
+		((InfantryController)token.agent).clearTarget();
 		attackU = -1;
 		if(target != null){
 			target.damage.clearAttacked(token);

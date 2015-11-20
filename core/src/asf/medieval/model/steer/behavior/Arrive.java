@@ -1,26 +1,22 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by daniel on 11/13/15.
  */
-public class ArriveCombat implements Behavior{
+public class Arrive implements Behavior{
 
 	private Vector2 force = new Vector2();
 
-	public SteerAgent agent;
-	public SteerAgent targetAgent;
-
-
+	public SteerController agent;
+	public final Vector2 target = new Vector2();
 	public float slowingRadiusSqr = 1.5f;
-
-	private final Vector2 targetLocation = new Vector2();
 	@Override
 	public void update(float delta) {
 
-		force.set(targetLocation).sub(agent.getLocation());
+		force.set(target).sub(agent.getLocation());
 		float distSqr = force.len2();
 		force.nor().scl(agent.getMaxSpeed());
 

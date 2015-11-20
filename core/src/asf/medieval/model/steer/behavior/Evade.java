@@ -1,6 +1,6 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
@@ -14,9 +14,9 @@ public class Evade implements Behavior{
 
 	private Vector2 force = new Vector2();
 
-	public SteerAgent agent;
+	public SteerController agent;
 
-	public SteerAgent target;
+	public SteerController target;
 
 	Vector3 temp1 = new Vector3();
 	/**

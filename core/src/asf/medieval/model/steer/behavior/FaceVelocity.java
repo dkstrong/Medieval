@@ -1,4 +1,4 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
 import asf.medieval.model.Token;
 import com.badlogic.gdx.math.Vector2;

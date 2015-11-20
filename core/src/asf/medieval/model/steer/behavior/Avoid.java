@@ -1,6 +1,6 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import asf.medieval.utility.JmePlane;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
@@ -22,9 +22,9 @@ public class Avoid implements Behavior{
 
 	private Vector2 steeringOut = new Vector2();
 
-	public SteerAgent agent;
+	public SteerController agent;
 
-	public Array<SteerAgent> nearbyAgents = new Array<SteerAgent>(false, 16, SteerAgent.class);
+	public Array<SteerController> nearbyAgents = new Array<SteerController>(false, 16, SteerController.class);
 
 	private JmePlane tempPlane = new JmePlane();
 
@@ -42,9 +42,9 @@ public class Avoid implements Behavior{
 		plane.normal.set(agent.getVelocity().x,0,agent.getVelocity().y);
 		plane.constant = 1;
 
-		Array<SteerAgent> obstacles = getObstacles(agent, 5);
+		Array<SteerController> obstacles = getObstacles(agent, 5);
 
-		for (SteerAgent obstacle : obstacles) {
+		for (SteerController obstacle : obstacles) {
 			if (obstacle == agent) {
 				continue;
 			}
@@ -78,13 +78,13 @@ public class Avoid implements Behavior{
 		steeringOut.set(0, 0);
 	}
 
-	private Array<SteerAgent> getObstacles(SteerAgent me, float withinRadius) {
-		Array<SteerAgent> nearbyObstacles = new Array<SteerAgent>();
+	private Array<SteerController> getObstacles(SteerController me, float withinRadius) {
+		Array<SteerController> nearbyObstacles = new Array<SteerController>();
 		nearbyObstacles.clear();
 
 		float r2 = UtMath.sqr(withinRadius);
 
-		for (SteerAgent agent : nearbyAgents) {
+		for (SteerController agent : nearbyAgents) {
 			if (agent == me) {
 				continue;
 			} else if (!agent.getVelocity().equals(Vector2.Zero)) {
@@ -123,7 +123,7 @@ public class Avoid implements Behavior{
 	 *
 	 * @author Brent Owens
 	 */
-	private Vector2 calculateAvoidForceOld(SteerAgent me, List<SteerAgent> obstacles, float tpf) {
+	private Vector2 calculateAvoidForceOld(SteerController me, List<SteerController> obstacles, float tpf) {
 		// a turn force less than the speed will increase the range of the
 		// collision cylinder. If the turn force is larger than the speed,
 		// then the cylinder. This is just a rough, linear, approximation
@@ -136,7 +136,7 @@ public class Avoid implements Behavior{
 
 		float r1 = cautionRange + me.getAvoidanceRadius();
 		// assuming obsticals are ordered from closest to farthest
-		for (SteerAgent obstacle : obstacles) {
+		for (SteerController obstacle : obstacles) {
 			if (obstacle == me) {
 				continue;
 			}

@@ -1,6 +1,6 @@
 package asf.medieval.model;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import asf.medieval.shape.Shape;
 import com.badlogic.gdx.math.Vector2;
 
@@ -16,7 +16,7 @@ public class Token {
 	public float elevation;
 	public float direction;
 	public Shape shape;
-	public SteerAgent agent;
+	public SteerController agent;
 	public AttackController attack;
 	public DamageController damage;
 

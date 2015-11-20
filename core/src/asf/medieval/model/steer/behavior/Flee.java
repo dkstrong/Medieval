@@ -1,25 +1,23 @@
-package asf.medieval.ai.behavior;
+package asf.medieval.model.steer.behavior;
 
-import asf.medieval.ai.SteerAgent;
+import asf.medieval.model.steer.SteerController;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 /**
- *
- * Seek static target
+ * flees from a static target
  *
  * Created by daniel on 11/13/15.
  */
-public class Seek implements Behavior{
+public class Flee implements Behavior{
 
 	private Vector2 force = new Vector2();
 
-	public SteerAgent agent;
+	public SteerController agent;
 	public final Vector2 target = new Vector2();
 
 	@Override
 	public void update(float delta) {
-		force.set(target).sub(agent.getLocation());
+		force.set(agent.getLocation()).sub(target);
 		force.nor().scl(agent.getMaxSpeed());
 		force.sub(agent.getVelocity());
 	}

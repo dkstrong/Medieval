@@ -1,26 +1,20 @@
-package asf.medieval.ai;
+package asf.medieval.model.steer;
 
-import asf.medieval.ai.behavior.Behavior;
-import asf.medieval.utility.JmePlane;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Danny on 11/13/2015.
  */
 public class SteerGraph {
-	public final Array<SteerAgent> agents = new Array<SteerAgent>(true, 32, SteerAgent.class);
+	public final Array<SteerController> agents = new Array<SteerController>(true, 32, SteerController.class);
 
 	public SteerGraph() {
 	}
 
 
-	public boolean isObstructed(SteerAgent me, float tpf) {
+	public boolean isObstructed(SteerController me, float tpf) {
 
 		Vector2 futureLoc = me.getFutureLocation(tpf);
 
@@ -30,8 +24,8 @@ public class SteerGraph {
 		}
 
 
-		for (SteerAgent agent : agents) {
-			if (agent == this) {
+		for (SteerController agent : agents) {
+			if (agent == me) {
 				continue; //cant obstruct yourself
 			}
 

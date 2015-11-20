@@ -1,5 +1,7 @@
 package asf.medieval.model;
 
+import asf.medieval.model.steer.InfantryController;
+
 /**
  * Created by daniel on 11/19/15.
  */
@@ -36,7 +38,7 @@ public class DamageController {
 			hitU = 0;
 			hitDuration = attacker.attack.attackDuration;
 
-			((InfantryAgent) token.agent).setCombatTarget(attacker.agent);
+			((InfantryController) token.agent).setCombatTarget(attacker.agent);
 		}
 
 	}
@@ -48,9 +50,9 @@ public class DamageController {
 			this.attacker = null;
 			hitU = -1;
 			if(health >0){
-				((InfantryAgent)token.agent).clearTarget();
+				((InfantryController)token.agent).clearTarget();
 			}else{
-				((InfantryAgent)token.agent).setDeath(token.location);
+				((InfantryController)token.agent).setDeath(token.location);
 			}
 
 

@@ -1,7 +1,7 @@
 package asf.medieval.model;
 
+import asf.medieval.model.steer.InfantryController;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by daniel on 11/16/15.
@@ -16,7 +16,7 @@ public class Command {
 		if(tokenId > 0){
 			// move command
 			Token token = scenario.getSoldier(tokenId);
-			InfantryAgent agent = (InfantryAgent)token.agent;
+			InfantryController agent = (InfantryController)token.agent;
 			agent.setTarget(location);
 
 		}else{

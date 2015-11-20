@@ -1,10 +1,10 @@
 package asf.medieval.view;
 
 import asf.medieval.MedievalApp;
-import asf.medieval.model.InfantryAgent;
+import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.Scenario;
 import asf.medieval.model.ScenarioRand;
-import asf.medieval.model.StructureAgent;
+import asf.medieval.model.steer.StructureController;
 import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.net.GameClient;
@@ -33,7 +33,6 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -251,9 +250,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	@Override
 	public void onNewToken(Token token) {
 
-		if(token.agent instanceof InfantryAgent){
+		if(token.agent instanceof InfantryController){
 			addGameObject(new InfantryView(this,token));
-		}else if(token.agent instanceof StructureAgent){
+		}else if(token.agent instanceof StructureController){
 			addGameObject(new StructureView(this,token));
 		}
 
