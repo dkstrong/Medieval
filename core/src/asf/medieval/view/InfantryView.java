@@ -106,7 +106,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 					}else if(anim.id.startsWith("die")){ // pile_of_rocks
 						die = new Animation[]{anim};
 					}
-					System.out.println(anim.id);
+					//System.out.println(anim.id);
 				}
 			}else{
 				for (Animation anim : modelInstance.animations) {

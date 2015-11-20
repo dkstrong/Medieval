@@ -69,7 +69,7 @@ public class Separation implements Behavior{
 		for (SteerAgent agent : nearbyAgents) {
 			if (agent == me) {
 				continue;
-			} else if (agent.getVelocity().equals(Vector3.Zero)) {
+			} else if (agent.getVelocity().equals(Vector2.Zero)) {
 				continue;
 			}
 

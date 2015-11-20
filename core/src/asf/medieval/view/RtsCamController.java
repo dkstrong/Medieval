@@ -4,7 +4,6 @@ import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -12,29 +11,26 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class RtsCamController implements InputProcessor {
 
-
-
-	public enum CamDegree {
-
-		SIDE,
-		FWD,
-		ROT,
-		ZOOM;
-	}
+	public static final int SIDE = 0;
+	public static final int FWD = 1;
+	public static final int ROT = 2;
+	public static final int TILT = 3;
+	public static final int ZOOM = 4;
 
 	private final CameraManager cameraManager;
 	private final ElevationProvider elevationProvider;
 
 	private boolean dragMouse = false;
 	//private Listener listener;
-	private int[] direction = new int[4];
-	private float[] accelPeriod = new float[4];
-	private float[] maxSpeed = new float[4];
-	private float[] maxAccelPeriod = new float[4];
-	private float[] minValue = new float[4];
-	private float[] maxValue = new float[4];
+	private int[] direction = new int[5];
+	private float[] accelPeriod = new float[5];
+	private float[] maxSpeed = new float[5];
+	private float[] maxAccelPeriod = new float[5];
+	private float[] minValue = new float[5];
+	private float[] maxValue = new float[5];
 	public final Vector3 center = new Vector3();
 	private float rot = 0;
+	private float tilt = 0.4172428f; //UtMath.PI/8f;
 	private float distance = 45;
 	private float minElevation =0;
 
@@ -42,28 +38,30 @@ public class RtsCamController implements InputProcessor {
 		this.cameraManager = cameraManager;
 		this.elevationProvider = elevationProvider;
 
-		setMinMaxValues(CamDegree.FWD, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
-		setMinMaxValues(CamDegree.SIDE, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
-		setMinMaxValues(CamDegree.ROT, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
-		setMinMaxValues(CamDegree.ZOOM, 4, 100);
+		setMinMaxValues(FWD, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+		setMinMaxValues(SIDE, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+		setMinMaxValues(ROT, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+		setMinMaxValues(TILT, UtMath.PI / 42f, UtMath.PI/3f);
+		setMinMaxValues(ZOOM, 4, 100);
 
-		setMaxSpeed(CamDegree.FWD, 24f*2f, 0.25f);
-		setMaxSpeed(CamDegree.SIDE, 24f*2f, 0.25f);
-		setMaxSpeed(CamDegree.ROT, 2f, 0.3f);
-		setMaxSpeed(CamDegree.ZOOM, 60f, 0.25f);
+		setMaxSpeed(FWD, 24f * 2f, 0.25f);
+		setMaxSpeed(SIDE, 24f*2f, 0.25f);
+		setMaxSpeed(ROT, 2f, 0.3f);
+		setMaxSpeed(TILT, 2f, 0.3f);
+		setMaxSpeed(ZOOM, 60f, 0.25f);
 
 		minElevation = 0;
 	}
 
 	// SIDE and FWD min/max values are ignored, need to fix this..
-	public final void setMinMaxValues(CamDegree dg, float min, float max) {
-		minValue[dg.ordinal()] = min;
-		maxValue[dg.ordinal()] = max;
+	public final void setMinMaxValues(int dg, float min, float max) {
+		minValue[dg] = min;
+		maxValue[dg] = max;
 	}
 
-	public final void setMaxSpeed(CamDegree dg, float maxSpeed, float accelerationTime) {
-		this.maxSpeed[dg.ordinal()] = maxSpeed / accelerationTime;
-		this.maxAccelPeriod[dg.ordinal()] = accelerationTime;
+	public final void setMaxSpeed(int dg, float maxSpeed, float accelerationTime) {
+		this.maxSpeed[dg] = maxSpeed / accelerationTime;
+		this.maxAccelPeriod[dg] = accelerationTime;
 	}
 
 	public void setDistance(float distance) {
@@ -96,22 +94,31 @@ public class RtsCamController implements InputProcessor {
 					break;
 			}
 		}
-		distance += maxSpeed[CamDegree.ZOOM.ordinal()] * accelPeriod[CamDegree.ZOOM.ordinal()] * delta;
-		rot += maxSpeed[CamDegree.ROT.ordinal()] * accelPeriod[CamDegree.ROT.ordinal()] * delta;
+		distance += maxSpeed[ZOOM] * accelPeriod[ZOOM] * delta;
+		rot += maxSpeed[ROT] * accelPeriod[ROT] * delta;
+		tilt += maxSpeed[TILT] * accelPeriod[TILT] * delta;
 
-		distance = UtMath.clamp(distance, minValue[CamDegree.ZOOM.ordinal()], maxValue[CamDegree.ZOOM.ordinal()]);
-		rot = UtMath.clamp(rot, minValue[CamDegree.ROT.ordinal()], maxValue[CamDegree.ROT.ordinal()]);
+		distance = UtMath.clamp(distance, minValue[ZOOM], maxValue[ZOOM]);
+		rot = UtMath.clamp(rot, minValue[ROT], maxValue[ROT]);
+		tilt = UtMath.clamp(tilt, minValue[TILT], maxValue[TILT]);
 
-		float tilt = UtMath.scalarLimitsInterpolation(distance, minValue[CamDegree.ZOOM.ordinal()], maxValue[CamDegree.ZOOM.ordinal()], UtMath.PI / 22f, UtMath.QUARTER_PI);
+		// this tilts based on what the zoom level is
+		//tilt = UtMath.scalarLimitsInterpolation(distance, minValue[CamDegree.ZOOM.ordinal()], maxValue[CamDegree.ZOOM.ordinal()], UtMath.PI / 22f, UtMath.QUARTER_PI);
+		//System.out.println(tilt);
 
-		float offX = maxSpeed[CamDegree.SIDE.ordinal()] * accelPeriod[CamDegree.SIDE.ordinal()] * delta;
-		float offZ = maxSpeed[CamDegree.FWD.ordinal()] * accelPeriod[CamDegree.FWD.ordinal()] * delta;
+		float offX = maxSpeed[SIDE] * accelPeriod[SIDE] * delta;
+		float offZ = maxSpeed[FWD] * accelPeriod[FWD] * delta;
 
-		center.x += offX * Math.cos(-rot) + offZ * Math.sin(rot);
-		center.z += offX * Math.sin(-rot) + offZ * Math.cos(rot);
+		final float sinRot = (float)Math.sin(rot);
+		final float cosRot = (float)Math.cos(rot);
+		final float cosTilt = (float)Math.cos(tilt);
+		final float sinTilt = (float)Math.sin(tilt);
 
-		center.x = UtMath.clamp(center.x, minValue[CamDegree.SIDE.ordinal()], maxValue[CamDegree.SIDE.ordinal()]);
-		center.z = UtMath.clamp(center.z, minValue[CamDegree.FWD.ordinal()], maxValue[CamDegree.FWD.ordinal()]);
+		center.x += offX * -cosRot + offZ * sinRot;
+		center.z += offX * -sinRot + offZ * cosRot;
+
+		center.x = UtMath.clamp(center.x, minValue[SIDE], maxValue[SIDE]);
+		center.z = UtMath.clamp(center.z, minValue[FWD], maxValue[FWD]);
 
 		final float elevation = elevationProvider.getElevationAt(center.x, center.z);
 		//float targetY = (int) (Math.ceil(elevation / 2f) * 2f);
@@ -121,11 +128,9 @@ public class RtsCamController implements InputProcessor {
 			center.y = elevation * 0.45f;
 		}
 
-
-
-		cameraManager.cam.position.x = center.x + (distance * (float)Math.cos(tilt) * (float)Math.sin(rot));
-		cameraManager.cam.position.y = center.y + (distance * (float)Math.sin(tilt)); //
-		cameraManager.cam.position.z = center.z + (distance * (float)Math.cos(tilt) * (float)Math.cos(rot));
+		cameraManager.cam.position.x = center.x + (distance * cosTilt * sinRot);
+		cameraManager.cam.position.y = center.y + (distance * sinTilt);
+		cameraManager.cam.position.z = center.z + (distance * cosTilt * cosRot);
 
 //		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) + 0.1f;
 //		if(cameraManager.cam.position.y < elevationCam){
@@ -176,28 +181,34 @@ public class RtsCamController implements InputProcessor {
 		switch(keycode)
 		{
 			case Input.Keys.W:
-				direction[CamDegree.FWD.ordinal()] += -press;
+				direction[FWD] += -press;
 				break;
 			case Input.Keys.S:
-				direction[CamDegree.FWD.ordinal()] += press;
+				direction[FWD] += press;
 				break;
 			case Input.Keys.A:
-				direction[CamDegree.SIDE.ordinal()] += -press;
+				direction[SIDE] += -press;
 				break;
 			case Input.Keys.D:
-				direction[CamDegree.SIDE.ordinal()] += press;
+				direction[SIDE] += press;
 				break;
 			case Input.Keys.Q:
-				direction[CamDegree.ROT.ordinal()] += press;
+				//direction[ROT] += press;
 				break;
 			case Input.Keys.E:
-				direction[CamDegree.ROT.ordinal()] += -press;
+				//direction[ROT] += -press;
 				break;
 			case Input.Keys.Z:
-				direction[CamDegree.ZOOM.ordinal()] += press;
+				//direction[ZOOM] += press;
 				break;
 			case Input.Keys.X:
-				direction[CamDegree.ZOOM.ordinal()] += -press;
+				//direction[ZOOM] += -press;
+				break;
+			case Input.Keys.V:
+				//direction[TILT] += press;
+				break;
+			case Input.Keys.C:
+				//direction[TILT] += -press;
 				break;
 
 		}
@@ -215,6 +226,7 @@ public class RtsCamController implements InputProcessor {
 	}
 
 	private int dragMouseLastScreenX;
+	private int dragMouseLastScreenY;
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
@@ -222,6 +234,7 @@ public class RtsCamController implements InputProcessor {
 		{
 			dragMouse = true;
 			dragMouseLastScreenX = screenX;
+			dragMouseLastScreenY = screenY;
 			Gdx.input.setCursorCatched(true);
 			return true;
 		}
@@ -244,10 +257,14 @@ public class RtsCamController implements InputProcessor {
 		if(dragMouse)
 		{
 			final int deltaScreenX =  dragMouseLastScreenX-screenX;
+			final int deltaScreenY =  dragMouseLastScreenY-screenY;
 			dragMouseLastScreenX = screenX;
-			rot += maxSpeed[CamDegree.ROT.ordinal()] * 0.02f* deltaScreenX * Gdx.graphics.getDeltaTime();
+			dragMouseLastScreenY = screenY;
+			rot += maxSpeed[ROT] * 0.005f* deltaScreenX * Gdx.graphics.getDeltaTime();
 			//System.out.println("drag mouse: "+deltaScreenX);
 			//accelPeriod[CamDegree.ROT.ordinal()] -= 0.15f * deltaScreenX * Gdx.graphics.getDeltaTime();
+
+			tilt += maxSpeed[TILT] * 0.005f* -deltaScreenY * Gdx.graphics.getDeltaTime();
 			return true;
 		}
 
@@ -264,7 +281,7 @@ public class RtsCamController implements InputProcessor {
 	public boolean scrolled(int amount) {
 
 		//accelPeriod[CamDegree.ZOOM.ordinal()] += 13 * amount * Gdx.graphics.getDeltaTime();
-		distance += maxSpeed[CamDegree.ZOOM.ordinal()] * amount * Gdx.graphics.getDeltaTime();
+		distance += maxSpeed[ZOOM] * amount * Gdx.graphics.getDeltaTime();
 		return false;
 	}
 
