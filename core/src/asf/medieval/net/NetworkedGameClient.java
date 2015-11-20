@@ -27,15 +27,13 @@ import java.io.IOException;
 /**
  * Created by daniel on 11/15/15.
  */
-public class NetworkedGameClient implements Disposable, GameClient, GameHost {
+public class NetworkedGameClient extends GameClient implements Disposable, GameHost {
 
 	public String hostName;
 	public int tcpPort;
 	public int udpPort;
 	public Client client;
-	public IntMap<Player> players = new IntMap<Player>();
-	public Player player;
-	public Scenario scenario;
+
 
 	public NetworkedGameClient() {
 

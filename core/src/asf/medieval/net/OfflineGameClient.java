@@ -8,10 +8,7 @@ import com.badlogic.gdx.utils.IntMap;
 /**
  * Created by daniel on 11/16/15.
  */
-public class OfflineGameClient implements GameClient {
-	public IntMap<Player> players = new IntMap<Player>();
-	public Player player;
-	public Scenario scenario;
+public class OfflineGameClient extends GameClient {
 
 	@Override
 	public void updateGameFrame(float delta) {

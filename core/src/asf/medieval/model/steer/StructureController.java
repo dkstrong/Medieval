@@ -13,7 +13,7 @@ public class StructureController extends SteerController {
 
 
 	public StructureController(Token token) {
-		this.token = token;
+		super(token);
 		mass = 10f;
 		avoidanceRadius = token.shape.radius;
 	}

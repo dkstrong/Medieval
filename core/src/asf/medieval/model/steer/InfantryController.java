@@ -27,7 +27,7 @@ public class InfantryController extends SteerController {
 
 
 	public InfantryController(Token token) {
-		this.token = token;
+		super(token);
 		maxSpeed = 7f;
 		maxTurnForce = 10;
 		mass = 0.4f;

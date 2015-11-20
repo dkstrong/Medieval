@@ -79,8 +79,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 	public final Scenario scenario;
 	protected final Array<View> gameObjects;
-	private HudView hudGameObject;
-	public TerrainView terrainGameObject;
+	private HudView hudView;
+	public TerrainView terrainView;
 
 	public MedievalWorld(MedievalApp app, Settings settings)  {
 		this.app = app;
@@ -184,20 +184,20 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//dungeonApp.music.setPlaylist(SongId.MainTheme, SongId.Arabesque, SongId.RitualNorm);
 			//dungeonApp.music.playSong(SongId.RitualNorm);
 
-			addGameObject(hudGameObject = new HudView(this));
+			addGameObject(hudView = new HudView(this));
 
 			//addGameObject(characterGameObject = new CharacterGameObject(this, mission.characterToken));
 			//cameraManager.setChaseTarget(characterGameObject);
 
 
 			//addGameObject(new TerrainDebugView(this));
-			addGameObject(terrainGameObject=new TerrainView(this));
+			addGameObject(terrainView =new TerrainView(this));
 
-			scenario.heightField = terrainGameObject.terrain.field;
+			scenario.heightField = terrainView.terrain.field;
 			scenario.setListener(this);
 
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
-			inputMultiplexer.addProcessor(hudGameObject);
+			inputMultiplexer.addProcessor(hudView);
 
 		}
 
@@ -328,8 +328,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		stage.getViewport().update(width, height, true);
 
-		if (hudGameObject != null)
-			hudGameObject.resize(width, height);
+		if (hudView != null)
+			hudView.resize(width, height);
 
 		cameraManager.resize(width, height);
 

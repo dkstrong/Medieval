@@ -16,6 +16,10 @@ public abstract class SteerController {
 
 	public final Vector2 velocity = new Vector2();
 
+	public SteerController(Token token) {
+		this.token = token;
+	}
+
 	public abstract void update(float delta);
 
 	public Vector2 getVelocity(){

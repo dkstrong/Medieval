@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Command;
+import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.model.Player;
 import asf.medieval.utility.StretchableImage;
@@ -87,26 +88,17 @@ public class HudView implements View,InputProcessor {
 	@Override
 	public void update(float delta)
 	{
-		if(mouseLeftDrag)
-		{
-			if(selectionBox.getParent() == null)
-				world.stage.addActor(selectionBox);
 
-			final float x = mouseLeftDragStartCoords.x;
-			final float y = Gdx.graphics.getHeight() - mouseLeftDragStartCoords.y;
-			final float width = mouseLeftDragEndCoords.x - mouseLeftDragStartCoords.x;
-			final float height = mouseLeftDragStartCoords.y - mouseLeftDragEndCoords.y;
-
-			selectionBox.setBounds(x,y,width,height);
-		}
-		else
-		{
-			selectionBox.remove();
-		}
 
 		forceSpacebarTimer -= delta;
 
-
+		for (SelectableView selectedView : selectedViews) {
+			if(!canSelectToken(selectedView.getToken()))
+			{
+				selectedView.setSelected(false);
+				selectedViews.removeValue(selectedView, true);
+			}
+		}
 	}
 
 
@@ -124,6 +116,22 @@ public class HudView implements View,InputProcessor {
 		int availableProcessors = rt.availableProcessors();
 		*/
 
+		if(mouseLeftDrag)
+		{
+			if(selectionBox.getParent() == null)
+				world.stage.addActor(selectionBox);
+
+			final float x = mouseLeftDragStartCoords.x;
+			final float y = Gdx.graphics.getHeight() - mouseLeftDragStartCoords.y;
+			final float width = mouseLeftDragEndCoords.x - mouseLeftDragStartCoords.x;
+			final float height = mouseLeftDragStartCoords.y - mouseLeftDragEndCoords.y;
+
+			selectionBox.setBounds(x,y,width,height);
+		}
+		else
+		{
+			selectionBox.remove();
+		}
 
 
 		String gameServerStatusString = null;
@@ -177,15 +185,6 @@ public class HudView implements View,InputProcessor {
 			bottomLeftLabel.setText("");
 		}else{
 			bottomLeftLabel.setText("Selected: " + selectedViews.size);
-
-			for (SelectableView selectedView : selectedViews) {
-				if(selectedView instanceof InfantryView){
-					if ( ((InfantryView) selectedView).token.damage.health <= 0){
-						selectedView.setSelected(false);
-						selectedViews.removeValue(selectedView, true);
-					}
-				}
-			}
 		}
 
 
@@ -213,8 +212,6 @@ public class HudView implements View,InputProcessor {
 	private final Vector2 mouseLeftDragStartCoords = new Vector2();
 	private final Vector2 mouseLeftDragEndCoords = new Vector2();
 	private final Vector3 lastMoveCommandLocation = new Vector3();
-
-
 
 	private boolean spacebarDown = false;
 	private float forceSpacebarTimer;
@@ -248,6 +245,12 @@ public class HudView implements View,InputProcessor {
 		return ray;
 	}
 
+	private boolean canSelectToken(Token token){
+		if(token.damage!=null && token.damage.health <=0) return false;
+		if(token.owner.id!= world.gameClient.player.id) return false;
+
+		return true;
+	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
@@ -271,12 +274,14 @@ public class HudView implements View,InputProcessor {
 					{
 						SelectableView sgo = (SelectableView) view;
 						sgo.setSelected(false);
-
-						float sgoDistance = sgo.intersects(ray);
-						if(sgoDistance > 0 && sgoDistance < closestDistance && ray.origin.dst2(sgo.getTranslation()) < groundDst2)
+						if(canSelectToken(sgo.getToken()))
 						{
-							closestDistance = sgoDistance;
-							closestSgo = sgo;
+							float sgoDistance = sgo.intersects(ray);
+							if(sgoDistance > 0 && sgoDistance < closestDistance && ray.origin.dst2(sgo.getTranslation()) < groundDst2)
+							{
+								closestDistance = sgoDistance;
+								closestSgo = sgo;
+							}
 						}
 					}
 				}
@@ -303,10 +308,14 @@ public class HudView implements View,InputProcessor {
 					if(view instanceof SelectableView)
 					{
 						SelectableView sgo = (SelectableView) view;
-						sgo.setSelected(UtMath.isPointInQuadrilateral(sgo.getTranslation(), vec1, vec2, vec3, vec4));
-						if(sgo.isSelected()){
-							selectedViews.add(sgo);
+						sgo.setSelected(false);
+						if(canSelectToken(sgo.getToken())){
+							sgo.setSelected(UtMath.isPointInQuadrilateral(sgo.getTranslation(), vec1, vec2, vec3, vec4));
+							if(sgo.isSelected()){
+								selectedViews.add(sgo);
+							}
 						}
+
 					}
 				}
 
