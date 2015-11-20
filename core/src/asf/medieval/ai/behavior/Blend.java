@@ -2,7 +2,6 @@ package asf.medieval.ai.behavior;
 
 import asf.medieval.ai.SteerAgent;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 /**
@@ -10,7 +9,7 @@ import com.badlogic.gdx.utils.Array;
  */
 public class Blend implements Behavior{
 
-	private Vector2 steeringOut = new Vector2();
+	private Vector2 force = new Vector2();
 
 	public SteerAgent agent;
 
@@ -21,14 +20,10 @@ public class Blend implements Behavior{
 		weightedBehaviors.add(new WeightedBehavior(behavior, weight));
 	}
 
-	/**
-	 * ensure all weights add up to 1
-	 */
-	public void calcWeights()
-	{
-		float totalWeight = 0;
+	public void normalizeWeights(){
+		float totalWeight=0;
 		for (WeightedBehavior wb : weightedBehaviors) {
-			totalWeight+=wb.weight;
+			totalWeight += wb.weight;
 		}
 
 		for (WeightedBehavior wb : weightedBehaviors) {
@@ -39,17 +34,17 @@ public class Blend implements Behavior{
 
 	@Override
 	public void update(float delta) {
-		steeringOut.set(0,0);
+		force.set(0, 0);
 		for (WeightedBehavior wb : weightedBehaviors) {
 			wb.behavior.update(delta);
-			steeringOut.mulAdd(wb.behavior.getForce(),wb.weight);
+			force.mulAdd(wb.behavior.getForce(), wb.weight);
 		}
 
 	}
 
 	@Override
 	public Vector2 getForce() {
-		return steeringOut;
+		return force;
 	}
 
 	private static class WeightedBehavior{

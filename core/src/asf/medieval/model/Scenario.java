@@ -102,6 +102,7 @@ public class Scenario {
 		tokens.add(token);
 
 		setNonOverlappingPosition(token, location);
+		token.elevation = heightField.getElevation(location.x,location.y);
 
 		if(listener!=null)
 			listener.onNewToken(token);
@@ -121,6 +122,7 @@ public class Scenario {
 		token.shape = new Box( width, height, depth, width*0.05f, height, -depth*0.75f);
 		token.owner = players.get(owner);
 		token.location.set(location);
+		token.elevation = heightField.getElevation(location.x,location.y);
 		token.agent = new StructureAgent(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);

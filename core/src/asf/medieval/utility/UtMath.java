@@ -203,7 +203,9 @@ public class UtMath {
 	}
 
 	/**
-	 * truncate the length of the vector to the given limit
+	 * ensures the length of source is not greater than limit
+	 * @param source
+	 * @param limit
 	 */
 	public static void truncate(Vector3 source, float limit) {
 
@@ -216,6 +218,12 @@ public class UtMath {
 		}
 	}
 
+	/**
+	 * ensures the length of source is not greater than limit
+	 * might be faster than regular truncate?
+	 * @param vector
+	 * @param max
+	 */
 	public static void truncateAlt(Vector3 vector, float max)
 	{
 		float i = max / vector.len();
@@ -223,6 +231,11 @@ public class UtMath {
 		vector.scl(i);
 	}
 
+	/**
+	 * ensures the length of source is not greater than limit
+	 * @param source
+	 * @param limit
+	 */
 	public static void truncate(Vector2 source, float limit) {
 
 		if (source.len2() <= UtMath.sqr(limit)) {
@@ -234,6 +247,18 @@ public class UtMath {
 		}
 	}
 
+	/**
+	 * ensures the absolute value of source is not greater than limit
+	 * @param source
+	 * @param limit
+	 * @return
+	 */
+	public static float truncate(float source, float limit){
+		float sign = source < 0 ? -1f : 1f;
+		source *= sign; // ensure source is positive
+		source = source < limit ? source : limit;
+		return source * sign;
+	}
 
 	public static void lookAt(Vector3 direction, Vector3 up, Quaternion store) {
 
@@ -313,6 +338,13 @@ public class UtMath {
 			return "null";
 		}
 		return "(" + round(vec.x, decimalPlace) + ", " + round(vec.y, decimalPlace) + ", " + round(vec.z, decimalPlace) + ")";
+	}
+
+	public static String round(Vector2 vec, int decimalPlace) {
+		if (vec == null) {
+			return "null";
+		}
+		return "(" + round(vec.x, decimalPlace) + ", " + round(vec.y, decimalPlace) + ")";
 	}
 
 	public static BigDecimal round(float d, int decimalPlace) {

@@ -38,8 +38,8 @@ public class AttackComponent {
 						newTarget = other;
 					}
 				}
-				if(newTarget!=null)
-					setTarget(newTarget);
+				//if(newTarget!=null)
+				//	setTarget(newTarget);
 			}
 		}else {
 			attackU += delta;

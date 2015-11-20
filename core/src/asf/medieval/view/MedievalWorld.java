@@ -213,6 +213,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		scenario.newSoldier(2, Vector2.Zero);
 
+
+
+
+		scenario.newStructure(2, new Vector2(-20,-20));
+
 	}
 
 	public <T extends View> T addGameObject(T gameObject) {

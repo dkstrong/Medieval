@@ -4,6 +4,7 @@ import asf.medieval.model.InfantryAgent;
 import asf.medieval.model.ModelId;
 import asf.medieval.model.Token;
 import asf.medieval.shape.Shape;
+import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -79,25 +80,29 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
+		translation.set(token.location.x,token.elevation,token.location.y);
 	}
 
 	@Override
 	public void update(float delta) {
-		translation.set(token.location.x,token.elevation,token.location.y);
+
 
 
 		//System.out.println(token.id + ": " + token.location);
 
 
+		translation.set(token.location.x,token.elevation,token.location.y);
+		rotation.setFromAxisRad(0,1,0,token.direction);
 
 		float speed = agent.getVelocity().len();
-		if(speed < .75f)
+		if(speed < 0.75f)
 		{
 			if (!animController.current.animation.id.startsWith("Idle"))
-				animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.1f);
+				animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
 		}
 		else
 		{
+
 			if (!animController.current.animation.id.startsWith(walk[0])){
 				if(token.modelId == ModelId.Skeleton)
 					animController.animate(walk[0], 0, -1, -1, 1, this, 0.2f);
@@ -108,15 +113,17 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 				animController.current.speed = speed  /agent.getMaxSpeed() * 0.65f;
 			}
 
-			float angle = agent.getVelocity().angleRad(Vector2.Y);
-			rotation.setFromAxisRad(0,1,0,angle);
+			//float angle = agent.getVelocity().cpy().nor().angleRad(Vector2.Y);
+
+
 			/*
-			Vector3 dir = agent.getVelocity().cpy();
+			Vector3 dir = UtMath.toVector3(agent.getVelocity(),new Vector3());
 			dir.x *= -1f; // TODO: why do i need to flip the x direction !?!?!
 			dir.y  =0;
 			dir.nor();
 			rotation.setFromCross(dir, Vector3.Z);
 			*/
+
 		}
 
 

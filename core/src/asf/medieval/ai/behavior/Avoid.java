@@ -108,7 +108,6 @@ public class Avoid implements Behavior{
 		return steeringOut;
 	}
 
-
 	/**
 	 * Obstacle avoidance behavior gives a character the ability to maneuver in a cluttered environment by dodging around obstacles. There is an important distinction between obstacle avoidance
 	 * and flee behavior. Flee will always cause a character to steer away from a given location, whereas obstacle avoidance takes action only when a nearby obstacle lies directly in front of the

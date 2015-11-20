@@ -5,12 +5,14 @@ import asf.medieval.ai.behavior.Arrival;
 import asf.medieval.ai.behavior.Avoid;
 import asf.medieval.ai.behavior.Behavior;
 import asf.medieval.ai.behavior.Blend;
+import asf.medieval.ai.behavior.FaceAgent;
+import asf.medieval.ai.behavior.FaceVelocity;
+import asf.medieval.ai.behavior.PostBehavior;
 import asf.medieval.ai.behavior.Pursuit;
 import asf.medieval.ai.behavior.Seek;
 import asf.medieval.ai.behavior.Separation;
 import asf.medieval.ai.behavior.Wander;
 import asf.medieval.utility.UtMath;
-import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
@@ -27,41 +29,36 @@ public class InfantryAgent implements SteerAgent {
 	public float avoidanceRadius = 1f;
 	public final Vector2 velocity = new Vector2();
 	public Behavior behavior;
+	public PostBehavior postBehavior;
 
-	private final Vector2 force = new Vector2();
 
 	public InfantryAgent(Token token) {
 		this.token = token;
 	}
 
-	public void update(float delta)
-	{
-		if(behavior != null)
-		{
+	private final Vector2 force = new Vector2();
+
+	public void update(float delta) {
+		if (behavior != null) {
 			behavior.update(delta);
 			force.set(behavior.getForce());
-			//force.y =0;
-
-		}
-		else
-		{
-			force.set(0,0);
+		} else {
+			force.set(0, 0);
 		}
 
 
 		if (mass < Float.MIN_VALUE) {
-			force.nor().scl(maxSpeed);
-			//UtMath.scaleAdd(force.nor(), maxSpeed, Vector3.Zero);
-			//force.nor().scaleAdd(maxSpeed, Vector3.Zero);
-			velocity.set(force);
+			// very little mass, instantly hit max speed
+			velocity.set(force.nor().scl(maxSpeed));
 		} else {
+			// use mass to calculate acceleration
+			// TODO: should i multiply by delta here?
 			UtMath.truncate(force, maxTurnForce * delta);
-			force.scl(1f/mass);
+			force.scl(1f / mass); // convert to acceleration
 			UtMath.truncate(velocity.add(force), maxSpeed);
 		}
 
-
-		if (!velocity.equals(Vector3.Zero)) {
+		if (!velocity.equals(Vector2.Zero)) {
 			//System.out.println("velocity: "+velocity);
 			//if (!canStepIntoOtherAgents && agent.isObstructed(tpf)) {
 			//        setVelocity(velocity.negate());
@@ -71,7 +68,13 @@ public class InfantryAgent implements SteerAgent {
 			//Quaternion rotTo = spatial.getLocalRotation().clone();
 			//rotTo.lookAt(velocity.normalize(), Vector3f.UNIT_Y);
 			//spatial.setLocalRotation(rotTo);
+
 		}
+
+
+		if(postBehavior!=null)
+			postBehavior.update(delta);
+
 
 	}
 
@@ -102,12 +105,15 @@ public class InfantryAgent implements SteerAgent {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(arrival,0.25f);
-		blend.add(avoid,4.25f);
-		blend.add(separation,4f);
-		blend.calcWeights();
+		blend.add(arrival, 1f);
+		blend.add(avoid, 8f);
+		blend.add(separation, 10f);
+		//blend.normalizeWeights();
 
 		behavior = blend;
+
+
+		postBehavior = new FaceVelocity(token);
 	}
 
 	public void setTarget(SteerAgent agentTarget) {
@@ -125,15 +131,17 @@ public class InfantryAgent implements SteerAgent {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(seek,1);
-		blend.add(avoid,1);
-		blend.add(separation,1);
+		blend.add(seek, 1);
+		blend.add(avoid, 1);
+		blend.add(separation, 1);
+		//blend.normalizeWeights();
 
 		behavior = blend;
+
+		postBehavior = new FaceVelocity(token);
 	}
 
-	public void setTargetAttack(SteerAgent agentTarget)
-	{
+	public void setTargetAttack(SteerAgent agentTarget) {
 		Pursuit seek = new Pursuit();
 		seek.agent = this;
 		seek.target = agentTarget;
@@ -148,11 +156,15 @@ public class InfantryAgent implements SteerAgent {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(seek,1);
-		blend.add(avoid,1);
-		blend.add(separation,1);
+		blend.add(seek, 1);
+		blend.add(avoid, 1);
+		blend.add(separation, 1);
+		blend.normalizeWeights();
 
 		behavior = blend;
+
+		postBehavior = new FaceAgent(token, agentTarget);
+
 	}
 
 	@Override
@@ -166,12 +178,15 @@ public class InfantryAgent implements SteerAgent {
 
 
 	@Override
-	public Vector2 getLocation() { return token.location; }
+	public Vector2 getLocation() {
+		return token.location;
+	}
 
 	@Override
 	public Vector2 getFutureLocation(float delta) {
 		return getLocation().cpy().add(getVelocity(delta));
 	}
+
 
 	@Override
 	public float getAvoidanceRadius() {

@@ -15,7 +15,7 @@ public class Token {
 	public ModelId modelId;
 	public final Vector2 location = new Vector2();
 	public float elevation;
-	public final Vector2 direction = new Vector2(0,1);
+	public float direction;
 	public Shape shape;
 	public SteerAgent agent;
 	public AttackComponent attack;
@@ -37,5 +37,6 @@ public class Token {
 		}
 
 		elevation = scenario.heightField.getElevation(location.x,location.y);
+
 	}
 }

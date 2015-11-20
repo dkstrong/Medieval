@@ -26,6 +26,9 @@ public class OfflineGameClient implements GameClient {
 	@Override
 	public void sendReadyAction() {
 		player.loading = 1;
+		for (Player p : players.values()) {
+			scenario.addPlayer(p);
+		}
 	}
 
 	@Override
