@@ -33,11 +33,11 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	public boolean selected = false;
 	private final Decal selectionDecal = new Decal();
 
-	private String[] idle = new String[]{"Idle"};
-	private final String[] walk = new String[]{"Walk"};
-	private final String[] attack = new String[]{"Attack"};
-	private final String[] hit = new String[]{"Hit"};
-	private final String[] die = new String[]{"Die"};
+	private Animation[] idle;
+	private Animation[] walk;
+	private Animation[] attack ;
+	private Animation[] hit ;
+	private Animation[] die ;
 
 	public InfantryView(MedievalWorld world, Token soldierToken) {
 		this.world = world;
@@ -50,11 +50,6 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		if(token.modelId == ModelId.Jimmy)
 		{
 			asset = "Models/Jimmy/Jimmy_r1.g3db";
-			idle = new String[]{"Idle01","Idle02","Idle03"};
-			walk[0] = "MoveForward";
-			attack[0] = "FlareThrow";
-			hit[0] = "FlareRelease";
-			die[0] = "TurtleOnDizzyWithFall";
 		}
 
 
@@ -62,9 +57,40 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 
 		modelInstance = new ModelInstance(model);
 		if (modelInstance.animations.size > 0) {
-			animController = new AnimationController(modelInstance);
-			animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+			if(token.modelId == ModelId.Jimmy){
+				for (Animation anim : modelInstance.animations) {
+					if(anim.id.startsWith("Idle01")){
+						idle = new Animation[]{anim};
+					}else if(anim.id.startsWith("MoveForward")){
+						walk = new Animation[]{anim};
+					}else if(anim.id.startsWith("FlareThrow")){
+						attack = new Animation[]{anim};
+					}else if(anim.id.startsWith("ThrustersOn")){
+						hit = new Animation[]{anim};
+					}else if(anim.id.startsWith("Death01")){ // Death01  // TurtleOnDizzyWithFall // TurtleOnDizzy
+						die = new Animation[]{anim};
+					}
+					//System.out.println(anim.id);
+				}
+			}else{
+				for (Animation anim : modelInstance.animations) {
+					if(anim.id.startsWith("Idle")){
+						idle = new Animation[]{anim};
+					}else if(anim.id.startsWith("Walk")){
+						walk = new Animation[]{anim};
+					}else if(anim.id.startsWith("Attack")){
+						attack = new Animation[]{anim};
+					}else if(anim.id.startsWith("Hit")){
+						hit = new Animation[]{anim};
+					}else if(anim.id.startsWith("Die")){
+						die = new Animation[]{anim};
+					}
+				}
+			}
 
+
+			animController = new AnimationController(modelInstance);
+			animController.animate(idle[MathUtils.random.nextInt(idle.length)].id, 0, -1, -1, 1, this, 0.2f);
 		}
 		//rotation.setEulerAngles(180f, 0, 0);
 
@@ -85,29 +111,38 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 
 	@Override
 	public void update(float delta) {
-
-
-
 		//System.out.println(token.id + ": " + token.location);
-
 
 		translation.set(token.location.x,token.elevation,token.location.y);
 		rotation.setFromAxisRad(0,1,0,token.direction);
-
 		float speed = agent.getVelocity().len();
-		if(speed < 0.75f)
-		{
+
+		if(token.attack.attackU >0){
+			if (!animController.current.animation.id.startsWith(attack[0].id)){
+				animController.animate(attack[0].id, 0, -1, 1, attack[0].duration/token.attack.attackDuration, this, 0.2f);
+			}
+			//animController.current.time = token.attack.attackU;
+			//animController.current.duration = token.attack.attackDuration;
+
+		}else if(token.damage.hitU >0){
+			if (!animController.current.animation.id.startsWith(hit[0].id)){
+				animController.animate(hit[0].id, 0, -1, 1, hit[0].duration/token.damage.hitDuration, this, 0.2f);
+			}
+			//animController.current.time = token.damage.hitU;
+			//animController.current.duration = token.damage.hitDuration;
+
+		}else if(speed < 0.75f){
 			if (!animController.current.animation.id.startsWith("Idle"))
-				animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+				animController.animate(idle[MathUtils.random.nextInt(idle.length)].id, 0, -1, -1, 1, this, 0.2f);
 		}
 		else
 		{
 
-			if (!animController.current.animation.id.startsWith(walk[0])){
+			if (!animController.current.animation.id.startsWith(walk[0].id)){
 				if(token.modelId == ModelId.Skeleton)
-					animController.animate(walk[0], 0, -1, -1, 1, this, 0.2f);
+					animController.animate(walk[0].id, 0, -1, -1, 1, this, 0.2f);
 				else{
-					animController.animate(walk[0], 0, -1, 1, 1, this, 0.2f);
+					animController.animate(walk[0].id, 0, -1, 1, 1, this, 0.2f);
 				}
 			}else{
 				animController.current.speed = speed  /agent.getMaxSpeed() * 0.65f;
@@ -191,6 +226,6 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	@Override
 	public void onLoop(AnimationController.AnimationDesc animation) {
 		if (animation.animation.id.startsWith("Idle"))
-			animController.animate(idle[MathUtils.random.nextInt(idle.length)], 0, -1, -1, 1, this, 0.2f);
+			animController.animate(idle[MathUtils.random.nextInt(idle.length)].id, 0, -1, -1, 1, this, 0.2f);
 	}
 }

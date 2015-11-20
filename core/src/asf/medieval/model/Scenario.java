@@ -5,7 +5,6 @@ import asf.medieval.shape.Box;
 import asf.medieval.terrain.HeightField;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 
@@ -89,14 +88,11 @@ public class Scenario {
 		token.id = lastTokenId;
 		token.scenario = this;
 		token.owner = players.get(owner);
-		if(token.owner == null){
-			System.out.println("null owner!: "+owner);
-		}
 		token.modelId = owner == 1 ? ModelId.Skeleton : ModelId.Jimmy;
 		token.shape = new Box(1f, 7.5f);
 		token.location.set(location);
-		token.attack = new AttackComponent(token);
-		token.damage = new DamageComponent(token);
+		token.attack = new AttackController(token);
+		token.damage = new DamageController(token);
 		token.agent = new InfantryAgent(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);

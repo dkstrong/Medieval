@@ -181,6 +181,8 @@ public class GameServer implements Disposable, GameHost {
 			// everyone else on the server
 			connection.player = login.player;
 			connection.player.id = c.getID();
+			connection.player.team = connection.player.id;
+
 			loggedInPlayerConnections.put(connection.player.id, connection);
 
 			AddPlayer addPlayer = new AddPlayer();

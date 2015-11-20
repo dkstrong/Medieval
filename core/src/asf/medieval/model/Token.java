@@ -3,7 +3,6 @@ package asf.medieval.model;
 import asf.medieval.ai.SteerAgent;
 import asf.medieval.shape.Shape;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -18,8 +17,8 @@ public class Token {
 	public float direction;
 	public Shape shape;
 	public SteerAgent agent;
-	public AttackComponent attack;
-	public DamageComponent damage;
+	public AttackController attack;
+	public DamageController damage;
 
 
 	public void update(float delta)

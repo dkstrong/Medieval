@@ -1,17 +1,7 @@
 package asf.medieval.model;
 
 import asf.medieval.ai.SteerAgent;
-import asf.medieval.ai.behavior.Arrival;
-import asf.medieval.ai.behavior.Avoid;
-import asf.medieval.ai.behavior.Behavior;
-import asf.medieval.ai.behavior.Blend;
-import asf.medieval.ai.behavior.Pursuit;
-import asf.medieval.ai.behavior.Seek;
-import asf.medieval.ai.behavior.Separation;
-import asf.medieval.ai.behavior.Wander;
-import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by daniel on 11/18/15.

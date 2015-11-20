@@ -1,7 +1,8 @@
 package asf.medieval.model;
 
 import asf.medieval.ai.SteerAgent;
-import asf.medieval.ai.behavior.Arrival;
+import asf.medieval.ai.behavior.Arrive;
+import asf.medieval.ai.behavior.ArriveCombat;
 import asf.medieval.ai.behavior.Avoid;
 import asf.medieval.ai.behavior.Behavior;
 import asf.medieval.ai.behavior.Blend;
@@ -14,7 +15,6 @@ import asf.medieval.ai.behavior.Separation;
 import asf.medieval.ai.behavior.Wander;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by daniel on 11/18/15.
@@ -88,9 +88,9 @@ public class InfantryAgent implements SteerAgent {
 		seek.agent = this;
 		seek.target.set(staticTarget);
 
-		Arrival arrival = new Arrival();
-		arrival.agent = this;
-		arrival.target.set(staticTarget);
+		Arrive arrive = new Arrive();
+		arrive.agent = this;
+		arrive.target.set(staticTarget);
 
 		Wander wander = new Wander();
 		wander.agent = this;
@@ -105,7 +105,7 @@ public class InfantryAgent implements SteerAgent {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(arrival, 1f);
+		blend.add(arrive, 1f);
 		blend.add(avoid, 8f);
 		blend.add(separation, 10f);
 		//blend.normalizeWeights();
@@ -141,10 +141,10 @@ public class InfantryAgent implements SteerAgent {
 		postBehavior = new FaceVelocity(token);
 	}
 
-	public void setTargetAttack(SteerAgent agentTarget) {
-		Pursuit seek = new Pursuit();
-		seek.agent = this;
-		seek.target = agentTarget;
+	public void setCombatTarget(SteerAgent agentTarget) {
+		ArriveCombat arrive = new ArriveCombat();
+		arrive.agent = this;
+		arrive.targetAgent = agentTarget;
 
 		Avoid avoid = new Avoid();
 		avoid.agent = this;
@@ -156,10 +156,8 @@ public class InfantryAgent implements SteerAgent {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(seek, 1);
-		blend.add(avoid, 1);
-		blend.add(separation, 1);
-		blend.normalizeWeights();
+		blend.add(arrive, 1);
+		blend.add(avoid, 4);
 
 		behavior = blend;
 

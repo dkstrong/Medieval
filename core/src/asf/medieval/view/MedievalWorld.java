@@ -153,11 +153,13 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			offlineGameClient.scenario = scenario;
 			Player player = new Player();
 			player.id = 1;
+			player.team = 1;
 			player.name = System.getProperty("user.name");
 			offlineGameClient.player = player;
 			offlineGameClient.players.put(1,player);
 			Player computerPlayer = new Player();
 			computerPlayer.id = 2;
+			computerPlayer.team = 2;
 			computerPlayer.name="Computer";
 			offlineGameClient.players.put(2,computerPlayer);
 			gameClient = offlineGameClient;
@@ -208,8 +210,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 	private void onAllPlayersReady(){
 		scenario.newSoldier(1, new Vector2(10,10));
-		scenario.newSoldier(1, new Vector2(10,12));
-		scenario.newSoldier(1, new Vector2(14,14));
+		//scenario.newSoldier(1, new Vector2(10,12));
+		//scenario.newSoldier(1, new Vector2(14,14));
 
 		scenario.newSoldier(2, Vector2.Zero);
 
