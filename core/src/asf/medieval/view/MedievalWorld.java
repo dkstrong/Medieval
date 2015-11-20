@@ -112,7 +112,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
 		assetManager.load("Models/skydome.g3db", Model.class);
+		assetManager.load("Models/Characters/knight_01.g3db", Model.class);
+		assetManager.load("Models/Loot/Sword/BasicSword.g3db", Model.class);
+		assetManager.load("Models/Loot/Sword/Shield.g3db", Model.class);
 		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
+		assetManager.load("Models/Characters/rockMonster_01.g3db", Model.class);
 		assetManager.load("Models/Church/Church.g3db", Model.class);
 		assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
 
@@ -209,16 +213,14 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	}
 
 	private void onAllPlayersReady(){
-		scenario.newSoldier(1, new Vector2(10,10));
-		//scenario.newSoldier(1, new Vector2(10,12));
-		//scenario.newSoldier(1, new Vector2(14,14));
+		for(int i= 0; i<10; i++){
+			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(1, new Vector2(0,0)),30,50,-50,50);
+		}
 
-		scenario.newSoldier(2, Vector2.Zero);
-
-
-
-
-		scenario.newStructure(2, new Vector2(-20,-20));
+		for(int i= 0; i<10; i++){
+			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0)),-50,-30,-50,50);
+		}
+		//scenario.newStructure(2, new Vector2(-20,-20));
 
 	}
 

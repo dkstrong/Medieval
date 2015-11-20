@@ -37,7 +37,7 @@ public class HudView implements View,InputProcessor {
 	private StretchableImage selectionBox;
 	private final Decal moveCommandDecal = new Decal();
 
-	private Array<SelectableView> selectedSoldiers = new Array<SelectableView>(true, 8, SelectableView.class);
+	private Array<SelectableView> selectedViews = new Array<SelectableView>(true, 8, SelectableView.class);
 
 	public HudView(MedievalWorld world) {
 		this.world = world;
@@ -124,6 +124,8 @@ public class HudView implements View,InputProcessor {
 		int availableProcessors = rt.availableProcessors();
 		*/
 
+
+
 		String gameServerStatusString = null;
 		String gameClientStatusString=null;
 		if(world.gameServer!=null){
@@ -171,10 +173,19 @@ public class HudView implements View,InputProcessor {
 		);
 
 
-		if (selectedSoldiers.size < 1){
+		if (selectedViews.size < 1){
 			bottomLeftLabel.setText("");
 		}else{
-			bottomLeftLabel.setText("Selected: " + selectedSoldiers.size);
+			bottomLeftLabel.setText("Selected: " + selectedViews.size);
+
+			for (SelectableView selectedView : selectedViews) {
+				if(selectedView instanceof InfantryView){
+					if ( ((InfantryView) selectedView).token.damage.health <= 0){
+						selectedView.setSelected(false);
+						selectedViews.removeValue(selectedView, true);
+					}
+				}
+			}
 		}
 
 
@@ -243,7 +254,7 @@ public class HudView implements View,InputProcessor {
 		if(button == Input.Buttons.LEFT)
 		{
 			mouseLeftDown = false;
-			selectedSoldiers.clear();
+			selectedViews.clear();
 
 			if(!mouseLeftDrag)
 			{
@@ -272,7 +283,7 @@ public class HudView implements View,InputProcessor {
 
 				if(closestSgo!=null){
 					closestSgo.setSelected(true);
-					selectedSoldiers.add(closestSgo);
+					selectedViews.add(closestSgo);
 				}
 			}
 			else
@@ -294,7 +305,7 @@ public class HudView implements View,InputProcessor {
 						SelectableView sgo = (SelectableView) view;
 						sgo.setSelected(UtMath.isPointInQuadrilateral(sgo.getTranslation(), vec1, vec2, vec3, vec4));
 						if(sgo.isSelected()){
-							selectedSoldiers.add(sgo);
+							selectedViews.add(sgo);
 						}
 					}
 				}
@@ -305,12 +316,12 @@ public class HudView implements View,InputProcessor {
 		}
 		else if(button == Input.Buttons.RIGHT)
 		{
-			if(selectedSoldiers.size > 0)
+			if(selectedViews.size > 0)
 			{
 				forceSpacebarTimer = 3f;
 				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
 
-				for (SelectableView sgo : selectedSoldiers) {
+				for (SelectableView sgo : selectedViews) {
 					if(sgo instanceof InfantryView)
 					{
 						Command command = new Command();

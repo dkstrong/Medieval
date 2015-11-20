@@ -88,7 +88,7 @@ public class Scenario {
 		token.id = lastTokenId;
 		token.scenario = this;
 		token.owner = players.get(owner);
-		token.modelId = owner == 1 ? ModelId.Skeleton : ModelId.Jimmy;
+		token.modelId = owner == 1 ? ModelId.Skeleton : ModelId.Knight;
 		token.shape = new Box(1f, 7.5f);
 		token.location.set(location);
 		token.attack = new AttackController(token);
@@ -128,17 +128,19 @@ public class Scenario {
 		return token;
 	}
 
-	public void setRandomNonOverlappingPosition (Token character, Array<Token> others, float minDistanceFromBoundary) {
-		int maxTries = UtMath.largest(100, others.size * others.size);
+	public void setRandomNonOverlappingPosition (Token token, float minX, float maxX, float minY, float maxY) {
+		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
+		final float eps = 0.001f;
 		SET_NEW_POS:
 		while (--maxTries >= 0) {
-
-			character.location.set(rand.range(-50f,50f),rand.range(-50f,50f));
-
-			for (int i = 0; i < others.size; i++) {
-				Token other = others.get(i);
-				if (character.location.dst(other.location) <= character.shape.radius + other.shape.radius + minDistanceFromBoundary)
-					continue SET_NEW_POS;
+			token.location.set(rand.range(minX,maxX),rand.range(minY,maxY));
+			for (Token t : tokens) {
+				if(t!= token){
+					Token other =  t;
+					if(UtMath.abs(token.location.x-other.location.x) <eps && UtMath.abs(token.location.y-other.location.y) <eps){
+						continue SET_NEW_POS;
+					}
+				}
 			}
 			return;
 		}

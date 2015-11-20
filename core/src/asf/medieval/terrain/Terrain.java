@@ -73,8 +73,8 @@ public class Terrain implements RenderableProvider,Disposable {
 
 	private void configureField()
 	{
-		int w = 50, h = 50;
-		float magnitude = 10f;
+		int w = 150, h = 150;
+		float magnitude = 20f;
 		field.uvScale.set(4f,4f);
 		field.corner00.set(-w, 0, -h);
 		field.corner10.set(w, 0, -h);

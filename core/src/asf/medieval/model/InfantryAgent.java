@@ -42,35 +42,35 @@ public class InfantryAgent implements SteerAgent {
 		if (behavior != null) {
 			behavior.update(delta);
 			force.set(behavior.getForce());
+
+			if (mass < Float.MIN_VALUE) {
+				// very little mass, instantly hit max speed
+				velocity.set(force.nor().scl(maxSpeed));
+			} else {
+				// use mass to calculate acceleration
+				// TODO: should i multiply by delta here?
+				UtMath.truncate(force, maxTurnForce * delta);
+				force.scl(1f / mass); // convert to acceleration
+				UtMath.truncate(velocity.add(force), maxSpeed);
+			}
+
+			if (!velocity.equals(Vector2.Zero)) {
+				//System.out.println("velocity: "+velocity);
+				//if (!canStepIntoOtherAgents && agent.isObstructed(tpf)) {
+				//        setVelocity(velocity.negate());
+				//}
+				token.location.mulAdd(velocity, delta);
+
+				//Quaternion rotTo = spatial.getLocalRotation().clone();
+				//rotTo.lookAt(velocity.normalize(), Vector3f.UNIT_Y);
+				//spatial.setLocalRotation(rotTo);
+
+			}
+
 		} else {
 			force.set(0, 0);
+			velocity.set(0,0);
 		}
-
-
-		if (mass < Float.MIN_VALUE) {
-			// very little mass, instantly hit max speed
-			velocity.set(force.nor().scl(maxSpeed));
-		} else {
-			// use mass to calculate acceleration
-			// TODO: should i multiply by delta here?
-			UtMath.truncate(force, maxTurnForce * delta);
-			force.scl(1f / mass); // convert to acceleration
-			UtMath.truncate(velocity.add(force), maxSpeed);
-		}
-
-		if (!velocity.equals(Vector2.Zero)) {
-			//System.out.println("velocity: "+velocity);
-			//if (!canStepIntoOtherAgents && agent.isObstructed(tpf)) {
-			//        setVelocity(velocity.negate());
-			//}
-			token.location.mulAdd(velocity, delta);
-
-			//Quaternion rotTo = spatial.getLocalRotation().clone();
-			//rotTo.lookAt(velocity.normalize(), Vector3f.UNIT_Y);
-			//spatial.setLocalRotation(rotTo);
-
-		}
-
 
 		if(postBehavior!=null)
 			postBehavior.update(delta);
@@ -159,9 +159,33 @@ public class InfantryAgent implements SteerAgent {
 		blend.add(arrive, 1);
 		blend.add(avoid, 4);
 
-		behavior = blend;
+		behavior = null;
 
 		postBehavior = new FaceAgent(token, agentTarget);
+
+	}
+
+	public void setDeath(Vector2 deathLocation) {
+		Arrive arrive = new Arrive();
+		arrive.agent = this;
+		arrive.target.set(deathLocation);
+
+		Avoid avoid = new Avoid();
+		avoid.agent = this;
+		avoid.nearbyAgents = token.scenario.steerGraph.agents;
+
+		Separation separation = new Separation();
+		separation.agent = this;
+		separation.nearbyAgents = token.scenario.steerGraph.agents;
+
+		Blend blend = new Blend();
+		blend.agent = this;
+		blend.add(arrive, 1);
+		blend.add(avoid, 4);
+
+		behavior = null;
+
+		postBehavior = new FaceVelocity(token);
 
 	}
 

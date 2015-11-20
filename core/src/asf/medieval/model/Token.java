@@ -38,4 +38,7 @@ public class Token {
 		elevation = scenario.heightField.getElevation(location.x,location.y);
 
 	}
+
+
+
 }

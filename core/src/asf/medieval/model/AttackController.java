@@ -19,7 +19,7 @@ public class AttackController {
 
 	public void update(float delta){
 		if(target == null){
-			if(token.damage.attacker == null){
+			if(token.damage.attacker == null && token.damage.health >0){
 				Token newTarget = null;
 				for (int i = 0; i < token.scenario.tokens.size; i++) {
 					Token other = token.scenario.tokens.items[i];
@@ -27,6 +27,7 @@ public class AttackController {
 					if(other.damage == null) continue;
 					if(token.owner.team == other.owner.team) continue;
 					if(other.damage.attacker != null) continue;
+					if(other.damage.health <=0) continue;
 
 					// TODO: also compare velocities (unless both characters have the same velocity- the one with
 					// higher velocity gets attack precedence
@@ -50,13 +51,20 @@ public class AttackController {
 				((InfantryAgent)token.agent).clearTarget();
 
 				target.damage.health -= dmg;
-				System.out.println("Wham! "+token.modelId+" attacked "+target.modelId);
+				//System.out.println("Wham! "+token.modelId+" attacked "+target.modelId);
+				// TODO: the reason units get stuck when moving while mid attack animation
+				// is because clear attack target clears the command.
+				// Instead i need to have a smart command queueing system that can queue to
+				// different controllers, so move command wont override the attack animation
+				// and when the attack animation finished itll perform the queued move command.
+				// etc
 				clearAttackTarget();
 			}
 		}
 	}
 
 	public void attackTarget(Token target){
+		//System.out.println(token.modelId+ " attack "+target.modelId);
 		this.target = target;
 		attackU = 0;
 		attackDuration = 2f;

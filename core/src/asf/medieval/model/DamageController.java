@@ -6,7 +6,7 @@ package asf.medieval.model;
 public class DamageController {
 	public Token token;
 
-	public float health;
+	public float health = 10;
 	public float meleeDefense;
 	public float chargeDefense;
 
@@ -47,7 +47,15 @@ public class DamageController {
 		{
 			this.attacker = null;
 			hitU = -1;
-			((InfantryAgent)token.agent).clearTarget();
+			if(health >0){
+				((InfantryAgent)token.agent).clearTarget();
+			}else{
+				((InfantryAgent)token.agent).setDeath(token.location);
+			}
+
+
+
+
 		}
 
 	}

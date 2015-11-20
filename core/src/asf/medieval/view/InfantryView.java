@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
@@ -46,10 +47,15 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		String asset = "Models/Characters/Skeleton.g3db";
-		if(token.modelId == ModelId.Jimmy)
-		{
+		String asset;
+		if(token.modelId == ModelId.Jimmy){
 			asset = "Models/Jimmy/Jimmy_r1.g3db";
+		}else if(token.modelId == ModelId.RockMonster){
+			asset = "Models/Characters/rockMonster_01.g3db";
+		}else if(token.modelId == ModelId.Knight){
+			asset = "Models/Characters/knight_01.g3db";
+		}else{
+			asset = "Models/Characters/Skeleton.g3db";
 		}
 
 
@@ -71,6 +77,36 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 						die = new Animation[]{anim};
 					}
 					//System.out.println(anim.id);
+				}
+			}else if(token.modelId == ModelId.RockMonster){
+				for (Animation anim : modelInstance.animations) {
+					if(anim.id.startsWith("idle")){
+						idle = new Animation[]{anim};
+					}else if(anim.id.startsWith("walk")){ // walk_old
+						walk = new Animation[]{anim};
+					}else if(anim.id.startsWith("attack")){
+						attack = new Animation[]{anim};
+					}else if(anim.id.startsWith("damage")){
+						hit = new Animation[]{anim};
+					}else if(anim.id.startsWith("die")){ // pile_of_rocks
+						die = new Animation[]{anim};
+					}
+					//System.out.println(anim.id);
+				}
+			}else if(token.modelId == ModelId.Knight){
+				for (Animation anim : modelInstance.animations) {
+					if(anim.id.startsWith("idle")){
+						idle = new Animation[]{anim};
+					}else if(anim.id.startsWith("walk")){ // sprint
+						walk = new Animation[]{anim};
+					}else if(anim.id.startsWith("AttackSword")){ // AttackUnarmed
+						attack = new Animation[]{anim};
+					}else if(anim.id.startsWith("damage")){
+						hit = new Animation[]{anim};
+					}else if(anim.id.startsWith("die")){ // pile_of_rocks
+						die = new Animation[]{anim};
+					}
+					System.out.println(anim.id);
 				}
 			}else{
 				for (Animation anim : modelInstance.animations) {
@@ -94,7 +130,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		}
 		//rotation.setEulerAngles(180f, 0, 0);
 
-
+		loadKnightWeapons();
 
 
 		//shape = new Disc(token.radius);
@@ -109,6 +145,30 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		translation.set(token.location.x,token.elevation,token.location.y);
 	}
 
+	private Node weaponAttachmentNode;
+	private ModelInstance weaponModelInstance;
+	private ModelInstance offhandModelInstance;
+	private Node offhandAttachmentNode;
+
+	private void loadKnightWeapons()
+	{
+		if (token.modelId != ModelId.Knight) return;
+
+
+		boolean offhandIsPrimary = false;
+
+		weaponAttachmentNode = offhandIsPrimary ? modelInstance.getNode("attach_l", true, true) : modelInstance.getNode("attach_r", true, true);
+
+
+		Model weaponModel = world.assetManager.get("Models/Loot/Sword/BasicSword.g3db", Model.class);
+		weaponModelInstance = new ModelInstance(weaponModel);
+
+		Model weaponOffhandModel = world.assetManager.get("Models/Loot/Sword/Shield.g3db", Model.class);
+		offhandModelInstance = new ModelInstance(weaponOffhandModel);
+		offhandAttachmentNode = modelInstance.getNode("shield", true, true);
+
+	}
+
 	@Override
 	public void update(float delta) {
 		//System.out.println(token.id + ": " + token.location);
@@ -117,20 +177,18 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		rotation.setFromAxisRad(0,1,0,token.direction);
 		float speed = agent.getVelocity().len();
 
-		if(token.attack.attackU >0){
+		if(token.damage != null && token.damage.health <=0){
+			if (!animController.current.animation.id.startsWith(die[0].id)){
+				animController.animate(die[0].id, 0, -1, 1, 1, this, 0.2f);
+			}
+		}else if(token.attack.attackU >0){
 			if (!animController.current.animation.id.startsWith(attack[0].id)){
 				animController.animate(attack[0].id, 0, -1, 1, attack[0].duration/token.attack.attackDuration, this, 0.2f);
 			}
-			//animController.current.time = token.attack.attackU;
-			//animController.current.duration = token.attack.attackDuration;
-
-		}else if(token.damage.hitU >0){
+		}else if(token.damage!=null && token.damage.hitU >0){
 			if (!animController.current.animation.id.startsWith(hit[0].id)){
 				animController.animate(hit[0].id, 0, -1, 1, hit[0].duration/token.damage.hitDuration, this, 0.2f);
 			}
-			//animController.current.time = token.damage.hitU;
-			//animController.current.duration = token.damage.hitDuration;
-
 		}else if(speed < 0.75f){
 			if (!animController.current.animation.id.startsWith("Idle"))
 				animController.animate(idle[MathUtils.random.nextInt(idle.length)].id, 0, -1, -1, 1, this, 0.2f);
@@ -139,10 +197,10 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		{
 
 			if (!animController.current.animation.id.startsWith(walk[0].id)){
-				if(token.modelId == ModelId.Skeleton)
-					animController.animate(walk[0].id, 0, -1, -1, 1, this, 0.2f);
-				else{
+				if(token.modelId == ModelId.Jimmy)
 					animController.animate(walk[0].id, 0, -1, 1, 1, this, 0.2f);
+				else{
+					animController.animate(walk[0].id, 0, -1, -1, 1, this, 0.2f);
 				}
 			}else{
 				animController.current.speed = speed  /agent.getMaxSpeed() * 0.65f;
@@ -177,6 +235,20 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		);
 		world.shadowBatch.render(modelInstance);
 		world.modelBatch.render(modelInstance, world.environment);
+
+		if (weaponModelInstance != null) {
+			weaponModelInstance.transform.set(modelInstance.transform).mul(weaponAttachmentNode.globalTransform);
+			weaponModelInstance.transform.rotate(Vector3.Z, -90);
+			world.shadowBatch.render(weaponModelInstance);
+			world.modelBatch.render(weaponModelInstance, world.environment);
+			if (offhandModelInstance != null) {
+				offhandModelInstance.transform.set(modelInstance.transform).mul(offhandAttachmentNode.globalTransform);
+				offhandModelInstance.transform.rotate(Vector3.Z, -90);
+				world.shadowBatch.render(offhandModelInstance);
+				world.modelBatch.render(offhandModelInstance, world.environment);
+			}
+		}
+
 
 		if(selected)
 		{

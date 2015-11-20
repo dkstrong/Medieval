@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * TODO: need to restructure this so the asset manager is used and everything that needs to be disposed will be..
+ *
  *
  * Created by Daniel Strong on 11/11/2015.
  */
