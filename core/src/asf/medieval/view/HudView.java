@@ -173,6 +173,7 @@ public class HudView implements View,InputProcessor {
 
 			"FPS: " + Gdx.graphics.getFramesPerSecond() +
 				"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB" +
+				"\nTokens: " + world.scenario.tokens.size +
 				"\n" +
 				(gameServerStatusString != null ? "\n" + gameServerStatusString : "") +
 				(gameClientStatusString != null ? "\n" + gameClientStatusString : "")
@@ -390,6 +391,12 @@ public class HudView implements View,InputProcessor {
 				Command command = new Command();
 				command.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
 				world.gameClient.sendCommand(command);
+				break;
+			case Input.Keys.J:
+				Command jimmyCommand = new Command();
+				jimmyCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
+				jimmyCommand.jimmy = true;
+				world.gameClient.sendCommand(jimmyCommand);
 				break;
 			case Input.Keys.B:
 				Command buildCommand = new Command();

@@ -83,7 +83,7 @@ public class Scenario {
 
 	private int lastTokenId = 0;
 
-	public Token newSoldier(int owner, Vector2 location)
+	public Token newSoldier(int owner, Vector2 location, boolean jimmy)
 	{
 		Token token= new Token();
 		++lastTokenId;
@@ -91,6 +91,8 @@ public class Scenario {
 		token.scenario = this;
 		token.owner = players.get(owner);
 		token.modelId = owner == 1 ? ModelId.Skeleton : ModelId.Knight;
+		if(jimmy)
+			token.modelId = ModelId.Jimmy;
 		token.shape = new Box(1f, 7.5f);
 		token.location.set(location);
 		token.attack = new AttackController(token);

@@ -35,6 +35,7 @@ public class UtNet {
 		kryo.register(com.badlogic.gdx.utils.Array.class);
 		kryo.register(asf.medieval.model.Command[].class);
 		kryo.register(com.badlogic.gdx.math.Vector3.class);
+		kryo.register(com.badlogic.gdx.math.Vector2.class);
 
 
 	}

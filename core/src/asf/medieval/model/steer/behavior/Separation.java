@@ -69,7 +69,7 @@ public class Separation implements Behavior{
 			} else if (agent.getVelocity().equals(Vector2.Zero)) {
 				continue;
 			}else if(agent.token.owner.team != me.token.owner.team){
-				continue;
+				//continue;
 			}
 
 			float d2 = me.getLocation().dst2(agent.getLocation());

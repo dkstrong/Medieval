@@ -262,11 +262,11 @@ public class RtsCamController implements InputProcessor {
 			final int deltaScreenY =  dragMouseLastScreenY-screenY;
 			dragMouseLastScreenX = screenX;
 			dragMouseLastScreenY = screenY;
-			rot += maxSpeed[ROT] * 0.005f* deltaScreenX * Gdx.graphics.getDeltaTime();
+			rot += maxSpeed[ROT] * 0.01f* deltaScreenX * Gdx.graphics.getDeltaTime();
 			//System.out.println("drag mouse: "+deltaScreenX);
 			//accelPeriod[CamDegree.ROT.ordinal()] -= 0.15f * deltaScreenX * Gdx.graphics.getDeltaTime();
 
-			tilt += maxSpeed[TILT] * 0.005f* -deltaScreenY * Gdx.graphics.getDeltaTime();
+			tilt += maxSpeed[TILT] * 0.01f* -deltaScreenY * Gdx.graphics.getDeltaTime();
 			return true;
 		}
 

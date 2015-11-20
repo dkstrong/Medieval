@@ -23,8 +23,8 @@ public class DesktopLauncher {
 		config.height = 540;
 
 
-		config.foregroundFPS = 20;
-		config.backgroundFPS = 20;
+		config.foregroundFPS = 60;
+		config.backgroundFPS = 30;
 		config.vSyncEnabled = false;
 		config.samples = 0;
 		config.r = 5;

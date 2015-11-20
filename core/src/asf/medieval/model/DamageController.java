@@ -33,7 +33,7 @@ public class DamageController {
 	public void attackedBy(Token attacker){
 
 
-		if(this.attacker == null){
+		if(this.attacker == null && token.attack.target == null){
 			this.attacker = attacker;
 			hitU = 0;
 			hitDuration = attacker.attack.attackDuration;

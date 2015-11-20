@@ -117,7 +117,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
 		//assetManager.load("Models/Characters/rockMonster_01.g3db", Model.class);
 		assetManager.load("Models/Church/Church.g3db", Model.class);
-		//assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
+		assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
 
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
@@ -213,11 +213,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 	private void onAllPlayersReady(){
 		for(int i= 0; i<10; i++){
-			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(1, new Vector2(0,0)),30,50,-50,50);
+			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(1, new Vector2(0,0),false),30,50,-50,50);
 		}
 
 		for(int i= 0; i<10; i++){
-			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0)),-50,-30,-50,50);
+			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0),false),-50,-30,-50,50 );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));
 

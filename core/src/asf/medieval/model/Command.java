@@ -10,6 +10,7 @@ public class Command {
 	public int tokenId;
 	public Vector2 location;
 	public boolean structure;
+	public boolean jimmy;
 
 	public void performCommand(int playerId, Scenario scenario)
 	{
@@ -24,7 +25,7 @@ public class Command {
 			if(structure){
 				Token token = scenario.newStructure(playerId,location);
 			}else{
-				Token token = scenario.newSoldier(playerId, location);
+				Token token = scenario.newSoldier(playerId, location,jimmy);
 			}
 		}
 	}

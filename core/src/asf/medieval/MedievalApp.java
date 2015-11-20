@@ -8,10 +8,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.I18NBundle;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.esotericsoftware.kryonet.Client;
 
 import java.io.IOException;
@@ -21,6 +28,9 @@ import java.util.Random;
 
 public class MedievalApp extends ApplicationAdapter {
 	public Preferences prefs;
+	private AbstractScreen screen;
+	protected Group stageScreen, stageDialog;
+
 
 	public MedievalWorld.Settings worldSettings;
 	public MedievalWorld world;
@@ -28,6 +38,8 @@ public class MedievalApp extends ApplicationAdapter {
 	public Stage stage;
 	public Skin skin;
 	public TextureAtlas pack;
+	private Texture backgroundTexture;
+	public Image backgroundImage;
 	public I18NBundle i18n;
 
 
@@ -39,7 +51,8 @@ public class MedievalApp extends ApplicationAdapter {
 		initPrefs();
 		initTextures();
 		initI18n();
-		loadStraightInToGame();
+		setScreen(ScreenId.Main);
+		//loadStraightInToGame();
 	}
 	private void initPrefs()
 	{
@@ -55,6 +68,10 @@ public class MedievalApp extends ApplicationAdapter {
 		skin = new Skin(Gdx.files.internal("Packs/GameSkin.json"));
 		pack = skin.getAtlas();
 
+		backgroundTexture = new Texture(Gdx.files.internal("Textures/Terrain/desert512.jpg"));
+		backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+		backgroundImage = new Image(new TiledDrawable(new TextureRegion(backgroundTexture)), Scaling.fill);
+
 	}
 
 	private void initI18n()
@@ -67,11 +84,17 @@ public class MedievalApp extends ApplicationAdapter {
 	@Override
 	public void resize(int width, int height) {
 		//System.out.println("app resize: "+width+"x"+height);
-		if(stage != null)
-			stage.getViewport().update(width, height, true);
-		// TODO: resize screen if it is not null
 		if(world!=null)
 			world.resize(width, height);
+		if(stage != null)
+			stage.getViewport().update(width, height, true);
+		if (stageScreen != null)
+			stageScreen.setBounds(0, 0, width, height);
+		//if (stageDialog != null)
+		//	stageDialog.setBounds(0, 0, width, height);
+		if (screen != null)
+			screen.resize(width, height);
+
 
 
 	}
@@ -81,10 +104,14 @@ public class MedievalApp extends ApplicationAdapter {
 		float delta = Gdx.graphics.getDeltaTime();
 		if(delta > 0.06f) delta = 0.06f;
 
+
+		// client.update()
+
 		if(world != null) world.render(delta);
 		else  Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		// TODO if screen not null, render screen
+		if(screen!=null)
+			screen.render(delta);
 
 		if(stage != null){
 			stage.act(delta);
@@ -103,10 +130,7 @@ public class MedievalApp extends ApplicationAdapter {
 
 	@Override
 	public void dispose() {
-		//if (dialogScreen != null) {
-		//	dialogScreen.hide();
-		//	dialogScreen = null;
-		//}
+
 		setScreen(null);
 
 		if (skin != null) {
@@ -115,33 +139,25 @@ public class MedievalApp extends ApplicationAdapter {
 			pack = null;
 		}
 
-		//if (backgroundTexture != null) {
-		//	backgroundTexture.dispose();
-		//	backgroundTexture = null;
-		//	backgroundImage = null;
-		//}
+		if (backgroundTexture != null) {
+			backgroundTexture.dispose();
+			backgroundTexture = null;
+			backgroundImage = null;
+		}
+
+		//client.dispose();
 
 	}
 
-	private static final boolean onlineGame = false;
+
 
 	private void loadStraightInToGame()
 	{
 		MedievalWorld.Settings settings = new MedievalWorld.Settings();
 
 		settings.random = new Random(1);
-//
-//		String name = System.getProperty("user.name");
-//		if(name.toLowerCase().startsWith("dan")){
-//			settings.gameServerConfig = new GameServerConfig();
-//			settings.server = true;
-//			System.out.println("ima server");
-//		}else{
-//			settings.hostName = "fox.dkstrong.com";
-//			settings.client = true;
-//			settings.gameServerConfig = new GameServerConfig();
-//		}
 
+		final boolean onlineGame = false;
 		if(onlineGame)
 		{
 			settings.gameServerConfig = new GameServerConfig();
@@ -178,6 +194,7 @@ public class MedievalApp extends ApplicationAdapter {
 		world = new MedievalWorld(this, settings);
 		// when loading world form app start this is redundnat...
 		world.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		setScreen(ScreenId.Loading);
 
 	}
 
@@ -205,8 +222,82 @@ public class MedievalApp extends ApplicationAdapter {
 		Gdx.app.exit();
 	}
 
-	public void setScreen(ScreenId screenId)
-	{
+	public ScreenId getScreenId(){
+		return screen == null ? null : screen.getScreenId();
+	}
 
+	public void setScreen(ScreenId screenId) {
+		if (screenId == null) {
+			setScreenInstance(null);
+			return;
+		}
+
+		if (this.screen != null && this.screen.getScreenId() == screenId) {
+			return; // already on this screen...
+		}
+
+		setScreenInstance(makeScreenInstance(screenId));
+
+		if (screen.killsWorld() && world != null) {
+			// we enqueue unloading the world because setScreen() may be called
+			//in the middle of render which would mess things up because the world would be
+			// disposed in the middle of rendering
+			Gdx.app.postRunnable(new Runnable() {
+				@Override
+				public void run() {
+					unloadWorld();
+					// TODO: here is where i would play menu music if i had some
+					///music.setPlaylist(SongId.MainTheme, SongId.Arabesque, SongId.RitualNorm);
+					//music.playSong(SongId.MainTheme);
+					//music.setPaused(false);
+				}
+			});
+		}
+
+
+
+	}
+
+	private AbstractScreen makeScreenInstance(ScreenId screenId) {
+		switch (screenId) {
+			case Main:
+				return new MainScreen(this);
+			case Loading:
+				return new LoadingScreen(this);
+			case Pause:
+				return new PauseScreen(this);
+			case GameOverScreen:
+				return new GameOverScreen(this);
+			default:
+				throw new AssertionError(screenId);
+		}
+	}
+
+	private void setScreenInstance(AbstractScreen screen) {
+		if (this.screen != null)
+			this.screen.hide();
+		this.screen = screen;
+		if (this.screen != null) {
+			if (stage == null) {
+				stage = new Stage(new ScreenViewport());
+				stage.addActor(stageScreen = new Group());
+				stage.addActor(stageDialog = new Group());
+				// theres some kind of weird positioning bug involving adding containrs to groups
+				// setting the groups bounds to the screen size seems to fix it
+				stageScreen.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+				// though if i size the dialog group then you cant click anything- theres some
+				// might weird stuff going on with sceneui
+			}
+			stageScreen.clearChildren();
+			this.screen.show();
+			this.screen.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		} else {
+			if (stage != null) {
+				stageScreen = null;
+				stageDialog = null;
+				stage.dispose();
+				stage = null;
+			}
+		}
 	}
 }
