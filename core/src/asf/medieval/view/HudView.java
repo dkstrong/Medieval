@@ -1,10 +1,8 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Command;
-import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.model.Player;
-import asf.medieval.utility.StretchableImage;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -17,7 +15,6 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -25,6 +22,8 @@ import com.badlogic.gdx.utils.Array;
 public class HudView implements View,InputProcessor {
 
 	private MedievalWorld world;
+	public HudCommandView hudCommandView;
+	public HudSelectionView hudSelectionView;
 
 	private Container topRightLabelContainer;
 	private Label topRightLabel;
@@ -35,15 +34,12 @@ public class HudView implements View,InputProcessor {
 	private Container topLeftLabelContainer;
 	private Label topLeftLabel;
 
-	private StretchableImage selectionBox;
-	private StretchableImage debugPosBox;
-	private Vector2 showDebugPosBox;
-	private final Decal moveCommandDecal = new Decal();
 
-	private Array<SelectableView> selectedViews = new Array<SelectableView>(true, 8, SelectableView.class);
 
 	public HudView(MedievalWorld world) {
 		this.world = world;
+		hudCommandView = new HudCommandView(world);
+		hudSelectionView = new HudSelectionView(world);
 		topRightLabel = new Label("Hello, there!", world.app.skin);
 		topRightLabel.setAlignment(Align.topRight, Align.topRight);
 		topRightLabelContainer = new Container<Label>(topRightLabel);
@@ -63,18 +59,6 @@ public class HudView implements View,InputProcessor {
 		topLeftLabelContainer.align(Align.topLeft).pad(10);
 		world.stage.addActor(topLeftLabelContainer);
 
-		selectionBox = new StretchableImage(world.pack.findRegion("Interface/Hud/selection-box"));
-
-		debugPosBox = new StretchableImage(world.pack.findRegion("Interface/Hud/health"));
-
-
-		moveCommandDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
-		moveCommandDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		moveCommandDecal.setDimensions(2, 2);
-		moveCommandDecal.setColor(1, 1, 1, 1);
-		moveCommandDecal.rotateX(-90);
-
-
 
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -86,7 +70,8 @@ public class HudView implements View,InputProcessor {
 		topRightLabelContainer.setBounds(0, 0, width, height);
 		bottomLeftLabelContainer.setBounds(0, 0, width, height);
 		topLeftLabelContainer.setBounds(0, 0, width, height);
-
+		hudCommandView.resize(width,height);
+		hudSelectionView.resize(width,height);
 	}
 
 	@Override
@@ -94,15 +79,9 @@ public class HudView implements View,InputProcessor {
 	{
 
 
-		forceSpacebarTimer -= delta;
 
-		for (SelectableView selectedView : selectedViews) {
-			if(!canSelectToken(selectedView.getToken()))
-			{
-				selectedView.setSelected(false);
-				selectedViews.removeValue(selectedView, true);
-			}
-		}
+
+
 	}
 
 
@@ -120,26 +99,7 @@ public class HudView implements View,InputProcessor {
 		int availableProcessors = rt.availableProcessors();
 		*/
 
-		if(showDebugPosBox != null){
-			//debugPosBox.setBounds();
-		}
 
-		if(mouseLeftDrag)
-		{
-			if(selectionBox.getParent() == null)
-				world.stage.addActor(selectionBox);
-
-			final float x = mouseLeftDragStartCoords.x;
-			final float y = Gdx.graphics.getHeight() - mouseLeftDragStartCoords.y;
-			final float width = mouseLeftDragEndCoords.x - mouseLeftDragStartCoords.x;
-			final float height = mouseLeftDragStartCoords.y - mouseLeftDragEndCoords.y;
-
-			selectionBox.setBounds(x,y,width,height);
-		}
-		else
-		{
-			selectionBox.remove();
-		}
 
 
 		String gameServerStatusString = null;
@@ -189,207 +149,32 @@ public class HudView implements View,InputProcessor {
 
 		);
 
-
-		if (selectedViews.size < 1){
+		if (hudSelectionView.selectedViews.size < 1){
 			bottomLeftLabel.setText("");
 		}else{
-			bottomLeftLabel.setText("Selected: " + selectedViews.size);
-		}
-
-
-		if(spacebarDown || forceSpacebarTimer>0)
-		{
-			moveCommandDecal.setPosition(lastMoveCommandLocation);
-			world.scenario.heightField.getWeightedNormalAt(lastMoveCommandLocation, vec1);
-			moveCommandDecal.setRotation(vec1, Vector3.Y);
-			vec1.scl(0.11f);
-			moveCommandDecal.translate(vec1);
-
-			world.decalBatch.add(moveCommandDecal);
+			bottomLeftLabel.setText("Selected: " + hudSelectionView.selectedViews.size);
 		}
 
 	}
 
-	private final Vector3 vec1 = new Vector3();
-	private boolean mouseLeftDown = false;
-	private int mouseLeftDragCount = 0;
-	private boolean mouseLeftDrag = false;
-	private final Vector2 mouseLeftDragStartCoords = new Vector2();
-	private final Vector2 mouseLeftDragEndCoords = new Vector2();
-	private final Vector2 tempVec = new Vector2();
-	private final Vector2 tempVec2 = new Vector2();
-	private final Vector2 tempVec4 = new Vector2();
-	private final Vector3 lastMoveCommandLocation = new Vector3();
 
-	private boolean spacebarDown = false;
-	private float forceSpacebarTimer;
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if(button == Input.Buttons.LEFT)
-		{
-			mouseLeftDragStartCoords.set(screenX, screenY);
-			mouseLeftDown = true;
-			mouseLeftDragCount = 0;
-			mouseLeftDrag = false;
 
-		}
 		return false;
-	}
-
-	private Ray getWorldCoord(float screenX, float screenY, Vector3 storeWorldCoord)
-	{
-		Ray ray = world.cameraManager.cam.getPickRay(screenX, screenY);
-
-
-		// this just gets the intersection point of the ray to the ground plane (y==0)
-		//final float distance = -ray.origin.y / ray.direction.y;
-		//storeWorldCoord.set(ray.direction).scl(distance).add(ray.origin);
-
-
-		world.scenario.heightField.intersect(ray, storeWorldCoord);
-
-
-		return ray;
-	}
-
-	private Vector2 getScreenCord(Vector3 worldCoord, Vector2 storeScreenCoord){
-		Vector3 screenCoord = world.cameraManager.cam.project(new Vector3(worldCoord));
-		// we flip screenCoord.y because the screen coordinates that come
-		// from input listeners use Y down, this will make it match that coordinate
-		// system
-		storeScreenCoord.set(screenCoord.x,Gdx.graphics.getHeight()-screenCoord.y);
-		return storeScreenCoord;
-	}
-
-	private boolean canSelectToken(Token token){
-		if(token.damage!=null && token.damage.health <=0) return false;
-		if(token.owner.id!= world.gameClient.player.id) return false;
-
-		return true;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if(button == Input.Buttons.LEFT)
-		{
-			mouseLeftDown = false;
-			selectedViews.clear();
 
-			if(!mouseLeftDrag)
-			{
-				// Direct selection
-				Ray ray = world.cameraManager.cam.getPickRay(screenX, screenY);
-				final boolean intersectsTerrain = world.scenario.heightField.intersect(ray, vec1);
-				final float groundDst2 = intersectsTerrain ? ray.origin.dst2(vec1) : Float.MAX_VALUE;
-
-				SelectableView closestSgo = null;
-				float closestDistance = Float.MAX_VALUE; // this distance value is only useful for comparing shapes intersections
-
-				for (View view : world.gameObjects) {
-					if(view instanceof SelectableView)
-					{
-						SelectableView sgo = (SelectableView) view;
-						sgo.setSelected(false);
-						if(canSelectToken(sgo.getToken()))
-						{
-							float sgoDistance = sgo.intersects(ray);
-							if(sgoDistance > 0 && sgoDistance < closestDistance && ray.origin.dst2(sgo.getTranslation()) < groundDst2)
-							{
-								closestDistance = sgoDistance;
-								closestSgo = sgo;
-							}
-						}
-					}
-				}
-
-				if(closestSgo!=null){
-					closestSgo.setSelected(true);
-					selectedViews.add(closestSgo);
-				}
-			}
-			else
-			{
-				// Box Selection
-				mouseLeftDrag = false;
-				mouseLeftDragEndCoords.set(screenX, screenY);
-
-				tempVec2.set(mouseLeftDragEndCoords.x, mouseLeftDragStartCoords.y);
-				tempVec4.set(mouseLeftDragStartCoords.x, mouseLeftDragEndCoords.y);
-
-				//world.addGameObject(new DebugShapeView(world, vec1, vec2,vec3,vec4));
-
-				for (View view : world.gameObjects) {
-					if(view instanceof SelectableView)
-					{
-						SelectableView sgo = (SelectableView) view;
-						sgo.setSelected(false);
-						if(canSelectToken(sgo.getToken())){
-							getScreenCord(sgo.getTranslation(), tempVec);
-							boolean isInSelectionBox = UtMath.isPointInRect(tempVec, mouseLeftDragStartCoords, tempVec2, mouseLeftDragEndCoords, tempVec4);
-							if(isInSelectionBox)
-							{
-								Ray ray = world.cameraManager.cam.getPickRay(tempVec.x, tempVec.y);
-								final boolean intersectsTerrain = world.scenario.heightField.intersect(ray, vec1);
-								final float groundDst2 = intersectsTerrain ? ray.origin.dst2(vec1) : Float.MAX_VALUE;
-
-								final float viewDst2 = ray.origin.dst2(sgo.getTranslation());
-								if(viewDst2 < groundDst2)
-								{
-									sgo.setSelected(true);
-									if(sgo.isSelected()){
-										selectedViews.add(sgo);
-									}
-								}
-
-
-							}
-						}
-
-					}
-				}
-
-
-			}
-
-		}
-		else if(button == Input.Buttons.RIGHT)
-		{
-			if(selectedViews.size > 0)
-			{
-				forceSpacebarTimer = 3f;
-				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
-
-				for (SelectableView sgo : selectedViews) {
-					if(sgo instanceof InfantryView)
-					{
-						Command command = new Command();
-						command.tokenId = ((InfantryView) sgo).token.id;
-						command.location = UtMath.toVector2(lastMoveCommandLocation, new Vector2());
-						world.gameClient.sendCommand(command);
-						//sgo.token.setTarget(lastMoveCommandLocation);
-					}
-
-				}
-
-			}
-
-			return true;
-		}
 
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		if(mouseLeftDown)
-		{
-			if(mouseLeftDragCount++ > 2)
-			{
-				mouseLeftDrag = true;
-				mouseLeftDragEndCoords.set(screenX, screenY);
-			}
-		}
+
 		return false;
 	}
 
@@ -400,12 +185,7 @@ public class HudView implements View,InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		switch(keycode)
-		{
-			case Input.Keys.SPACE:
-				spacebarDown = true;
-				break;
-		}
+
 		return false;
 	}
 
@@ -413,26 +193,7 @@ public class HudView implements View,InputProcessor {
 	public boolean keyUp(int keycode) {
 		switch(keycode)
 		{
-			case Input.Keys.SPACE:
-				spacebarDown = false;
-				break;
-			case Input.Keys.I:
-				Command command = new Command();
-				command.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				world.gameClient.sendCommand(command);
-				break;
-			case Input.Keys.J:
-				Command jimmyCommand = new Command();
-				jimmyCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				jimmyCommand.jimmy = true;
-				world.gameClient.sendCommand(jimmyCommand);
-				break;
-			case Input.Keys.B:
-				Command buildCommand = new Command();
-				buildCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				buildCommand.structure = true;
-				world.gameClient.sendCommand(buildCommand);
-				break;
+
 		}
 		return false;
 	}

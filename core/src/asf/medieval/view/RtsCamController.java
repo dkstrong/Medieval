@@ -50,7 +50,7 @@ public class RtsCamController implements InputProcessor {
 		setMaxSpeed(TILT, 2f, 0.3f);
 		setMaxSpeed(ZOOM, 60f, 0.25f);
 
-		minElevation = 0;
+		minElevation = 1;
 	}
 
 	// SIDE and FWD min/max values are ignored, need to fix this..
@@ -134,10 +134,10 @@ public class RtsCamController implements InputProcessor {
 		cameraManager.cam.position.y = center.y + (distance * sinTilt);
 		cameraManager.cam.position.z = center.z + (distance * cosTilt * cosRot);
 
-//		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) + 0.1f;
-//		if(cameraManager.cam.position.y < elevationCam){
-//			cameraManager.cam.position.y = elevationCam;;
-//		}
+		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) + minElevation*0.45f;
+		if(cameraManager.cam.position.y < elevationCam){
+			cameraManager.cam.position.y = elevationCam;
+		}
 
 
 		//cameraManager.cam.position.y += elevationAt;

@@ -398,13 +398,14 @@ public class HeightField implements Disposable {
 		return UtMath.interpolateBilinear(fieldX - x0, fieldY - y0, s00, s10, s01, s11);
 	}
 
+
 	public Vector3 getWeightedNormalAt(Vector3 worldCoordinate,Vector3 store) {
 		// convert world coordinates to field coordinates
-		float x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
-		float y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
-		int x0 = (int) x;
-		int y0 = (int) y;
-		return getWeightedNormalAt(x0, y0, store);
+		float fieldX = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
+		float fieldY = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
+		int x0 = (int) fieldX;
+		int y0 = (int) fieldY;
+		return getWeightedNormalAt(x0, y0+1, store);
 	}
 
 	public float getElevation(Vector3 worldCoordinate)

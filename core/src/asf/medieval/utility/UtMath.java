@@ -462,6 +462,15 @@ public class UtMath {
 		return (1 - yfrac) * ((1 - xfrac)*s00 + xfrac*s10) + yfrac * ((1 - xfrac)*s01 + xfrac*s11);
 	}
 
+	public static Vector3 interpolateBilinear(float xfrac, float yfrac, Vector3 s00, Vector3 s10, Vector3 s01, Vector3 s11)
+	{
+		Vector3 store = new Vector3();
+		store.x = interpolateBilinear(xfrac, yfrac, s00.x, s10.x, s01.x, s11.x);
+		store.y = interpolateBilinear(xfrac, yfrac, s00.y, s10.y, s01.y, s11.y);
+		store.z = interpolateBilinear(xfrac, yfrac, s00.z, s10.z, s01.z, s11.z);
+		return store;
+	}
+
 
 	/**
 	 * Returns 1 if the number is positive, -1 if the number is negative, and 0 otherwise

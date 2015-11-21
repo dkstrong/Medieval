@@ -193,15 +193,15 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		}
 		else
 		{
-
+			float animSpeed = speed  /agent.getMaxSpeed() * 0.5f;
 			if (!animController.current.animation.id.startsWith(walk[0].id)){
 				if(token.modelId == ModelId.Jimmy)
-					animController.animate(walk[0].id, 0, -1, 1, 1, this, 0.2f);
+					animController.animate(walk[0].id, 0, -1, 1, animSpeed, this, 0.2f);
 				else{
-					animController.animate(walk[0].id, 0, -1, -1, 1, this, 0.2f);
+					animController.animate(walk[0].id, 0, -1, -1, animSpeed, this, 0.2f);
 				}
 			}else{
-				animController.current.speed = speed  /agent.getMaxSpeed() * 0.65f;
+				animController.current.speed = animSpeed;
 			}
 
 			//float angle = agent.getVelocity().cpy().nor().angleRad(Vector2.Y);

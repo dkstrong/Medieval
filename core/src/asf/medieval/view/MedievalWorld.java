@@ -79,8 +79,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 	public final Scenario scenario;
 	protected final Array<View> gameObjects;
-	private HudView hudView;
-	public TerrainView terrainView;
+	protected HudView hudView;
+	protected TerrainView terrainView;
 
 	public MedievalWorld(MedievalApp app, Settings settings)  {
 		this.app = app;
@@ -185,6 +185,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//dungeonApp.music.playSong(SongId.RitualNorm);
 
 			addGameObject(hudView = new HudView(this));
+			addGameObject(hudView.hudCommandView);
+			addGameObject(hudView.hudSelectionView);
 
 			//addGameObject(characterGameObject = new CharacterGameObject(this, mission.characterToken));
 			//cameraManager.setChaseTarget(characterGameObject);
@@ -198,6 +200,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
 			inputMultiplexer.addProcessor(hudView);
+			inputMultiplexer.addProcessor(hudView.hudCommandView);
+			inputMultiplexer.addProcessor(hudView.hudSelectionView);
 
 		}
 
