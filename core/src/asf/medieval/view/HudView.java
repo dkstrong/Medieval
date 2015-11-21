@@ -36,6 +36,8 @@ public class HudView implements View,InputProcessor {
 	private Label topLeftLabel;
 
 	private StretchableImage selectionBox;
+	private StretchableImage debugPosBox;
+	private Vector2 showDebugPosBox;
 	private final Decal moveCommandDecal = new Decal();
 
 	private Array<SelectableView> selectedViews = new Array<SelectableView>(true, 8, SelectableView.class);
@@ -62,6 +64,8 @@ public class HudView implements View,InputProcessor {
 		world.stage.addActor(topLeftLabelContainer);
 
 		selectionBox = new StretchableImage(world.pack.findRegion("Interface/Hud/selection-box"));
+
+		debugPosBox = new StretchableImage(world.pack.findRegion("Interface/Hud/health"));
 
 
 		moveCommandDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
@@ -115,6 +119,10 @@ public class HudView implements View,InputProcessor {
 		long used = total - free;
 		int availableProcessors = rt.availableProcessors();
 		*/
+
+		if(showDebugPosBox != null){
+			//debugPosBox.setBounds();
+		}
 
 		if(mouseLeftDrag)
 		{
@@ -202,16 +210,15 @@ public class HudView implements View,InputProcessor {
 
 	}
 
-
 	private final Vector3 vec1 = new Vector3();
-	private final Vector3 vec2 = new Vector3();
-	private final Vector3 vec3 = new Vector3();
-	private final Vector3 vec4 = new Vector3();
 	private boolean mouseLeftDown = false;
 	private int mouseLeftDragCount = 0;
 	private boolean mouseLeftDrag = false;
 	private final Vector2 mouseLeftDragStartCoords = new Vector2();
 	private final Vector2 mouseLeftDragEndCoords = new Vector2();
+	private final Vector2 tempVec = new Vector2();
+	private final Vector2 tempVec2 = new Vector2();
+	private final Vector2 tempVec4 = new Vector2();
 	private final Vector3 lastMoveCommandLocation = new Vector3();
 
 	private boolean spacebarDown = false;
@@ -244,6 +251,15 @@ public class HudView implements View,InputProcessor {
 
 
 		return ray;
+	}
+
+	private Vector2 getScreenCord(Vector3 worldCoord, Vector2 storeScreenCoord){
+		Vector3 screenCoord = world.cameraManager.cam.project(new Vector3(worldCoord));
+		// we flip screenCoord.y because the screen coordinates that come
+		// from input listeners use Y down, this will make it match that coordinate
+		// system
+		storeScreenCoord.set(screenCoord.x,Gdx.graphics.getHeight()-screenCoord.y);
+		return storeScreenCoord;
 	}
 
 	private boolean canSelectToken(Token token){
@@ -298,10 +314,8 @@ public class HudView implements View,InputProcessor {
 				mouseLeftDrag = false;
 				mouseLeftDragEndCoords.set(screenX, screenY);
 
-				getWorldCoord(mouseLeftDragStartCoords.x, mouseLeftDragStartCoords.y, vec1);
-				getWorldCoord(mouseLeftDragStartCoords.x, mouseLeftDragEndCoords.y, vec2);
-				getWorldCoord(mouseLeftDragEndCoords.x, mouseLeftDragEndCoords.y, vec3);
-				getWorldCoord(mouseLeftDragEndCoords.x, mouseLeftDragStartCoords.y, vec4);
+				tempVec2.set(mouseLeftDragEndCoords.x, mouseLeftDragStartCoords.y);
+				tempVec4.set(mouseLeftDragStartCoords.x, mouseLeftDragEndCoords.y);
 
 				//world.addGameObject(new DebugShapeView(world, vec1, vec2,vec3,vec4));
 
@@ -311,9 +325,24 @@ public class HudView implements View,InputProcessor {
 						SelectableView sgo = (SelectableView) view;
 						sgo.setSelected(false);
 						if(canSelectToken(sgo.getToken())){
-							sgo.setSelected(UtMath.isPointInQuadrilateral(sgo.getTranslation(), vec1, vec2, vec3, vec4));
-							if(sgo.isSelected()){
-								selectedViews.add(sgo);
+							getScreenCord(sgo.getTranslation(), tempVec);
+							boolean isInSelectionBox = UtMath.isPointInRect(tempVec, mouseLeftDragStartCoords, tempVec2, mouseLeftDragEndCoords, tempVec4);
+							if(isInSelectionBox)
+							{
+								Ray ray = world.cameraManager.cam.getPickRay(tempVec.x, tempVec.y);
+								final boolean intersectsTerrain = world.scenario.heightField.intersect(ray, vec1);
+								final float groundDst2 = intersectsTerrain ? ray.origin.dst2(vec1) : Float.MAX_VALUE;
+
+								final float viewDst2 = ray.origin.dst2(sgo.getTranslation());
+								if(viewDst2 < groundDst2)
+								{
+									sgo.setSelected(true);
+									if(sgo.isSelected()){
+										selectedViews.add(sgo);
+									}
+								}
+
+
 							}
 						}
 

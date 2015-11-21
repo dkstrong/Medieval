@@ -492,20 +492,16 @@ public class UtMath {
 		return MathUtils.random(min, max); //return (min + (FastMath.range.nextFloat() * (max - min)));
 	}
 
-
 	public static float randomSign() {
-
 		return (MathUtils.randomBoolean() ? 1f : -1f);
 	}
 
-
-
-	public static boolean isPointInQuadrilateral(Vector3 point, Vector3 q1, Vector3 q2, Vector3 q3, Vector3 q4)
-	{
-		//Intersector.isPointInPolygon()
-
+	public static boolean isPointInQuadrilateral(Vector3 point, Vector3 q1, Vector3 q2, Vector3 q3, Vector3 q4) {
 		return Intersector.isPointInTriangle(point, q1,q3,q4) || Intersector.isPointInTriangle(point, q1,q2,q3);
+	}
 
+	public static boolean isPointInRect(Vector2 point, Vector2 q1, Vector2 q2, Vector2 q3, Vector2 q4){
+		return Intersector.isPointInTriangle(point,q1,q3,q4) || Intersector.isPointInTriangle(point,q1,q2,q3);
 	}
 
 	public static Vector2 toVector2(Vector3 vec3, Vector2 store){
