@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Array;
  *
  * Created by daniel on 11/13/15.
  */
-public class Separation implements Behavior{
+public strictfp class Separation implements Behavior{
 
 
 	private Vector2 steeringOut = new Vector2();

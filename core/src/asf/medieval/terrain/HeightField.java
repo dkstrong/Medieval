@@ -376,12 +376,12 @@ public class HeightField implements Disposable {
 		return store;
 	}
 
-	private float getElevationField(int fieldX, int fieldY){
+	protected float getElevationField(int fieldX, int fieldY){
 		final int i = (fieldY * width +fieldX)*stride;
 		return vertices[i + 1];
 	}
 
-	private float getElevationField(float fieldX, float fieldY)
+	protected float getElevationField(float fieldX, float fieldY)
 	{
 		int x0 = (int) fieldX;
 		int y0 = (int) fieldY;
@@ -405,7 +405,7 @@ public class HeightField implements Disposable {
 		float fieldY = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
 		int x0 = (int) fieldX;
 		int y0 = (int) fieldY;
-		return getWeightedNormalAt(x0, y0+1, store);
+		return getWeightedNormalAt(x0, y0 + 1, store);
 	}
 
 	public float getElevation(Vector3 worldCoordinate)
@@ -442,13 +442,24 @@ public class HeightField implements Disposable {
 	/**
 	 * Simply creates an array containing only all the red components of the data.
 	 */
-	public static float[] heightColorsToMap(final ByteBuffer data, final Pixmap.Format format, int width, int height) {
-		final int bytesPerColor = (format == Format.RGB888 ? 3 : (format == Format.RGBA8888 ? 4 : 0));
-		if (bytesPerColor == 0)
-			throw new GdxRuntimeException("Unsupported format, should be either RGB8 or RGBA8");
+	public static float[] heightColorsToMap(final ByteBuffer data, final Pixmap.Format format, int width, int height){
+		if(format == Format.RGB888 || format == Format.RGBA8888 || format == Format.Alpha) {
+			return heightColorsToMapImp(data, format, width, height);
+		}else{
+			throw new UnsupportedOperationException("Have not yet implemented supported for this format: "+format);
+		}
+	}
+	private static float[] heightColorsToMapImp(final ByteBuffer data, final Pixmap.Format format, int width, int height) {
+		int bytesPerColor;
+		if(format == Format.RGB888) bytesPerColor = 3;
+		else if(format == Format.RGBA8888) bytesPerColor = 4;
+		else if(format == Format.Alpha) bytesPerColor = 1;
+		else throw new UnsupportedOperationException("Does not support format: "+format);
+
 		if (data.remaining() < (width * height * bytesPerColor))
 			throw new GdxRuntimeException("Incorrect map size");
 
+		//System.out.println("format: "+format);
 		final int startPos = data.position();
 		byte[] source = null;
 		int sourceOffset = 0;
@@ -463,7 +474,7 @@ public class HeightField implements Disposable {
 
 		float[] dest = new float[width * height];
 		for (int i = 0; i < dest.length; ++i) {
-			int v = source[sourceOffset + i * 3];
+			int v = source[sourceOffset + i * bytesPerColor];
 			v = v < 0 ? 256 + v : v;
 			dest[i] = (float) v / 255f;
 		}

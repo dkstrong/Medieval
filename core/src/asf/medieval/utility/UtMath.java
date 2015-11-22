@@ -1,5 +1,6 @@
 package asf.medieval.utility;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
@@ -179,24 +180,15 @@ public class UtMath {
 		store.z =interpolation.apply(startValue.z, endValue.z, scale);
 	}
 
-	public static void multiply(Vector3 vec, float scalar){
-		vec.x*=scalar;
-		vec.y*=scalar;
-		vec.z*=scalar;
+	public static void interpolate(Interpolation interpolation,
+				       float scale,
+				       Color startValue, Color endValue, Color store){
+		store.r =interpolation.apply(startValue.r, endValue.r, scale);
+		store.g =interpolation.apply(startValue.g, endValue.g, scale);
+		store.b =interpolation.apply(startValue.b, endValue.b, scale);
+		store.a =interpolation.apply(startValue.b, endValue.b, scale);
 	}
 
-	public static void scaleAdd(Vector3 vec, float scalar, Vector3 add)
-	{
-		vec.x = vec.x * scalar + add.x;
-		vec.y = vec.y * scalar + add.y;
-		vec.z = vec.z * scalar + add.z;
-	}
-
-	public static void scaleAdd(Vector2 vec, float scalar, Vector2 add)
-	{
-		vec.x = vec.x * scalar + add.x;
-		vec.y = vec.y * scalar + add.y;
-	}
 
 	public static float sqr(float fValue) {
 		return fValue * fValue;
@@ -460,6 +452,15 @@ public class UtMath {
 	public static float interpolateBilinear(float xfrac, float yfrac, float s00, float s10, float s01, float s11)
 	{
 		return (1 - yfrac) * ((1 - xfrac)*s00 + xfrac*s10) + yfrac * ((1 - xfrac)*s01 + xfrac*s11);
+	}
+
+	public static Color interpolateBilinear(float xfrac, float yfrac, Color s00, Color s10, Color s01, Color s11, Color store)
+	{
+		store.r = interpolateBilinear(xfrac, yfrac, s00.r, s10.r, s01.r, s11.r);
+		store.g = interpolateBilinear(xfrac, yfrac, s00.g, s10.g, s01.g, s11.g);
+		store.b = interpolateBilinear(xfrac, yfrac, s00.b, s10.b, s01.b, s11.b);
+		store.a = interpolateBilinear(xfrac, yfrac, s00.a, s10.a, s01.a, s11.a);
+		return store;
 	}
 
 	public static Vector3 interpolateBilinear(float xfrac, float yfrac, Vector3 s00, Vector3 s10, Vector3 s01, Vector3 s11)

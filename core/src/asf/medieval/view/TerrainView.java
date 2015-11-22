@@ -42,12 +42,14 @@ public class TerrainView implements View {
 	public void render(float delta)
 	{
 		//world.shadowBatch.render(terrain);
+		//world.modelBatch.render(terrain);
 		world.modelBatch.render(terrain, world.environment);
 
-		Vector3 translation = world.cameraManager.rtsCamController.center;
+
 
 		if(skydome != null)
 		{
+			Vector3 translation = world.cameraManager.rtsCamController.center;
 			skydome.transform.set(
 				translation.x, translation.y-60f, translation.z,
 				skyRotation.x, skyRotation.y, skyRotation.z, skyRotation.w,

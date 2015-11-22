@@ -111,22 +111,30 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
 		//assetManager.load("Models/skydome.g3db", Model.class);
-		assetManager.load("Models/Characters/knight_01.g3db", Model.class);
-		assetManager.load("Models/Loot/Sword/BasicSword.g3db", Model.class);
-		assetManager.load("Models/Loot/Sword/Shield.g3db", Model.class);
+		//assetManager.load("Models/Characters/knight_01.g3db", Model.class);
+		//assetManager.load("Models/Loot/Sword/BasicSword.g3db", Model.class);
+		//assetManager.load("Models/Loot/Sword/Shield.g3db", Model.class);
 		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
 		//assetManager.load("Models/Characters/rockMonster_01.g3db", Model.class);
-		assetManager.load("Models/Church/Church.g3db", Model.class);
-		assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
+		//assetManager.load("Models/Church/Church.g3db", Model.class);
+		//assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
 
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
 		terrainParameter.seed = settings.random.nextLong();
-		terrainParameter.heightmapName = "Models/Terrain/heightmap.png";
+		terrainParameter.heightmapName = "Models/Terrain/map7.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg
 		//"Textures/Terrain/sand512.jpg"
 		//"Textures/Floor/wallTiles.png"
 		terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg";
+		terrainParameter.generatedDiffuseMapSize = 1024;
+		terrainParameter.tex1="Textures/Terrain/grass_2.png"; // grass_2
+		terrainParameter.tex1Scale.set(2,2);
+		terrainParameter.tex2="Textures/Terrain/dirt.png";
+		terrainParameter.tex2Scale.set(2,2);
+		terrainParameter.tex3="Textures/Terrain/snow2_512.png";
+		terrainParameter.tex2Scale.set(4,4);
+
 		AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Models/Terrain/terrain.txt", Terrain.class,terrainParameter);
 		assetManager.load(terrainAssetDescriptor);
 

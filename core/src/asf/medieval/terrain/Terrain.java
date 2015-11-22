@@ -1,6 +1,7 @@
 package asf.medieval.terrain;
 
 import asf.medieval.utility.OpenSimplexNoise;
+import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -28,22 +29,16 @@ public class Terrain implements RenderableProvider,Disposable {
 
 	private Texture diffusemap;
 
-	public Terrain(long seed, Texture diffusemap)
+	public Terrain(long seed)
 	{
-		this.diffusemap = diffusemap;
 		createHeightField(seed);
 		configureField();
-		createRenderable(null);
-
 	}
 
-	public Terrain(Pixmap heightmap, Texture diffusemap)
+	public Terrain(Pixmap heightmap)
 	{
-		this.diffusemap = diffusemap;
 		createHeightField(heightmap);
 		configureField();
-		createRenderable(null);
-
 	}
 
 	private void createHeightField(Pixmap heightmap)
@@ -75,7 +70,7 @@ public class Terrain implements RenderableProvider,Disposable {
 	{
 		int w = 150, h = 150;
 		float magnitude = 20f;
-		field.uvScale.set(4f,4f);
+		field.uvScale.set(1f,1f);
 		field.corner00.set(-w, 0, -h);
 		field.corner10.set(w, 0, -h);
 		field.corner01.set(-w, 0, h);
@@ -88,24 +83,27 @@ public class Terrain implements RenderableProvider,Disposable {
 		field.update();
 	}
 
-	private void createRenderable(Environment environment)
+	public void createRenderable(Texture diffusemap)
 	{
-
+		UtLog.info("max short value:"+Short.MAX_VALUE);
+		this.diffusemap = diffusemap;
 
 		ground = new Renderable();
-		ground.environment = environment;
+		ground.environment = null; // doesnt seem to matter- gets set by renderable provider stuff
 		ground.meshPart.mesh = field.mesh;
 		ground.meshPart.primitiveType = GL20.GL_TRIANGLES;
 		ground.meshPart.offset = 0;
 		ground.meshPart.size = field.mesh.getNumIndices();
-		ground.meshPart.update();
+		//ground.meshPart.update();
 		ground.material = new Material(TextureAttribute.createDiffuse(diffusemap));
 	}
 
 	@Override
 	public void dispose() {
-		diffusemap.dispose();
-		field.dispose();
+		if(diffusemap !=null)
+			diffusemap.dispose();
+		if(field !=null)
+			field.dispose();
 	}
 
 	@Override
