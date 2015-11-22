@@ -35,7 +35,7 @@ public class Token {
 			agent.update(delta);
 		}
 
-		elevation = scenario.heightField.getElevation(location.x,location.y);
+		elevation = scenario.terrain.getElevation(location.x,location.y);
 
 	}
 

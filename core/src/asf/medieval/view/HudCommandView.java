@@ -1,10 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Command;
-import asf.medieval.model.Token;
-import asf.medieval.utility.StretchableImage;
 import asf.medieval.utility.UtMath;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
@@ -12,7 +9,6 @@ import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import com.badlogic.gdx.utils.Array;
 
 /**
  * Created by daniel on 11/20/15.
@@ -53,7 +49,7 @@ public class HudCommandView implements View,InputProcessor {
 		if(spacebarDown || forceSpacebarTimer>0)
 		{
 			moveCommandDecal.setPosition(lastMoveCommandLocation);
-			world.scenario.heightField.getWeightedNormalAt(lastMoveCommandLocation, vec1);
+			world.scenario.terrain.getWeightedNormalAt(lastMoveCommandLocation, vec1);
 			moveCommandDecal.setRotation(vec1, Vector3.Y);
 			vec1.scl(0.11f);
 			moveCommandDecal.translate(vec1);
@@ -72,7 +68,7 @@ public class HudCommandView implements View,InputProcessor {
 		//storeWorldCoord.set(ray.direction).scl(distance).add(ray.origin);
 
 
-		world.scenario.heightField.intersect(ray, storeWorldCoord);
+		world.scenario.terrain.intersect(ray, storeWorldCoord);
 
 
 		return ray;
@@ -93,6 +89,7 @@ public class HudCommandView implements View,InputProcessor {
 			{
 				forceSpacebarTimer = 3f;
 				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
+				System.out.println(lastMoveCommandLocation);
 
 				for (SelectableView sgo : world.hudView.hudSelectionView.selectedViews) {
 					if(sgo instanceof InfantryView)

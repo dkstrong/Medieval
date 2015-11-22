@@ -1,21 +1,20 @@
 package asf.medieval.terrain;
 
 import asf.medieval.utility.OpenSimplexNoise;
-import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.model.MeshPart;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
@@ -25,13 +24,13 @@ import com.badlogic.gdx.utils.Pool;
  */
 public class Terrain implements RenderableProvider,Disposable {
 
-	public HeightField field;
-	public Renderable ground;
+	public TerrainChunk field;
+	public TerrainChunk[] chunks;
 
-	private Texture diffusemap;
 
 	public Terrain(long seed)
 	{
+		MeshPart mp;
 		createHeightField(seed);
 		configureField();
 	}
@@ -44,7 +43,10 @@ public class Terrain implements RenderableProvider,Disposable {
 
 	private void createHeightField(Pixmap heightmap)
 	{
-		field = new HeightField(true, heightmap, true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+
+		chunks = new TerrainChunk[1];
+		chunks[0] = new TerrainChunk(true, heightmap, true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+		field = chunks[0];
 		heightmap.dispose();
 	}
 
@@ -64,7 +66,7 @@ public class Terrain implements RenderableProvider,Disposable {
 			}
 		}
 
-		field = new HeightField(true, data, fieldWidth,fieldHeight,true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
+		field = new TerrainChunk(true, data, fieldWidth,fieldHeight,true, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates);
 	}
 
 	private void configureField()
@@ -84,34 +86,44 @@ public class Terrain implements RenderableProvider,Disposable {
 		field.update();
 	}
 
-	public void createRenderable(Texture diffusemap)
-	{
-
-		ModelInstance mi;
-		this.diffusemap = diffusemap;
-		// max verts per mesh is 32767
-		ground = new Renderable();
-		ground.meshPart.mesh = field.mesh;
-		ground.meshPart.primitiveType = GL20.GL_TRIANGLES;
-		ground.meshPart.offset = 0;
-		ground.meshPart.size = field.mesh.getNumIndices();
-		//System.out.println("size:"+ground.meshPart.size);
-		ground.meshPart.update();
-		ground.material = new Material(TextureAttribute.createDiffuse(diffusemap));
-		ground.userData = "Terrain";
-
+	public Vector3 getWeightedNormalAt(Vector3 worldCoordinate,Vector3 store) {
+		// convert world coordinates to field coordinates
+		float fieldX = UtMath.scalarLimitsInterpolation(worldCoordinate.x, field.corner00.x, field.corner10.x, 0, field.width - 1);
+		float fieldY = UtMath.scalarLimitsInterpolation(worldCoordinate.z, field.corner00.z, field.corner01.z, 0, field.height - 1);
+		int x0 = (int) fieldX;
+		int y0 = (int) fieldY;
+		return field.getWeightedNormalAt(x0, y0 + 1, store);
 	}
+
+	public float getElevation(Vector3 worldCoordinate)
+	{
+		// convert world coordinates to field coordinates
+		float x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, field.corner00.x, field.corner10.x, 0, field.width - 1);
+		float y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, field.corner00.z, field.corner01.z, 0, field.height - 1);
+		return field.getElevationField(x, y);
+	}
+
+	public float getElevation(float worldX, float worldZ)
+	{
+		// convert world coordinates to field coordinates
+		float x = UtMath.scalarLimitsInterpolation(worldX, field.corner00.x, field.corner10.x, 0, field.width - 1);
+		float y = UtMath.scalarLimitsInterpolation(worldZ, field.corner00.z, field.corner01.z, 0, field.height - 1);
+		return field.getElevationField(x, y);
+	}
+
+	public boolean intersect(Ray ray, Vector3 store) {
+		return Intersector.intersectRayTriangles(ray, field.vertices, field.indices, field.stride, store);
+	}
+
 
 	@Override
 	public void dispose() {
-		if(diffusemap !=null)
-			diffusemap.dispose();
 		if(field !=null)
 			field.dispose();
 	}
 
 	@Override
 	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
-		renderables.add(ground);
+		renderables.add(field.renderable);
 	}
 }

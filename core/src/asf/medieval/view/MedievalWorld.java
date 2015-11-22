@@ -32,7 +32,6 @@ import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultRenderableSorter;
-import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -205,7 +204,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//addGameObject(new TerrainDebugView(this));
 			addGameObject(terrainView =new TerrainView(this));
 
-			scenario.heightField = terrainView.terrain.field;
+			scenario.terrain = terrainView.terrain;
 
 			scenario.setListener(this);
 
@@ -401,7 +400,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	@Override
 	public float getElevationAt(float x, float z)
 	{
-		return scenario.heightField.getElevation(x,z);
+		return scenario.terrain.getElevation(x,z);
 
 	}
 }

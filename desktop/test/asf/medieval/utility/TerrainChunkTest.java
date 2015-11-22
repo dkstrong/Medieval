@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 /**
  * Created by daniel on 11/17/15.
  */
-public class HeightFieldTest {
+public class TerrainChunkTest {
 
 	@Before
 	public void setUp() throws Exception {

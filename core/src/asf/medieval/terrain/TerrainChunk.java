@@ -5,12 +5,16 @@ import java.nio.ByteBuffer;
 
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
@@ -70,7 +74,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  *
  * @author Xoppa
  */
-public class HeightField implements Disposable {
+public class TerrainChunk implements Disposable {
 	public final Vector2 uvOffset = new Vector2(0, 0);
 	public final Vector2 uvScale = new Vector2(1, 1);
 	public final Color color00 = new Color(Color.WHITE);
@@ -89,8 +93,9 @@ public class HeightField implements Disposable {
 	public final boolean smooth;
 	public final Mesh mesh;
 
-	private final float vertices[];
-	private final int stride;
+	public final float vertices[];
+	public short[] indices;
+	public final int stride;
 
 	private final int posPos;
 	private final int norPos;
@@ -113,27 +118,27 @@ public class HeightField implements Disposable {
 	private final Vector3 tmpV9 = new Vector3();
 	private final Color tmpC = new Color();
 
-	public HeightField(boolean isStatic, final Pixmap map, boolean smooth, int attributes) {
+	public TerrainChunk(boolean isStatic, final Pixmap map, boolean smooth, int attributes) {
 		this(isStatic, map.getWidth(), map.getHeight(), smooth, attributes);
 		set(map);
 	}
 
-	public HeightField(boolean isStatic, final ByteBuffer colorData, final Pixmap.Format format, int width, int height,
-			   boolean smooth, int attributes) {
+	public TerrainChunk(boolean isStatic, final ByteBuffer colorData, final Pixmap.Format format, int width, int height,
+			    boolean smooth, int attributes) {
 		this(isStatic, width, height, smooth, attributes);
 		set(colorData, format);
 	}
 
-	public HeightField(boolean isStatic, final float[] data, int width, int height, boolean smooth, int attributes) {
+	public TerrainChunk(boolean isStatic, final float[] data, int width, int height, boolean smooth, int attributes) {
 		this(isStatic, width, height, smooth, attributes);
 		set(data);
 	}
 
-	public HeightField(boolean isStatic, int width, int height, boolean smooth, int attributes) {
+	public TerrainChunk(boolean isStatic, int width, int height, boolean smooth, int attributes) {
 		this(isStatic, width, height, smooth, MeshBuilder.createAttributes(attributes));
 	}
 
-	public HeightField(boolean isStatic, int width, int height, boolean smooth, VertexAttributes attributes) {
+	public TerrainChunk(boolean isStatic, int width, int height, boolean smooth, VertexAttributes attributes) {
 		this.posPos = attributes.getOffset(Usage.Position, -1);
 		this.norPos = attributes.getOffset(Usage.Normal, -1);
 		this.uvPos = attributes.getOffset(Usage.TextureCoordinates, -1);
@@ -156,7 +161,7 @@ public class HeightField implements Disposable {
 		setIndices();
 	}
 
-	public short[] indices;
+
 	private void setIndices() {
 		final int w = width - 1;
 		final int h = height - 1;
@@ -305,7 +310,7 @@ public class HeightField implements Disposable {
 		return out;
 	}
 
-	private Vector3 getWeightedNormalAt(int x, int y,Vector3 out) {
+	protected Vector3 getWeightedNormalAt(int x, int y,Vector3 out) {
 // This commented code is based on http://www.flipcode.com/archives/Calculating_Vertex_Normals_for_Height_Maps.shtml
 // Note that this approach only works for a heightfield on the XZ plane with a magnitude on the y axis
 // float sx = data[(x < width - 1 ? x + 1 : x) + y * width] + data[(x > 0 ? x-1 : x) + y * width];
@@ -365,13 +370,13 @@ public class HeightField implements Disposable {
 	 * @param store
 	 * @return
 	 */
-	private Vector3 getWorldCoordinate(int fieldX, int fieldY, Vector3 store) {
+	protected Vector3 getWorldCoordinate(int fieldX, int fieldY, Vector3 store) {
 		final int i = (fieldY * width +fieldX)*stride;
 		store.set(vertices[i], vertices[i + 1], vertices[i + 2]);
 		return store;
 	}
 
-	private Vector3 getWorldCoordinate(float fieldX, float fieldY, Vector3 store) {
+	protected Vector3 getWorldCoordinate(float fieldX, float fieldY, Vector3 store) {
 		store.set(fieldX,getElevationField(fieldX,fieldY),fieldY);
 		return store;
 	}
@@ -398,45 +403,37 @@ public class HeightField implements Disposable {
 		return UtMath.interpolateBilinear(fieldX - x0, fieldY - y0, s00, s10, s01, s11);
 	}
 
-
-	public Vector3 getWeightedNormalAt(Vector3 worldCoordinate,Vector3 store) {
-		// convert world coordinates to field coordinates
-		float fieldX = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
-		float fieldY = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
-		int x0 = (int) fieldX;
-		int y0 = (int) fieldY;
-		return getWeightedNormalAt(x0, y0 + 1, store);
-	}
-
-	public float getElevation(Vector3 worldCoordinate)
-	{
-		// convert world coordinates to field coordinates
-		float x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner10.x, 0, width - 1);
-		float y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner01.z, 0, height - 1);
-		return getElevationField(x,y);
-	}
-
-	public float getElevation(float worldX, float worldZ)
-	{
-		// convert world coordinates to field coordinates
-		float x = UtMath.scalarLimitsInterpolation(worldX, corner00.x, corner10.x, 0, width - 1);
-		float y = UtMath.scalarLimitsInterpolation(worldZ, corner00.z, corner01.z, 0, height - 1);
-		return getElevationField(x,y);
-	}
-
-	public boolean intersect(Ray ray, Vector3 store) {
-		return Intersector.intersectRayTriangles(ray, vertices,indices,stride,store );
-	}
-
 	//
 	//
 	//  End methods that requiring verts having been made
 	//
 	//
+	public Renderable renderable;
+
+	private Texture diffusemap;
+	public void createRenderable(Texture diffusemap)
+	{
+
+		this.diffusemap = diffusemap;
+		// max verts per mesh is 32767
+		renderable = new Renderable();
+		renderable.meshPart.mesh = mesh;
+		renderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
+		renderable.meshPart.offset = 0;
+		renderable.meshPart.size = mesh.getNumIndices();
+		//System.out.println("size:"+renderable.meshPart.size);
+		renderable.meshPart.update();
+		renderable.material = new Material(TextureAttribute.createDiffuse(diffusemap));
+		renderable.userData = "Terrain";
+
+	}
 
 	@Override
 	public void dispose() {
-		mesh.dispose();
+		if(mesh!=null)
+			mesh.dispose();
+		if(diffusemap !=null)
+			diffusemap.dispose();
 	}
 
 	/**

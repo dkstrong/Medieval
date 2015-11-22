@@ -4,7 +4,8 @@ import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.steer.SteerGraph;
 import asf.medieval.model.steer.StructureController;
 import asf.medieval.shape.Box;
-import asf.medieval.terrain.HeightField;
+import asf.medieval.terrain.Terrain;
+import asf.medieval.terrain.TerrainChunk;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -17,7 +18,7 @@ public class Scenario {
 	private transient Listener listener;
 
 	public final ScenarioRand rand;
-	public transient HeightField heightField;
+	public transient Terrain terrain;
 	public final SteerGraph steerGraph = new SteerGraph();
 
 	public IntMap<Player> players = new IntMap<Player>(2);
@@ -102,7 +103,7 @@ public class Scenario {
 		tokens.add(token);
 
 		setNonOverlappingPosition(token, location);
-		token.elevation = heightField.getElevation(location.x,location.y);
+		token.elevation = terrain.getElevation(location.x,location.y);
 
 		if(listener!=null)
 			listener.onNewToken(token);
@@ -122,7 +123,7 @@ public class Scenario {
 		token.shape = new Box( width, height, depth, width*0.05f, height, -depth*0.75f);
 		token.owner = players.get(owner);
 		token.location.set(location);
-		token.elevation = heightField.getElevation(location.x,location.y);
+		token.elevation = terrain.getElevation(location.x,location.y);
 		token.agent = new StructureController(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);

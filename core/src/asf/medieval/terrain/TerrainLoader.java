@@ -46,25 +46,25 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 			Pixmap heightPix = new Pixmap(resolve(parameter.heightmapName));
 			Terrain terrain = new Terrain(heightPix);
 
-			terrain.createRenderable(getDiffuseMap(terrain, parameter));
+			terrain.field.createRenderable(getDiffuseMap(terrain.field, parameter));
 			return terrain;
 		}else{
 			Terrain terrain = new Terrain(parameter.seed);
-			terrain.createRenderable(getDiffuseMap(terrain,parameter));
+			terrain.field.createRenderable(getDiffuseMap(terrain.field, parameter));
 			return terrain;
 		}
 
 	}
 
-	private Texture getDiffuseMap(Terrain terrain, TerrainParameter parameter){
+	private Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter parameter){
 		if(parameter.generatedDiffuseMapSize >0){
-			return generateDiffuseMap(terrain, parameter);
+			return generateDiffuseMap(terrainChunk, parameter);
 		}else{
 			return loadDiffuseMap(parameter);
 		}
 	}
 
-	private Texture generateDiffuseMap(Terrain terrain, TerrainParameter param){
+	private Texture generateDiffuseMap(TerrainChunk terrainChunk, TerrainParameter param){
 		Pixmap pix1 = new Pixmap(resolve(param.tex1));
 		Pixmap pix2 = new Pixmap(resolve(param.tex2));
 		Pixmap pix3 = new Pixmap(resolve(param.tex3));
@@ -79,10 +79,10 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 
 		for(int x=0; x< splatResolution; x++){
 			for(int y=0; y<splatResolution; y++){
-				float fieldX = (x/(float)splatResolution) * terrain.field.width;
-				float fieldY = (y/(float)splatResolution) * terrain.field.height;
+				float fieldX = (x/(float)splatResolution) * terrainChunk.width;
+				float fieldY = (y/(float)splatResolution) * terrainChunk.height;
 
-				float a = terrain.field.getElevationField((int)fieldX,(int)fieldY) /terrain.field.magnitude.y;
+				float a = terrainChunk.getElevationField((int)fieldX,(int)fieldY) /terrainChunk.magnitude.y;
 				Color.rgba8888ToColor(c1, UtPixmap.getColorStretchLinearTile(pix1, param.tex1Scale.x, param.tex1Scale.y, splatPix, x, y));
 				Color.rgba8888ToColor(c2, UtPixmap.getColorStretchLinearTile(pix2, param.tex2Scale.x, param.tex2Scale.y, splatPix, x, y));
 				//Color.rgb888ToColor(c3,UtPixmap.getColorStretchLinearTile(pix3, param.tex3Scale.x, param.tex3Scale.y, splatPix, x, y));
