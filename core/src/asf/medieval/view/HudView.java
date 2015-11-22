@@ -19,7 +19,7 @@ import com.badlogic.gdx.utils.Align;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class HudView implements View,InputProcessor {
+public class HudView implements View, InputProcessor {
 
 	private MedievalWorld world;
 	public HudCommandView hudCommandView;
@@ -33,7 +33,6 @@ public class HudView implements View,InputProcessor {
 
 	private Container topLeftLabelContainer;
 	private Label topLeftLabel;
-
 
 
 	public HudView(MedievalWorld world) {
@@ -60,7 +59,6 @@ public class HudView implements View,InputProcessor {
 		world.stage.addActor(topLeftLabelContainer);
 
 
-
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 
@@ -70,18 +68,18 @@ public class HudView implements View,InputProcessor {
 		topRightLabelContainer.setBounds(0, 0, width, height);
 		bottomLeftLabelContainer.setBounds(0, 0, width, height);
 		topLeftLabelContainer.setBounds(0, 0, width, height);
-		hudCommandView.resize(width,height);
-		hudSelectionView.resize(width,height);
+		if(hudCommandView!=null)
+			hudCommandView.resize(width, height);
+		if(hudSelectionView!=null)
+			hudSelectionView.resize(width, height);
 	}
 
 	@Override
-	public void update(float delta)
-	{
-
-
-
-
-
+	public void update(float delta) {
+		if(hudCommandView!=null)
+			hudCommandView.update(delta);
+		if(hudSelectionView!=null)
+			hudSelectionView.update(delta);
 	}
 
 
@@ -99,41 +97,44 @@ public class HudView implements View,InputProcessor {
 		int availableProcessors = rt.availableProcessors();
 		*/
 
-
+		if(hudCommandView!=null)
+			hudCommandView.render(delta);
+		if(hudSelectionView!=null)
+			hudSelectionView.render(delta);
 
 
 		String gameServerStatusString = null;
-		String gameClientStatusString=null;
-		if(world.gameServer!=null){
+		String gameClientStatusString = null;
+		if (world.gameServer != null) {
 			gameServerStatusString = world.gameServer.isBound() ? "Server Online" : "Server Offline";
 		}
 
-		if(world.gameClient instanceof NetworkedGameClient){
+		if (world.gameClient instanceof NetworkedGameClient) {
 			NetworkedGameClient networkedGameClient = (NetworkedGameClient) world.gameClient;
-			if(gameServerStatusString== null)
-				gameServerStatusString = networkedGameClient.isConnected() ? "Connected to: "+ networkedGameClient.hostName+":"+ networkedGameClient.tcpPort : "No Server Connection";
+			if (gameServerStatusString == null)
+				gameServerStatusString = networkedGameClient.isConnected() ? "Connected to: " + networkedGameClient.hostName + ":" + networkedGameClient.tcpPort : "No Server Connection";
 
-			gameClientStatusString="Players:";
-			if(networkedGameClient.player.id > 0 && networkedGameClient.players.containsKey(networkedGameClient.player.id)){
-				gameClientStatusString+= "\n"+String.valueOf(networkedGameClient.player);
-				requestPingTimer-=delta;
-				if(requestPingTimer <0){
+			gameClientStatusString = "Players:";
+			if (networkedGameClient.player.id > 0 && networkedGameClient.players.containsKey(networkedGameClient.player.id)) {
+				gameClientStatusString += "\n" + String.valueOf(networkedGameClient.player);
+				requestPingTimer -= delta;
+				if (requestPingTimer < 0) {
 					requestPingTimer = 15;
 					networkedGameClient.client.updateReturnTripTime();
 				}
 				int returnTripTime = networkedGameClient.client.getReturnTripTime();
-				gameClientStatusString+=" ["+returnTripTime+"]";
+				gameClientStatusString += " [" + returnTripTime + "]";
 			}
 			for (Player player : networkedGameClient.players.values()) {
-				if(player.id != networkedGameClient.player.id){
-					gameClientStatusString+= "\n"+String.valueOf(player);
+				if (player.id != networkedGameClient.player.id) {
+					gameClientStatusString += "\n" + String.valueOf(player);
 				}
 			}
 			String topLeftText = String.valueOf(world.gameClient);
-			topLeftText+="\nbuffer: "+networkedGameClient.numLockstepFramesInBuffer();
+			topLeftText += "\nbuffer: " + networkedGameClient.numLockstepFramesInBuffer();
 			topLeftLabel.setText(topLeftText);
 
-		}else{
+		} else {
 			topLeftLabel.setText("");
 		}
 
@@ -149,32 +150,27 @@ public class HudView implements View,InputProcessor {
 
 		);
 
-		if (hudSelectionView.selectedViews.size < 1){
+		if (hudSelectionView==null || hudSelectionView.selectedViews.size < 1) {
 			bottomLeftLabel.setText("");
-		}else{
+		} else {
 			bottomLeftLabel.setText("Selected: " + hudSelectionView.selectedViews.size);
 		}
 
 	}
 
 
-
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-
 		return false;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-
-
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-
 		return false;
 	}
 
@@ -185,16 +181,11 @@ public class HudView implements View,InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-
 		return false;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
-		switch(keycode)
-		{
-
-		}
 		return false;
 	}
 

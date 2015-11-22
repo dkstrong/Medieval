@@ -44,6 +44,7 @@ public class TerrainView implements View {
 		//world.shadowBatch.render(terrain);
 		//world.modelBatch.render(terrain);
 		world.modelBatch.render(terrain, world.environment);
+		//world.modelBatch.render()
 
 
 

@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
@@ -85,17 +86,20 @@ public class Terrain implements RenderableProvider,Disposable {
 
 	public void createRenderable(Texture diffusemap)
 	{
-		UtLog.info("max short value:"+Short.MAX_VALUE);
-		this.diffusemap = diffusemap;
 
+		ModelInstance mi;
+		this.diffusemap = diffusemap;
+		// max verts per mesh is 32767
 		ground = new Renderable();
-		ground.environment = null; // doesnt seem to matter- gets set by renderable provider stuff
 		ground.meshPart.mesh = field.mesh;
 		ground.meshPart.primitiveType = GL20.GL_TRIANGLES;
 		ground.meshPart.offset = 0;
 		ground.meshPart.size = field.mesh.getNumIndices();
-		//ground.meshPart.update();
+		//System.out.println("size:"+ground.meshPart.size);
+		ground.meshPart.update();
 		ground.material = new Material(TextureAttribute.createDiffuse(diffusemap));
+		ground.userData = "Terrain";
+
 	}
 
 	@Override

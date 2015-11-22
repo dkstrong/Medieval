@@ -31,6 +31,8 @@ import com.badlogic.gdx.graphics.g3d.decals.CameraGroupStrategy;
 import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultRenderableSorter;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -100,7 +102,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		shadowBatch = new ModelBatch(new DepthShaderProvider());
 		decalBatch = new DecalBatch(32, new CameraGroupStrategy(cameraManager.cam));
 
-		modelBatch = new ModelBatch();
+		// https://github.com/libgdx/libgdx/wiki/ModelBatch
+		modelBatch = new ModelBatch(null,new MedievalShaderProvider(), new DefaultRenderableSorter());
+
 		assetManager = new AssetManager();
 
 		assetManager.setLoader(Terrain.class, new TerrainLoader(new InternalFileHandleResolver()));
@@ -123,7 +127,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
 		terrainParameter.seed = settings.random.nextLong();
-		terrainParameter.heightmapName = "Models/Terrain/map7.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg
+		terrainParameter.heightmapName = "Models/Terrain/map8.jpg"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
 		//"Textures/Terrain/sand512.jpg"
 		//"Textures/Floor/wallTiles.png"
 		terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg";
@@ -193,23 +197,23 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//dungeonApp.music.playSong(SongId.RitualNorm);
 
 			addGameObject(hudView = new HudView(this));
-			addGameObject(hudView.hudCommandView);
-			addGameObject(hudView.hudSelectionView);
 
 			//addGameObject(characterGameObject = new CharacterGameObject(this, mission.characterToken));
 			//cameraManager.setChaseTarget(characterGameObject);
-
+			addGameObject(new ShaderTestView(this));
 
 			//addGameObject(new TerrainDebugView(this));
 			addGameObject(terrainView =new TerrainView(this));
 
 			scenario.heightField = terrainView.terrain.field;
+
 			scenario.setListener(this);
 
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
 			inputMultiplexer.addProcessor(hudView);
 			inputMultiplexer.addProcessor(hudView.hudCommandView);
 			inputMultiplexer.addProcessor(hudView.hudSelectionView);
+
 
 		}
 
@@ -224,7 +228,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	}
 
 	private void onAllPlayersReady(){
-		for(int i= 0; i<1; i++){
+		for(int i= 0; i<0; i++){
 			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(1, new Vector2(0,0),false),30,50,-50,50);
 		}
 
