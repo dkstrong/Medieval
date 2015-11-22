@@ -117,7 +117,7 @@ public class TerrainChunk implements Disposable {
 	private final Vector3 tmpV8 = new Vector3();
 	private final Vector3 tmpV9 = new Vector3();
 	private final Color tmpC = new Color();
-
+/*
 	public TerrainChunk(boolean isStatic, final Pixmap map, boolean smooth, int attributes) {
 		this(isStatic, map.getWidth(), map.getHeight(), smooth, attributes);
 		set(map);
@@ -137,12 +137,14 @@ public class TerrainChunk implements Disposable {
 	public TerrainChunk(boolean isStatic, int width, int height, boolean smooth, int attributes) {
 		this(isStatic, width, height, smooth, MeshBuilder.createAttributes(attributes));
 	}
+	*/
 
-	public TerrainChunk(boolean isStatic, int width, int height, boolean smooth, VertexAttributes attributes) {
-		this.posPos = attributes.getOffset(Usage.Position, -1);
-		this.norPos = attributes.getOffset(Usage.Normal, -1);
-		this.uvPos = attributes.getOffset(Usage.TextureCoordinates, -1);
-		this.colPos = attributes.getOffset(Usage.ColorUnpacked, -1);
+	public TerrainChunk(boolean isStatic, int width, int height, boolean smooth, int attributes) {
+		VertexAttributes vertexAttributes = MeshBuilder.createAttributes(attributes);
+		this.posPos = vertexAttributes.getOffset(Usage.Position, -1);
+		this.norPos = vertexAttributes.getOffset(Usage.Normal, -1);
+		this.uvPos = vertexAttributes.getOffset(Usage.TextureCoordinates, -1);
+		this.colPos = vertexAttributes.getOffset(Usage.ColorUnpacked, -1);
 		smooth = smooth || (norPos < 0); // cant have sharp edges without normals
 
 		this.width = width;
@@ -150,12 +152,12 @@ public class TerrainChunk implements Disposable {
 		this.smooth = smooth;
 		this.data = new float[width * height];
 
-		this.stride = attributes.vertexSize / 4;
+		this.stride = vertexAttributes.vertexSize / 4;
 
 		final int numVertices = smooth ? width * height : (width - 1) * (height - 1) * 4;
 		final int numIndices = (width - 1) * (height - 1) * 6;
 
-		this.mesh = new Mesh(isStatic, numVertices, numIndices, attributes);
+		this.mesh = new Mesh(isStatic, numVertices, numIndices, vertexAttributes);
 		this.vertices = new float[numVertices * stride];
 
 		setIndices();
@@ -205,6 +207,8 @@ public class TerrainChunk implements Disposable {
 		System.arraycopy(data, offset, this.data, 0, this.data.length);
 		update();
 	}
+
+	//
 
 	public void update() {
 		if (smooth) {
@@ -408,9 +412,25 @@ public class TerrainChunk implements Disposable {
 	//  End methods that requiring verts having been made
 	//
 	//
-	public Renderable renderable;
 
+	public void configureField(float startW, float startH, float endW, float endH, Color color, Vector3 magnitude)
+	{
+		uvScale.set(1f,1f);
+		corner00.set(startW, 0, startH);
+		corner10.set(endW, 0, startH);
+		corner01.set(startW, 0, endH);
+		corner11.set(endW, 0, endH);
+		color00.set(color);
+		color01.set(color);
+		color10.set(color);
+		color11.set(color);
+		this.magnitude.set(magnitude);
+		update();
+	}
+
+	public Renderable renderable;
 	private Texture diffusemap;
+
 	public void createRenderable(Texture diffusemap)
 	{
 

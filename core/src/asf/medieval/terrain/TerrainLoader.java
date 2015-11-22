@@ -2,18 +2,15 @@ package asf.medieval.terrain;
 
 import asf.medieval.utility.UtMath;
 import asf.medieval.utility.UtPixmap;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.AsynchronousAssetLoader;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
-import com.badlogic.gdx.assets.loaders.TextureLoader;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
@@ -41,23 +38,21 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 	@Override
 	public Terrain loadSync(AssetManager manager, String fileName, FileHandle file, TerrainParameter parameter) {
 		// TODO: apply min/mag
+		Terrain terrain = new Terrain();
 
-		if(parameter.heightmapName != null){
+		if(parameter.heightmapName != null && false){
 			Pixmap heightPix = new Pixmap(resolve(parameter.heightmapName));
-			Terrain terrain = new Terrain(heightPix);
-
-			terrain.field.createRenderable(getDiffuseMap(terrain.field, parameter));
-			return terrain;
+			terrain.createHeightField(heightPix);
 		}else{
-			Terrain terrain = new Terrain(parameter.seed);
-			terrain.field.createRenderable(getDiffuseMap(terrain.field, parameter));
-			return terrain;
+			terrain.createHeightField(parameter.seed);
 		}
+		terrain.createRenderables(this,parameter);
+		return terrain;
 
 	}
 
-	private Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter parameter){
-		if(parameter.generatedDiffuseMapSize >0){
+	protected Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter parameter){
+		if(parameter.generatedDiffuseMapSize >0 && false){
 			return generateDiffuseMap(terrainChunk, parameter);
 		}else{
 			return loadDiffuseMap(parameter);
