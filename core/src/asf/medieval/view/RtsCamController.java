@@ -50,7 +50,7 @@ public class RtsCamController implements InputProcessor {
 		setMaxSpeed(TILT, 2f, 0.3f);
 		setMaxSpeed(ZOOM, 60f, 0.25f);
 
-		minElevation = 1;
+		minElevation = 10;
 	}
 
 	// SIDE and FWD min/max values are ignored, need to fix this..

@@ -433,7 +433,7 @@ public class TerrainChunk implements Disposable {
 	//
 	//
 
-	public void configureField(float startW, float startH, float endW, float endH, Color color, Vector3 magnitude)
+	public void configureField(float startW, float startH, float endW, float endH, Color color, float magnitude)
 	{
 		uvScale.set(1f,1f);
 		corner00.set(startW, 0, startH);
@@ -444,7 +444,7 @@ public class TerrainChunk implements Disposable {
 		color01.set(color);
 		color10.set(color);
 		color11.set(color);
-		this.magnitude.set(magnitude);
+		this.magnitude.set(0,magnitude,0);
 		update();
 	}
 

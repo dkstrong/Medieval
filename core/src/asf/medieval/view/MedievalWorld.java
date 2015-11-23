@@ -39,6 +39,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import java.io.InterruptedIOException;
 import java.util.Random;
 
 /**
@@ -125,11 +126,22 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
+
+		terrainParameter.heightmapName = "Models/Terrain/mountains128.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
+
 		terrainParameter.seed = settings.random.nextLong();
-		terrainParameter.heightmapName = "Models/Terrain/mountains512.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
+		terrainParameter.fieldWidth = 128;
+		terrainParameter.fieldHeight = 200;
+
+		terrainParameter.terrainScale = 200;
+		terrainParameter.terrainMagnitude = 30;
+
+		terrainParameter.chunkWidth = 128;
+		terrainParameter.chunkHeight = 128;
+
 		//"Textures/Terrain/sand512.jpg"
 		//"Textures/Floor/wallTiles.png"
-		terrainParameter.diffusemapName = "Textures/Terrain/checker512.png"; // sand512.jpg
+		terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg"; // sand512.jpg
 		terrainParameter.generatedDiffuseMapSize = 1024;
 		terrainParameter.tex1="Textures/Terrain/grass_2.png"; // grass_2
 		terrainParameter.tex1Scale.set(2,2);

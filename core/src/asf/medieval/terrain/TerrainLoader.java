@@ -1,5 +1,6 @@
 package asf.medieval.terrain;
 
+import asf.medieval.utility.OpenSimplexNoise;
 import asf.medieval.utility.UtMath;
 import asf.medieval.utility.UtPixmap;
 import com.badlogic.gdx.assets.AssetDescriptor;
@@ -36,28 +37,71 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 	}
 
 	@Override
-	public Terrain loadSync(AssetManager manager, String fileName, FileHandle file, TerrainParameter parameter) {
+	public Terrain loadSync(AssetManager manager, String fileName, FileHandle file, TerrainParameter param) {
 		// TODO: apply min/mag
 		Terrain terrain = new Terrain();
-		terrain.corner00.set(-parameter.terrainScale,0,-parameter.terrainScale);
-		terrain.corner11.set(parameter.terrainScale,0,parameter.terrainScale);
+		terrain.corner00.set(-param.terrainScale,0,-param.terrainScale);
+		terrain.corner11.set(param.terrainScale,0,param.terrainScale);
+		terrain.magnitude = param.terrainMagnitude;
+		terrain.chunkDataMaxWidth = param.chunkWidth;
+		terrain.chunkDataMaxHeight = param.chunkHeight;
 
-		if(parameter.heightmapName != null){
-			Pixmap heightPix = new Pixmap(resolve(parameter.heightmapName));
-			terrain.createHeightField(heightPix);
-		}else{
-			terrain.createHeightField(parameter.seed,parameter.fieldWidth,parameter.fieldHeight);
-		}
-		terrain.createRenderables(this,parameter);
+		createFieldData(terrain, param);
+		terrain.createRenderables(this,param);
 		return terrain;
 
 	}
 
-	protected Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter parameter){
-		if(parameter.generatedDiffuseMapSize >0 && false){
-			return generateDiffuseMap(terrainChunk, parameter);
+	private void createFieldData(Terrain terrain, TerrainParameter param){
+		if(param.heightmapName != null){
+			loadFieldData(terrain,param);
 		}else{
-			return loadDiffuseMap(parameter);
+			generateFieldData(terrain,param);
+		}
+	}
+
+	private void generateFieldData(Terrain terrain, TerrainParameter param)
+	{
+		// max smooth: 181 x 181
+		// max unsmooth: 128 x 128
+
+		final int fieldWidth = param.fieldWidth;
+		final int fieldHeight = param.fieldHeight;
+		terrain.fieldData = new float[fieldWidth*fieldHeight];
+
+
+		final double featureSize = 20d;
+		OpenSimplexNoise noise = new OpenSimplexNoise(param.seed);
+		for (int x = 0; x < fieldWidth; x++){
+			for (int y = 0; y < fieldHeight; y++){
+
+				terrain.fieldData[y * fieldWidth + x] = UtMath.scalarLimitsInterpolation((float) noise.eval(x / featureSize, y / featureSize), -1f, 1f, 0f, 1f);
+				//data[y * fieldWidth + x] = 1;
+			}
+		}
+
+		terrain.fieldWidth = param.fieldWidth;
+		terrain.fieldHeight = param.fieldHeight;
+		terrain.createHeightField();
+	}
+
+	private void loadFieldData(Terrain terrain, TerrainParameter param){
+		Pixmap heightPix = new Pixmap(resolve(param.heightmapName));
+		final int fieldWidth = heightPix.getWidth();
+		final int fieldHeight = heightPix.getHeight();
+		terrain.fieldData = TerrainChunk.heightColorsToMap(heightPix.getPixels(), heightPix.getFormat(),fieldWidth , fieldHeight);
+		heightPix.dispose();
+
+		terrain.fieldWidth = fieldWidth;
+		terrain.fieldHeight = fieldHeight;
+		terrain.createHeightField();
+	}
+
+	protected Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter param){
+		if(param.diffusemapName != null){
+			return loadDiffuseMap(param);
+		}else{
+			return generateDiffuseMap(terrainChunk, param);
 		}
 	}
 
@@ -132,18 +176,25 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 	}
 
 	static public class TerrainParameter extends AssetLoaderParameters<Terrain> {
-		public String heightmapName;
 
-		public long seed;
-		public int fieldWidth = 128;
-		public int fieldHeight = 200;
+		public String heightmapName; 	// heightmap texture to load height data from (currently supports RGB888, RGBA8888, and Alpha formats)
+						// setting this value is what tells the terrain to load from a texture instead of generate from seed
 
-		public float terrainScale = 200;
+		public long seed; // seed to use to generate height data (if heightmapName != null then this does nothing)
+		public int fieldWidth = 128; // how wide the field data array is, only used if generating terrain.
+		public int fieldHeight = 128; // how tall the field data array is, only used if generating terrain.
+
+		public float terrainScale = 200; // the terrains "extent" (half the width) in world units
+		public float terrainMagnitude = 30; // the highest peaks of the terrain in world units
+
+		public int chunkWidth = 128; // how many data points wide each chunk is. , max chunk is 180x180 or the mesh will be too big to render
+		public int chunkHeight = 128; // how many data points tall each chunk is
 
 		public Texture.TextureFilter minFilter = Texture.TextureFilter.Nearest;
 		public Texture.TextureFilter magFilter = Texture.TextureFilter.Nearest;
 
-		public String diffusemapName;
+		public String diffusemapName;  // diffusemap texture to use for each terrain chunk.
+						// setting this values tells terrain to load diffusemap from texture instead of generating it
 
 		public int generatedDiffuseMapSize;
 		public String tex1;

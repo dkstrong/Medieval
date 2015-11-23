@@ -31,36 +31,6 @@ public class Terrain implements RenderableProvider,Disposable {
 
 	}
 
-	protected void createHeightField(Pixmap heightmap)
-	{
-		final int fieldWidth = heightmap.getWidth();
-		final int fieldHeight = heightmap.getHeight();
-		float[] data = TerrainChunk.heightColorsToMap(heightmap.getPixels(), heightmap.getFormat(),fieldWidth , fieldHeight);
-		heightmap.dispose();
-		createHeightField(data, fieldWidth, fieldHeight);
-	}
-
-	protected void createHeightField(long seed, final int fieldWidth, final int fieldHeight)
-	{
-		// max smooth: 181 x 181
-		// max unsmooth: 128 x 128
-
-		final float data[] = new float[fieldWidth*fieldHeight];
-
-		final double featureSize = 20d;
-		OpenSimplexNoise noise = new OpenSimplexNoise(seed);
-		for (int x = 0; x < fieldWidth; x++){
-			for (int y = 0; y < fieldHeight; y++){
-
-				data[y * fieldWidth + x] = UtMath.scalarLimitsInterpolation((float) noise.eval(x / featureSize, y / featureSize), -1f, 1f, 0f, 1f);
-				//data[y * fieldWidth + x] = 1;
-			}
-		}
-
-		createHeightField(data,fieldWidth, fieldHeight);
-
-	}
-
 	private TerrainChunk getTerrainChunk(int x, int y){
 		return chunkGrid.get(x).get(y);
 	}
@@ -82,35 +52,30 @@ public class Terrain implements RenderableProvider,Disposable {
 	}
 
 	private Array<Array<TerrainChunk>> chunkGrid;
-	public int maxVertsPerChunks = 32767 ;
+	//public int maxVertsPerChunks = 32767 ;
 	//public int maxVertsPerChunks = 1000;
 
 	public final Vector3 corner00 = new Vector3(-250, 0, -250);
 	public final Vector3 corner11 = new Vector3(250, 0, 250);
 	public final Color color = new Color(0.75f,0.75f,0.75f,1f);
-	public final Vector3 magnitude = new Vector3(0, 30f, 0f);
+	public float magnitude = 30;
 
-	private float[] fieldData;
-	private int fieldWidth;
-	private int fieldHeight;
-	private int chunkDataMaxWidth = 128;
-	private int chunkDataMaxHeight =128;
+	public float[] fieldData;
+	public int fieldWidth=128;
+	public int fieldHeight=128;
+	public int chunkDataMaxWidth = 128;
+	public int chunkDataMaxHeight =128;
 
-	protected void createHeightField(float[] data, int fieldWidth, int fieldHeight){
-		this.fieldData = data;
-		this.fieldWidth = fieldWidth;
-		this.fieldHeight = fieldHeight;
+	protected void createHeightField(){
 
 		float heightRatio = fieldHeight / (float)fieldWidth;
 		corner00.z *= heightRatio;
 		corner11.z *= heightRatio;
 
-
-
 		final int vertexAttributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates;
 		final boolean isStatic = true;
 		final boolean smooth = true;
-		final int maxDataPerChunk = smooth ? maxVertsPerChunks : maxVertsPerChunks /2;
+		//final int maxDataPerChunk = smooth ? maxVertsPerChunks : maxVertsPerChunks /2;
 
 		chunkGrid = new Array<Array<TerrainChunk>>(true, 4, Array.class);
 		int chunk =0;
@@ -199,9 +164,11 @@ public class Terrain implements RenderableProvider,Disposable {
 		fieldX -= gridX *(float)chunkDataMaxWidth;
 		fieldY -= gridY *(float)chunkDataMaxHeight;
 
-		int x0 = (int) fieldX;
-		int y0 = (int) fieldY;
-		return chunk.getWeightedNormalAt(x0, y0 + 1, store);
+		//int x0 = Math.round(fieldX);
+		//int y0 = Math.round(fieldY) ;
+		int x0 = (int)fieldX;
+		int y0 = (int)fieldY;
+		return chunk.getWeightedNormalAt(x0, y0, store);
 
 	}
 
