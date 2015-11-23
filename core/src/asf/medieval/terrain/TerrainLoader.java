@@ -39,12 +39,14 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 	public Terrain loadSync(AssetManager manager, String fileName, FileHandle file, TerrainParameter parameter) {
 		// TODO: apply min/mag
 		Terrain terrain = new Terrain();
+		terrain.corner00.set(-parameter.terrainScale,0,-parameter.terrainScale);
+		terrain.corner11.set(parameter.terrainScale,0,parameter.terrainScale);
 
-		if(parameter.heightmapName != null  && false){
+		if(parameter.heightmapName != null){
 			Pixmap heightPix = new Pixmap(resolve(parameter.heightmapName));
 			terrain.createHeightField(heightPix);
 		}else{
-			terrain.createHeightField(parameter.seed);
+			terrain.createHeightField(parameter.seed,parameter.fieldWidth,parameter.fieldHeight);
 		}
 		terrain.createRenderables(this,parameter);
 		return terrain;
@@ -52,7 +54,7 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 	}
 
 	protected Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter parameter){
-		if(parameter.generatedDiffuseMapSize >0 ){
+		if(parameter.generatedDiffuseMapSize >0 && false){
 			return generateDiffuseMap(terrainChunk, parameter);
 		}else{
 			return loadDiffuseMap(parameter);
@@ -131,6 +133,16 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 
 	static public class TerrainParameter extends AssetLoaderParameters<Terrain> {
 		public String heightmapName;
+
+		public long seed;
+		public int fieldWidth = 128;
+		public int fieldHeight = 200;
+
+		public float terrainScale = 200;
+
+		public Texture.TextureFilter minFilter = Texture.TextureFilter.Nearest;
+		public Texture.TextureFilter magFilter = Texture.TextureFilter.Nearest;
+
 		public String diffusemapName;
 
 		public int generatedDiffuseMapSize;
@@ -141,9 +153,7 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 		public String tex3;
 		public final Vector2 tex3Scale = new Vector2(1,1);
 
-		public Texture.TextureFilter minFilter = Texture.TextureFilter.Nearest;
-		public Texture.TextureFilter magFilter = Texture.TextureFilter.Nearest;
 
-		public long seed;
+
 	}
 }

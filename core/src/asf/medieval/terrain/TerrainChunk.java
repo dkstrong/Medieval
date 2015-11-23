@@ -317,9 +317,9 @@ public class TerrainChunk implements Disposable {
 	}
 
 	protected Vector3 getPositionAt(int x, int y, Vector3 out) {
-		if(terrain!=null && terrain.masterChunk != this){
-			return terrain.masterChunk.getPositionAt(chunkStartX+x, chunkStartY+y, out);
-		}
+		//if(terrain!=null && terrain.masterChunk != this){
+			//return terrain.masterChunk.getPositionAt(chunkStartX+x, chunkStartY+y, out);
+		//}
 		final float dx = (float) x / (float) (width - 1);
 		final float dy = (float) y / (float) (height - 1);
 		final float a = data[y * width + x];
@@ -346,10 +346,10 @@ public class TerrainChunk implements Disposable {
 // The following approach weights the normal of the four triangles (half quad) surrounding the position.
 // A more accurate approach would be to weight the normal of the actual triangles.
 
-		if(terrain!=null && terrain.masterChunk != this){
+		//if(terrain!=null && terrain.masterChunk != this){
 			//System.out.println("using master chunk normal");
-			return terrain.masterChunk.getWeightedNormalAt(chunkStartX+x, chunkStartY+y, out);
-		}
+		//	return terrain.masterChunk.getWeightedNormalAt(chunkStartX+x, chunkStartY+y, out);
+		//}
 
 		int faces = 0;
 		out.set(0, 0, 0);

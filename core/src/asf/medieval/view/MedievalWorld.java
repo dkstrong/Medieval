@@ -129,7 +129,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		terrainParameter.heightmapName = "Models/Terrain/mountains512.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
 		//"Textures/Terrain/sand512.jpg"
 		//"Textures/Floor/wallTiles.png"
-		terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg";
+		terrainParameter.diffusemapName = "Textures/Terrain/checker512.png"; // sand512.jpg
 		terrainParameter.generatedDiffuseMapSize = 1024;
 		terrainParameter.tex1="Textures/Terrain/grass_2.png"; // grass_2
 		terrainParameter.tex1Scale.set(2,2);
