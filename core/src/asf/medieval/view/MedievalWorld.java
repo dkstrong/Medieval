@@ -126,7 +126,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
 		terrainParameter.seed = settings.random.nextLong();
-		terrainParameter.heightmapName = "Models/Terrain/map8.jpg"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
+		terrainParameter.heightmapName = "Models/Terrain/mountains512.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
 		//"Textures/Terrain/sand512.jpg"
 		//"Textures/Floor/wallTiles.png"
 		terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg";

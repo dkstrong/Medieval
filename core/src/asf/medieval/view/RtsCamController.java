@@ -42,10 +42,10 @@ public class RtsCamController implements InputProcessor {
 		setMinMaxValues(SIDE, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(ROT, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(TILT, UtMath.PI / 42f, UtMath.PI/3f);
-		setMinMaxValues(ZOOM, 4, 100);
+		setMinMaxValues(ZOOM, 4, 200);
 
-		setMaxSpeed(FWD, 24f * 2f, 0.25f);
-		setMaxSpeed(SIDE, 24f*2f, 0.25f);
+		setMaxSpeed(FWD, 24f * 2f*2f, 0.25f);
+		setMaxSpeed(SIDE, 24f*2f*2f, 0.25f);
 		setMaxSpeed(ROT, 2f, 0.3f);
 		setMaxSpeed(TILT, 2f, 0.3f);
 		setMaxSpeed(ZOOM, 60f, 0.25f);
@@ -120,6 +120,7 @@ public class RtsCamController implements InputProcessor {
 		center.x = UtMath.clamp(center.x, minValue[SIDE], maxValue[SIDE]);
 		center.z = UtMath.clamp(center.z, minValue[FWD], maxValue[FWD]);
 
+		/*
 		final float elevation = elevationProvider.getElevationAt(center.x, center.z);
 		//float targetY = (int) (Math.ceil(elevation / 2f) * 2f);
 		if(elevation < minElevation){
@@ -127,6 +128,8 @@ public class RtsCamController implements InputProcessor {
 		}else {
 			center.y = elevation * 0.45f;
 		}
+		*/
+		center.y = minElevation;
 
 
 

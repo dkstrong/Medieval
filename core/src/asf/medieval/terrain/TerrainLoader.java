@@ -40,7 +40,7 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 		// TODO: apply min/mag
 		Terrain terrain = new Terrain();
 
-		if(parameter.heightmapName != null && false){
+		if(parameter.heightmapName != null  && false){
 			Pixmap heightPix = new Pixmap(resolve(parameter.heightmapName));
 			terrain.createHeightField(heightPix);
 		}else{
@@ -52,7 +52,7 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 	}
 
 	protected Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter parameter){
-		if(parameter.generatedDiffuseMapSize >0 && false){
+		if(parameter.generatedDiffuseMapSize >0 ){
 			return generateDiffuseMap(terrainChunk, parameter);
 		}else{
 			return loadDiffuseMap(parameter);
@@ -74,10 +74,10 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 
 		for(int x=0; x< splatResolution; x++){
 			for(int y=0; y<splatResolution; y++){
-				float fieldX = (x/(float)splatResolution) * terrainChunk.width;
-				float fieldY = (y/(float)splatResolution) * terrainChunk.height;
+				float chunkX = (x/(float)splatResolution) * terrainChunk.width;
+				float chunkY = (y/(float)splatResolution) * terrainChunk.height;
 
-				float a = terrainChunk.getElevationField((int)fieldX,(int)fieldY) /terrainChunk.magnitude.y;
+				float a = terrainChunk.getElevation((int)chunkX,(int)chunkY) /terrainChunk.magnitude.y;
 				Color.rgba8888ToColor(c1, UtPixmap.getColorStretchLinearTile(pix1, param.tex1Scale.x, param.tex1Scale.y, splatPix, x, y));
 				Color.rgba8888ToColor(c2, UtPixmap.getColorStretchLinearTile(pix2, param.tex2Scale.x, param.tex2Scale.y, splatPix, x, y));
 				//Color.rgb888ToColor(c3,UtPixmap.getColorStretchLinearTile(pix3, param.tex3Scale.x, param.tex3Scale.y, splatPix, x, y));

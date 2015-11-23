@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.terrain.Terrain;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
@@ -43,7 +44,7 @@ public class TerrainView implements View {
 	{
 		//world.shadowBatch.render(terrain);
 		//world.modelBatch.render(terrain);
-		world.modelBatch.render(terrain, world.environment);
+		world.modelBatch.render(terrain,world.environment); //
 		//world.modelBatch.render()
 
 
@@ -52,9 +53,9 @@ public class TerrainView implements View {
 		{
 			Vector3 translation = world.cameraManager.rtsCamController.center;
 			skydome.transform.set(
-				translation.x, translation.y-60f, translation.z,
+				translation.x, translation.y-65f, translation.z,
 				skyRotation.x, skyRotation.y, skyRotation.z, skyRotation.w,
-				1f, 1f, 1f
+				4f, 4f, 4f
 			);
 
 			world.modelBatch.render(skydome);
