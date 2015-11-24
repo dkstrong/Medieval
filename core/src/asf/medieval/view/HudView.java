@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Command;
+import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.model.Player;
 import asf.medieval.utility.UtMath;
@@ -138,11 +139,21 @@ public class HudView implements View, InputProcessor {
 			topLeftLabel.setText("");
 		}
 
+		String soldierStatusString = "";
+		Token soldier = world.scenario.getSoldier(1);
+		if(soldier != null){
+			soldierStatusString+="Pos: "+UtMath.round(soldier.location,2);
+			soldierStatusString+="\nElevation: "+soldier.elevation;
+			soldierStatusString+="\nDirection: "+soldier.direction;
+			Vector3 normal = world.terrainView.terrain.getWeightedNormalAt(new Vector3(soldier.location.x,0,soldier.location.y), new Vector3());
+			soldierStatusString+="\nNormal: "+UtMath.round(normal,2);
+		}
 		topRightLabel.setText(
 
 			"FPS: " + Gdx.graphics.getFramesPerSecond() +
 				"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB" +
 				"\nTokens: " + world.scenario.tokens.size +
+				"\n"+ soldierStatusString +
 				"\n" +
 				(gameServerStatusString != null ? "\n" + gameServerStatusString : "") +
 				(gameClientStatusString != null ? "\n" + gameClientStatusString : "")

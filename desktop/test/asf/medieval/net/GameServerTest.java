@@ -51,7 +51,7 @@ public class GameServerTest {
 	}
 
 
-	@Test
+
 	public void clientLogin() throws Exception
 	{
 		Thread.sleep(500);

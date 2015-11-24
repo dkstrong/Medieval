@@ -88,8 +88,8 @@ public class TerrainChunk implements Disposable {
 	public final Vector3 magnitude = new Vector3(0, 1, 0);
 
 	public Terrain terrain;
-	public int meshCoordX;
-	public int meshCoordY;
+	public int gridX;
+	public int gridY;
 	public int chunkStartX;
 	public int chunkStartY;
 	public int chunkEndX;
@@ -105,7 +105,7 @@ public class TerrainChunk implements Disposable {
 	public short[] indices;
 	public final int stride;
 
-	private final int posPos;
+	public final int posPos;
 	private final int norPos;
 	private final int uvPos;
 	private final int colPos;
@@ -394,29 +394,42 @@ public class TerrainChunk implements Disposable {
 	 * @param store
 	 * @return
 	 */
-	protected Vector3 getWorldCoordinate(int chunkX, int chunkY, Vector3 store) {
+	public Vector3 getWorldCoordinate(int chunkX, int chunkY, Vector3 store) {
+		if(chunkX >= width || chunkX <0 || chunkY >= height || chunkY<0)
+			throw new IllegalArgumentException("provided x/y coords do not exist in this chunk");
 		final int i = (chunkY * width +chunkX)*stride;
-		store.set(vertices[i], vertices[i + 1], vertices[i + 2]);
+		store.set(vertices[i+posPos], vertices[i +posPos+ 1], vertices[i +posPos+ 2]);
 		return store;
 	}
 
-	protected Vector3 getWorldCoordinate(float chunkX, float chunkY, Vector3 store) {
-		store.set(chunkX,getElevation(chunkX, chunkY),chunkY);
-		return store;
-	}
-
-	protected float getElevation(int chunkX, int chunkY){
-		final int i = (chunkY * width +chunkX)*stride;
-		return vertices[i + 1];
-	}
-
-	protected float getElevation(float chunkX, float chunkY)
-	{
+	public Vector3 getWorldCoordinate(float chunkX, float chunkY, Vector3 store) {
 		int x0 = (int) chunkX;
 		int y0 = (int) chunkY;
 		int x1 = x0 + 1;
 		int y1 = y0 + 1;
 		if (x1 >= width) x1 = width - 1;
+		if (y1 >= height) y1 = height - 1;
+
+		Vector3 s00 = getWorldCoordinate(x0, y0, new Vector3());
+		Vector3 s10 = getWorldCoordinate(x1, y0, new Vector3());
+		Vector3 s01 = getWorldCoordinate(x0, y1, new Vector3());
+		Vector3 s11 = getWorldCoordinate(x1, y1, new Vector3());
+
+		return UtMath.interpolateBilinear(chunkX - x0, chunkY - y0, s00, s10, s01, s11,store);
+	}
+
+	public float getElevation(int chunkX, int chunkY){
+		final int i = (chunkY * width +chunkX)*stride;
+		return vertices[i +posPos+ 1];
+	}
+
+	public float getElevation(float chunkX, float chunkY)
+	{
+		int x0 = (int) chunkX;
+		int y0 = (int) chunkY;
+		int x1 = x0 + 1;
+		int y1 = y0 + 1;
+		if (x1 >= width) x1 = width - 1; // TODO: rollover to next mesh!
 		if (y1 >= height) y1 = height - 1;
 
 		float s00 = getElevation(x0, y0);

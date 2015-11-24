@@ -89,7 +89,7 @@ public class HudCommandView implements View,InputProcessor {
 			{
 				forceSpacebarTimer = 3f;
 				getWorldCoord(screenX, screenY, lastMoveCommandLocation);
-				System.out.println(lastMoveCommandLocation);
+				//System.out.println(lastMoveCommandLocation);
 
 				for (SelectableView sgo : world.hudView.hudSelectionView.selectedViews) {
 					if(sgo instanceof InfantryView)
@@ -149,6 +149,9 @@ public class HudCommandView implements View,InputProcessor {
 				buildCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
 				buildCommand.structure = true;
 				world.gameClient.sendCommand(buildCommand);
+				break;
+			case Input.Keys.C:
+				world.cameraManager.rtsCamController.printCamValues();
 				break;
 		}
 		return false;

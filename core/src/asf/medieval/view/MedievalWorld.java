@@ -34,6 +34,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultRenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -118,10 +119,10 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		//assetManager.load("Models/Characters/knight_01.g3db", Model.class);
 		//assetManager.load("Models/Loot/Sword/BasicSword.g3db", Model.class);
 		//assetManager.load("Models/Loot/Sword/Shield.g3db", Model.class);
-		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
+		//assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
 		//assetManager.load("Models/Characters/rockMonster_01.g3db", Model.class);
 		//assetManager.load("Models/Church/Church.g3db", Model.class);
-		//assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
+		assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
 
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
@@ -130,14 +131,20 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		terrainParameter.heightmapName = "Models/Terrain/mountains128.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
 
 		terrainParameter.seed = settings.random.nextLong();
-		terrainParameter.fieldWidth = 128;
-		terrainParameter.fieldHeight = 200;
+
 
 		terrainParameter.terrainScale = 200;
 		terrainParameter.terrainMagnitude = 30;
 
-		terrainParameter.chunkWidth = 128;
-		terrainParameter.chunkHeight = 128;
+//		terrainParameter.fieldWidth = 128;
+//		terrainParameter.fieldHeight = 200;
+//		terrainParameter.chunkWidth = 25;
+//		terrainParameter.chunkHeight = 25;
+		terrainParameter.fieldWidth = 6;
+		terrainParameter.fieldHeight = 6;
+		terrainParameter.chunkWidth = 180;
+		terrainParameter.chunkHeight = 180;
+		//terrainParameter.terrainMagnitude = 70;
 
 		//"Textures/Terrain/sand512.jpg"
 		//"Textures/Floor/wallTiles.png"
@@ -213,8 +220,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			//cameraManager.setChaseTarget(characterGameObject);
 			addGameObject(new ShaderTestView(this));
 
-			//addGameObject(new TerrainDebugView(this));
+
 			addGameObject(terrainView =new TerrainView(this));
+			//addGameObject(new TerrainDebugView(this));
 
 			scenario.terrain = terrainView.terrain;
 
@@ -247,6 +255,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0),false),-50,-30,-50,50 );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));
+		scenario.newSoldier(1,new Vector2(-74.47005f, 169.50835f), true);
 
 	}
 

@@ -129,6 +129,7 @@ public class DebugShapeView implements View {
 			1, 1, 1
 		);
 
-		world.modelBatch.render(modelInstance, world.environment);
+		//world.modelBatch.render(modelInstance, world.environment);
+		world.modelBatch.render(modelInstance);
 	}
 }

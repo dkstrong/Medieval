@@ -28,11 +28,13 @@ public class RtsCamController implements InputProcessor {
 	private float[] maxAccelPeriod = new float[5];
 	private float[] minValue = new float[5];
 	private float[] maxValue = new float[5];
+	private float sideSpeedMin = 24f;
+	private float sideSpeedMax = 24f*2f*2f*2f*2f*2f;
 	public final Vector3 center = new Vector3();
-	private float rot = 0;
-	private float tilt = 0.4172428f; //UtMath.PI/8f;
-	private float distance = 45;
-	private float minElevation =0;
+	public float rot = 0;
+	public float tilt = 0.4172428f; //UtMath.PI/8f;
+	public float distance = 45;
+	public float minElevation =0;
 
 	public RtsCamController(CameraManager cameraManager, ElevationProvider elevationProvider) {
 		this.cameraManager = cameraManager;
@@ -42,7 +44,7 @@ public class RtsCamController implements InputProcessor {
 		setMinMaxValues(SIDE, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(ROT, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(TILT, UtMath.PI / 42f, UtMath.PI/3f);
-		setMinMaxValues(ZOOM, 4, 200);
+		setMinMaxValues(ZOOM, 4, 300);
 
 		setMaxSpeed(FWD, 24f * 2f*2f, 0.25f);
 		setMaxSpeed(SIDE, 24f*2f*2f, 0.25f);
@@ -50,7 +52,19 @@ public class RtsCamController implements InputProcessor {
 		setMaxSpeed(TILT, 2f, 0.3f);
 		setMaxSpeed(ZOOM, 60f, 0.25f);
 
-		minElevation = 10;
+		minElevation = 1;
+	}
+
+	public void printCamValues(){
+		RtsCamController rtsCamController = this;
+
+		String out =
+			"rtsCamController.center.set("+center.x+"f,"+center.y+"f,"+center.z+"f);" +
+			"\nrtsCamController.rot = "+rtsCamController.rot+"f;" +
+			"\nrtsCamController.tilt = "+rtsCamController.tilt+"f;"+
+			"\nrtsCamController.distance = "+rtsCamController.distance+"f;";
+
+		System.out.println(out);
 	}
 
 	// SIDE and FWD min/max values are ignored, need to fix this..
@@ -106,8 +120,12 @@ public class RtsCamController implements InputProcessor {
 		//tilt = UtMath.scalarLimitsInterpolation(distance, minValue[CamDegree.ZOOM.ordinal()], maxValue[CamDegree.ZOOM.ordinal()], UtMath.PI / 22f, UtMath.QUARTER_PI);
 		//System.out.println(tilt);
 
-		float offX = maxSpeed[SIDE] * accelPeriod[SIDE] * delta;
-		float offZ = maxSpeed[FWD] * accelPeriod[FWD] * delta;
+		final float realMaxSpeed = UtMath.scalarLimitsInterpolation(distance, minValue[ZOOM],maxValue[ZOOM],maxSpeed[SIDE]*0.1f, maxSpeed[SIDE]);
+
+//		float offX = maxSpeed[SIDE] * accelPeriod[SIDE] * delta;
+//		float offZ = maxSpeed[FWD] * accelPeriod[FWD] * delta;
+		float offX = realMaxSpeed * accelPeriod[SIDE] * delta;
+		float offZ = realMaxSpeed * accelPeriod[FWD] * delta;
 
 		final float sinRot = (float)Math.sin(rot);
 		final float cosRot = (float)Math.cos(rot);
@@ -137,10 +155,10 @@ public class RtsCamController implements InputProcessor {
 		cameraManager.cam.position.y = center.y + (distance * sinTilt);
 		cameraManager.cam.position.z = center.z + (distance * cosTilt * cosRot);
 
-		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) + minElevation*0.45f;
-		if(cameraManager.cam.position.y < elevationCam){
-			cameraManager.cam.position.y = elevationCam;
-		}
+//		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) + minElevation*0.45f;
+//		if(cameraManager.cam.position.y < elevationCam){
+//			cameraManager.cam.position.y = elevationCam;
+//		}
 
 
 		//cameraManager.cam.position.y += elevationAt;
