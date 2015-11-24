@@ -22,6 +22,7 @@ import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -95,9 +96,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		environment.set(new ColorAttribute(ColorAttribute.Fog, 0.13f, 0.13f, 0.13f, 1f));
 		environment.add(new DirectionalLight().set(0.65f, 0.65f, 0.65f, -1f, -0.8f, 0.3f));
 
-		environment.add((shadowLight = new DirectionalShadowLight(2048, 2048, 200,200, .1f, 800f))
+		environment.add((shadowLight = new DirectionalShadowLight(2048, 2048, 200,200, 1f, 500f))
 			.set(0.65f, 0.65f, 0.65f, -1f, -0.8f, 0.3f));
 		environment.shadowMap = shadowLight;
+		//shadowLight.getDepthMap().magFilter = Texture.TextureFilter.Linear;
+		//shadowLight.getDepthMap().minFilter = Texture.TextureFilter.Linear;
 
 		stage = new Stage(new ScreenViewport());
 		shadowBatch = new ModelBatch(new DepthShaderProvider());
@@ -128,27 +131,27 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
 
-		terrainParameter.heightmapName = "Models/Terrain/mountains128.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
+		terrainParameter.heightmapName = "Models/Terrain/heightmap.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
 
 		terrainParameter.seed = settings.random.nextLong();
 
 
-		terrainParameter.terrainScale = 200;
+		terrainParameter.terrainScale = 250;
 		terrainParameter.terrainMagnitude = 30;
 
 //		terrainParameter.fieldWidth = 128;
 //		terrainParameter.fieldHeight = 200;
 //		terrainParameter.chunkWidth = 25;
 //		terrainParameter.chunkHeight = 25;
-		terrainParameter.fieldWidth = 6;
-		terrainParameter.fieldHeight = 6;
+		terrainParameter.fieldWidth = 180;
+		terrainParameter.fieldHeight = 180;
 		terrainParameter.chunkWidth = 180;
 		terrainParameter.chunkHeight = 180;
 		//terrainParameter.terrainMagnitude = 70;
 
 		//"Textures/Terrain/sand512.jpg"
 		//"Textures/Floor/wallTiles.png"
-		terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg"; // sand512.jpg
+		//terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg"; // sand512.jpg
 		terrainParameter.generatedDiffuseMapSize = 1024;
 		terrainParameter.tex1="Textures/Terrain/grass_2.png"; // grass_2
 		terrainParameter.tex1Scale.set(2,2);
@@ -255,7 +258,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0),false),-50,-30,-50,50 );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));
-		scenario.newSoldier(1,new Vector2(-74.47005f, 169.50835f), true);
+		//scenario.newSoldier(1,new Vector2(-74.47005f, 169.50835f), true);
 
 	}
 
@@ -321,6 +324,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 			shadowLight.begin(cameraManager.rtsCamController.center, cameraManager.cam.direction);
+			//shadowLight.begin(cameraManager.cam);
 			shadowBatch.begin(shadowLight.getCamera());
 
 			modelBatch.begin(cameraManager.cam);

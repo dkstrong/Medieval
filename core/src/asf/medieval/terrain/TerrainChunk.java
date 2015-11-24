@@ -49,7 +49,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * <p/>
  * base[y * width + x] + magnitude * value[y * width + x]
  * <p/>
- * Use the {@link #getPositionAt(int, int,Vector3)} method to get the coordinate of a specific point on the grid.
+ * Use the {@link #getPositionAt(int, int, Vector3)} method to get the coordinate of a specific point on the grid.
  * <p/>
  * You can set this heightfield using the constructor or one of the `set` methods. E.g. by specifying an array of values or a
  * {@link Pixmap}. The latter can be used to load a HeightMap, which is an image loaded from disc of which each texel is used to
@@ -90,10 +90,10 @@ public class TerrainChunk implements Disposable {
 	public Terrain terrain;
 	public int gridX;
 	public int gridY;
-	public int chunkStartX;
-	public int chunkStartY;
-	public int chunkEndX;
-	public int chunkEndY;
+	public int fieldStartX;
+	public int fieldStartY;
+	public int fieldEndX;
+	public int fieldEndY;
 
 	public final float[] data;
 	public final int width;
@@ -232,7 +232,7 @@ public class TerrainChunk implements Disposable {
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
 				VertexInfo v = getVertexAt(x, y, vertex00);
-				getWeightedNormalAt(x, y,v.normal);
+				getWeightedNormalAt(x, y, v.normal);
 				setVertex(y * width + x, v);
 			}
 		}
@@ -304,7 +304,7 @@ public class TerrainChunk implements Disposable {
 	 */
 	protected VertexInfo getVertexAt(int x, int y, final VertexInfo out) {
 		//if(terrain!=null && terrain.masterChunk != this){
-			//return terrain.masterChunk.getVertexAt(chunkStartX+x, chunkStartY+y, out);
+		//return terrain.masterChunk.getVertexAt(fieldStartX+x, fieldStartY+y, out);
 		//}
 		final float dx = (float) x / (float) (width - 1);
 		final float dy = (float) y / (float) (height - 1);
@@ -318,7 +318,7 @@ public class TerrainChunk implements Disposable {
 
 	protected Vector3 getPositionAt(int x, int y, Vector3 out) {
 		//if(terrain!=null && terrain.masterChunk != this){
-			//return terrain.masterChunk.getPositionAt(chunkStartX+x, chunkStartY+y, out);
+		//return terrain.masterChunk.getPositionAt(fieldStartX+x, fieldStartY+y, out);
 		//}
 		final float dx = (float) x / (float) (width - 1);
 		final float dy = (float) y / (float) (height - 1);
@@ -328,37 +328,36 @@ public class TerrainChunk implements Disposable {
 		return out;
 	}
 
-	protected Vector3 getWeightedNormalAt(int x, int y,Vector3 out) {
-// This commented code is based on http://www.flipcode.com/archives/Calculating_Vertex_Normals_for_Height_Maps.shtml
-// Note that this approach only works for a heightfield on the XZ plane with a magnitude on the y axis
-// float sx = data[(x < width - 1 ? x + 1 : x) + y * width] + data[(x > 0 ? x-1 : x) + y * width];
-// if (x == 0 || x == (width - 1))
-// sx *= 2f;
-// float sy = data[(y < height - 1 ? y + 1 : y) * width + x] + data[(y > 0 ? y-1 : y) * width + x];
-// if (y == 0 || y == (height - 1))
-// sy *= 2f;
-// float xScale = (corner11.x - corner00.x) / (width - 1f);
-// float zScale = (corner11.z - corner00.z) / (height - 1f);
-// float yScale = magnitude.len();
-// out.set(-sx * yScale, 2f * xScale, sy*yScale*xScale / zScale).nor();
-// return out;
+	protected Vector3 getWeightedNormalAtLessGood(int x, int y, Vector3 out) {
+		// This commented code is based on http://www.flipcode.com/archives/Calculating_Vertex_Normals_for_Height_Maps.shtml
+		// Note that this approach only works for a heightfield on the XZ plane with a magnitude on the y axis
+		float sx = data[(x < width - 1 ? x + 1 : x) + y * width] + data[(x > 0 ? x - 1 : x) + y * width];
+		if (x == 0 || x == (width - 1))
+			sx *= 2f;
+		float sy = data[(y < height - 1 ? y + 1 : y) * width + x] + data[(y > 0 ? y - 1 : y) * width + x];
+		if (y == 0 || y == (height - 1))
+			sy *= 2f;
+		float xScale = (corner11.x - corner00.x) / (width - 1f);
+		float zScale = (corner11.z - corner00.z) / (height - 1f);
+		float yScale = magnitude.len();
+		out.set(-sx * yScale, 2f * xScale, sy * yScale * xScale / zScale).nor();
+		return out;
+	}
 
-// The following approach weights the normal of the four triangles (half quad) surrounding the position.
-// A more accurate approach would be to weight the normal of the actual triangles.
+	protected Vector3 getWeightedNormalAt(int x, int y, Vector3 out) {
 
-		//if(terrain!=null && terrain.masterChunk != this){
-			//System.out.println("using master chunk normal");
-		//	return terrain.masterChunk.getWeightedNormalAt(chunkStartX+x, chunkStartY+y, out);
-		//}
+		// The following approach weights the normal of the four triangles (half quad) surrounding the position.
+		// A more accurate approach would be to weight the normal of the actual triangles.
+
 
 		int faces = 0;
 		out.set(0, 0, 0);
 
-		Vector3 center = getPositionAt(x, y,tmpV2);
-		Vector3 left = x > 0 ? getPositionAt(x - 1, y,tmpV3) : null;
-		Vector3 right = x < (width - 1) ? getPositionAt(x + 1, y,tmpV4) : null;
-		Vector3 bottom = y > 0 ? getPositionAt(x, y - 1,tmpV5) : null;
-		Vector3 top = y < (height - 1) ? getPositionAt(x, y + 1,tmpV6) : null;
+		Vector3 center = getPositionAt(x, y, tmpV2);
+		Vector3 left = x > 0 ? getPositionAt(x - 1, y, tmpV3) : null;
+		Vector3 right = x < (width - 1) ? getPositionAt(x + 1, y, tmpV4) : null;
+		Vector3 bottom = y > 0 ? getPositionAt(x, y - 1, tmpV5) : null;
+		Vector3 top = y < (height - 1) ? getPositionAt(x, y + 1, tmpV6) : null;
 		if (top != null && left != null) {
 			out.add(tmpV7.set(top).sub(center).nor().crs(tmpV8.set(center).sub(left).nor()).nor());
 			faces++;
@@ -389,16 +388,17 @@ public class TerrainChunk implements Disposable {
 
 	/**
 	 * same as getPositionAt(), but more effecient
+	 *
 	 * @param chunkX
 	 * @param chunkY
 	 * @param store
 	 * @return
 	 */
 	public Vector3 getWorldCoordinate(int chunkX, int chunkY, Vector3 store) {
-		if(chunkX >= width || chunkX <0 || chunkY >= height || chunkY<0)
+		if (chunkX >= width || chunkX < 0 || chunkY >= height || chunkY < 0)
 			throw new IllegalArgumentException("provided x/y coords do not exist in this chunk");
-		final int i = (chunkY * width +chunkX)*stride;
-		store.set(vertices[i+posPos], vertices[i +posPos+ 1], vertices[i +posPos+ 2]);
+		final int i = (chunkY * width + chunkX) * stride;
+		store.set(vertices[i + posPos], vertices[i + posPos + 1], vertices[i + posPos + 2]);
 		return store;
 	}
 
@@ -415,16 +415,15 @@ public class TerrainChunk implements Disposable {
 		Vector3 s01 = getWorldCoordinate(x0, y1, new Vector3());
 		Vector3 s11 = getWorldCoordinate(x1, y1, new Vector3());
 
-		return UtMath.interpolateBilinear(chunkX - x0, chunkY - y0, s00, s10, s01, s11,store);
+		return UtMath.interpolateBilinear(chunkX - x0, chunkY - y0, s00, s10, s01, s11, store);
 	}
 
-	public float getElevation(int chunkX, int chunkY){
-		final int i = (chunkY * width +chunkX)*stride;
-		return vertices[i +posPos+ 1];
+	public float getElevation(int chunkX, int chunkY) {
+		final int i = (chunkY * width + chunkX) * stride;
+		return vertices[i + posPos + 1];
 	}
 
-	public float getElevation(float chunkX, float chunkY)
-	{
+	public float getElevation(float chunkX, float chunkY) {
 		int x0 = (int) chunkX;
 		int y0 = (int) chunkY;
 		int x1 = x0 + 1;
@@ -446,9 +445,10 @@ public class TerrainChunk implements Disposable {
 	//
 	//
 
-	public void configureField(float startW, float startH, float endW, float endH, Color color, float magnitude)
-	{
-		uvScale.set(1f,1f);
+	public void configureField(float startW, float startH, float endW, float endH, Color color, float magnitude) {
+		float heightRatio = (endH - startH) / (endW - startW);
+
+		uvScale.set(1f, 1f);
 		corner00.set(startW, 0, startH);
 		corner10.set(endW, 0, startH);
 		corner01.set(startW, 0, endH);
@@ -457,15 +457,14 @@ public class TerrainChunk implements Disposable {
 		color01.set(color);
 		color10.set(color);
 		color11.set(color);
-		this.magnitude.set(0,magnitude,0);
+		this.magnitude.set(0, magnitude, 0);
 		update();
 	}
 
 	public Renderable renderable;
 	private Texture diffusemap;
 
-	public void createRenderable(Texture diffusemap)
-	{
+	public void createRenderable(Texture diffusemap) {
 
 		this.diffusemap = diffusemap;
 		// max verts per mesh is 32767
@@ -483,28 +482,29 @@ public class TerrainChunk implements Disposable {
 
 	@Override
 	public void dispose() {
-		if(mesh!=null)
+		if (mesh != null)
 			mesh.dispose();
-		if(diffusemap !=null)
+		if (diffusemap != null)
 			diffusemap.dispose();
 	}
 
 	/**
 	 * Simply creates an array containing only all the red components of the data.
 	 */
-	public static float[] heightColorsToMap(final ByteBuffer data, final Pixmap.Format format, int width, int height){
-		if(format == Format.RGB888 || format == Format.RGBA8888 || format == Format.Alpha) {
+	public static float[] heightColorsToMap(final ByteBuffer data, final Pixmap.Format format, int width, int height) {
+		if (format == Format.RGB888 || format == Format.RGBA8888 || format == Format.Alpha) {
 			return heightColorsToMapImp(data, format, width, height);
-		}else{
-			throw new UnsupportedOperationException("Have not yet implemented supported for this format: "+format);
+		} else {
+			throw new UnsupportedOperationException("Have not yet implemented supported for this format: " + format);
 		}
 	}
+
 	private static float[] heightColorsToMapImp(final ByteBuffer data, final Pixmap.Format format, int width, int height) {
 		int bytesPerColor;
-		if(format == Format.RGB888) bytesPerColor = 3;
-		else if(format == Format.RGBA8888) bytesPerColor = 4;
-		else if(format == Format.Alpha) bytesPerColor = 1;
-		else throw new UnsupportedOperationException("Does not support format: "+format);
+		if (format == Format.RGB888) bytesPerColor = 3;
+		else if (format == Format.RGBA8888) bytesPerColor = 4;
+		else if (format == Format.Alpha) bytesPerColor = 1;
+		else throw new UnsupportedOperationException("Does not support format: " + format);
 
 		if (data.remaining() < (width * height * bytesPerColor))
 			throw new GdxRuntimeException("Incorrect map size");

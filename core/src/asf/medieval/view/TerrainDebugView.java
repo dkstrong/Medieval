@@ -73,7 +73,7 @@ public class TerrainDebugView implements View {
 		TerrainChunk terrainChunk = world.terrainView.terrain.getTerrainChunk(chunkX, chunkY);
 		for(int x=0; x< terrainChunk.width; x++){
 			for(int y=0; y< terrainChunk.height; y++){
-				Vector3 worldPoint = world.terrainView.terrain.getWorldCoordinate(x+terrainChunk.chunkStartX,y+terrainChunk.chunkStartY, new Vector3());
+				Vector3 worldPoint = world.terrainView.terrain.getWorldCoordinate(x+terrainChunk.fieldStartX,y+terrainChunk.fieldStartY, new Vector3());
 				worldPoint.y = world.terrainView.terrain.getElevation(worldPoint);
 				world.addGameObject(new DebugShapeView(world).point(worldPoint,30,color));
 			}
@@ -86,10 +86,10 @@ public class TerrainDebugView implements View {
 			for(int y=0; y< terrainChunk.height; y++){
 				float xfloat = x+0.25f;
 				float yFloat = y+0.25f;
-				Vector3 worldPoint = world.terrainView.terrain.getWorldCoordinate(xfloat+terrainChunk.chunkStartX,yFloat+terrainChunk.chunkStartY, new Vector3());
+				Vector3 worldPoint = world.terrainView.terrain.getWorldCoordinate(xfloat+terrainChunk.fieldStartX,yFloat+terrainChunk.fieldStartY, new Vector3());
 				//worldPoint.y = world.terrainView.terrain.getElevation(worldPoint);
 				world.addGameObject(new DebugShapeView(world).point(worldPoint,30,color));
-				world.terrainView.terrain.verifyWorldCoordinate(worldPoint, worldPoint);
+				world.terrainView.terrain.verifyWorldCoordinateSlow(worldPoint, worldPoint);
 				world.addGameObject(new DebugShapeView(world).point(worldPoint,40,color.cpy().mul(0.5f)));
 
 			}

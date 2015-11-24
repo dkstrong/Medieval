@@ -66,7 +66,7 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 		terrain.fieldData = new float[fieldWidth * fieldHeight];
 
 
-		final double featureSize = 1d;
+		final double featureSize = 20d;
 		OpenSimplexNoise noise = new OpenSimplexNoise(param.seed);
 		for (int x = 0; x < fieldWidth; x++) {
 			for (int y = 0; y < fieldHeight; y++) {

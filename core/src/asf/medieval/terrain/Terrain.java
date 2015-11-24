@@ -39,86 +39,28 @@ public class Terrain implements RenderableProvider,Disposable {
 	 */
 	public Camera camera;
 
-	public Terrain()
-	{
-
-	}
-
 	protected void createHeightField(){
-
 		float heightRatio = fieldHeight / (float)fieldWidth;
 		corner00.z *= heightRatio;
 		corner11.z *= heightRatio;
-
 		final int vertexAttributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates;
 		final boolean isStatic = true;
 		final boolean smooth = true;
-		//final int maxDataPerChunk = smooth ? maxVertsPerChunks : maxVertsPerChunks /2;
-
-		chunkGrid = new Array<Array<TerrainChunk>>(true, 4, Array.class);
-		int chunk =0;
-		int gridX=0;
-		int gridY=0;
-		for(int chunkStartX = 0; chunkStartX < fieldWidth; chunkStartX+=chunkDataMaxWidth){
-			gridY = 0;
-			for(int chunkStartY=0; chunkStartY< fieldHeight; chunkStartY+=chunkDataMaxHeight){
-				int chunkEndX = UtMath.smallest(chunkStartX + chunkDataMaxWidth+1, fieldWidth);
-				int chunkEndY = UtMath.smallest(chunkStartY + chunkDataMaxHeight+1, fieldHeight);
-				int chunkWidth = chunkEndX - chunkStartX;
-				int chunkHeight = chunkEndY - chunkStartY;
-				final float[] chunkData = new float[chunkWidth*chunkHeight];
-				int chunkX =0;
-				int chunkY=0;
-				for (int x = chunkStartX; x < chunkEndX; x++){
-					chunkY=0;
-					for (int y = chunkStartY; y < chunkEndY; y++){
-						chunkData[chunkY * chunkWidth + chunkX] = fieldData[y * fieldWidth + x];
-						chunkY++;
-					}
-					chunkX++;
-				}
-
-
-				//System.out.println("creating chunk: "+chunk);
-				TerrainChunk terrainChunk = new TerrainChunk(isStatic,chunkWidth,chunkHeight,smooth,vertexAttributes);
-				terrainChunk.terrain = this;
-				terrainChunk.gridX = gridX;
-				terrainChunk.gridY = gridY;
-				terrainChunk.chunkStartX = chunkStartX;
-				terrainChunk.chunkStartY = chunkStartY;
-				terrainChunk.chunkEndX = chunkEndX;
-				terrainChunk.chunkEndY = chunkEndY;
-				terrainChunk.set(chunkData);
-
-				chunk++;
-				putTerrainChunk(gridX, gridY, terrainChunk);
-				gridY++;
-
-			}
-
-			gridX++;
-		}
-
-		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
-			for (TerrainChunk terrainChunk : terrainChunks) {
-				// TODO: i think this is what is causing slight "stretching" of the diffuse texture
-				// and is probably also why the elevation finding code seems to be slightly off
-				// also if you use scalarLimitsExtrapolate instead of Interpolate, then
-				// get the weighted normal of the highest (in Y) edge- youll get an index
-				// out of bounds error.
-				// I think this is because chunks need one extra row/col of verticies to connect
-				// chunks, i dont think this properly accounts for that... (ie somekind of +1 or -1 thing)
-				float chunkWorldStartX = UtMath.scalarLimitsExtrapolation(terrainChunk.chunkStartX + terrainChunk.gridX, 0, fieldWidth, corner00.x, corner11.x);
-				float chunkWorldStartY = UtMath.scalarLimitsExtrapolation(terrainChunk.chunkStartY + terrainChunk.gridY, 0, fieldHeight, corner00.z, corner11.z);
-				float chunkWorldEndX = UtMath.scalarLimitsExtrapolation(terrainChunk.chunkEndX + terrainChunk.gridX, 0, fieldWidth, corner00.x, corner11.x);
-				float chunkWorldEndY = UtMath.scalarLimitsExtrapolation(terrainChunk.chunkEndY + terrainChunk.gridY, 0, fieldHeight, corner00.z, corner11.z);
-
-				terrainChunk.configureField(chunkWorldStartX, chunkWorldStartY, chunkWorldEndX, chunkWorldEndY, color, magnitude);
-			}
-		}
-
+		chunkGrid = new Array<Array<TerrainChunk>>(true, 1, Array.class);
+		TerrainChunk chunk = new TerrainChunk(isStatic,fieldWidth, fieldHeight,smooth, vertexAttributes);
+		chunk.terrain = this;
+		chunk.gridX = 0;
+		chunk.gridY = 0;
+		chunk.fieldStartX = 0;
+		chunk.fieldStartY = 0;
+		chunk.fieldEndX = fieldWidth;
+		chunk.fieldEndY = fieldHeight;
+		chunk.set(fieldData);
+		putTerrainChunk(0, 0, chunk);
+		chunk.configureField(corner00.x, corner00.z, corner11.x, corner11.z, color, magnitude);
 
 	}
+
 
 	public TerrainChunk getTerrainChunk(int x, int y){
 		return chunkGrid.get(x).get(y);
@@ -158,14 +100,13 @@ public class Terrain implements RenderableProvider,Disposable {
 		int gridY= (int)(fieldY / (float)chunkDataMaxHeight);
 
 		TerrainChunk chunk = getTerrainChunk(gridX, gridY);
-
-		fieldX -= gridX *(float)chunkDataMaxWidth;
-		fieldY -= gridY *(float)chunkDataMaxHeight;
+		float chunkX = fieldX-(gridX * chunkDataMaxWidth);
+		float chunkY = fieldY-(gridY * chunkDataMaxHeight);
 
 		//int x0 = Math.round(fieldX);
 		//int y0 = Math.round(fieldY) ;
-		int x0 = (int)fieldX;
-		int y0 = (int)fieldY;
+		int x0 = (int)chunkX;
+		int y0 = (int)chunkY;
 		return chunk.getWeightedNormalAt(x0, y0, store);
 
 	}
@@ -194,52 +135,12 @@ public class Terrain implements RenderableProvider,Disposable {
 
 	}
 
-	public Vector3 verifyWorldCoordinate(Vector3 worldCoordinate, Vector3 store){
-		// convert world coordinates to field coordinates
-		float worldX = worldCoordinate.x;
-		float worldZ = worldCoordinate.z;
-		store.set(worldX,0,worldZ);
-		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
-			for (TerrainChunk terrainChunk : terrainChunks) {
-				if(	UtMath.isBetween(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x) && UtMath.isBetween(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z) ){
-
-					float fieldX = UtMath.scalarLimitsInterpolation(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x, terrainChunk.chunkStartX, terrainChunk.chunkEndX-1);
-					float fieldY = UtMath.scalarLimitsInterpolation(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z, terrainChunk.chunkStartY, terrainChunk.chunkEndY-1);
-					return getWorldCoordinate(fieldX, fieldY, store);
-				}
-			}
-		}
-
-		throw new IllegalStateException("no coord found for: "+UtMath.round(worldCoordinate,2));
-	}
-
 	public float getElevation(Vector3 worldCoordinate)
 	{
 		return getElevation(worldCoordinate.x, worldCoordinate.z);
 	}
 
-
-
 	public float getElevation(float worldX, float worldZ)
-	{
-		Vector3 store = new Vector3();
-		store.set(worldX, 0, worldZ);
-		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
-			for (TerrainChunk terrainChunk : terrainChunks) {
-				if(	UtMath.isBetween(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x) && UtMath.isBetween(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z) ){
-
-					float fieldX = UtMath.scalarLimitsInterpolation(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x, terrainChunk.chunkStartX, terrainChunk.chunkEndX-1);
-					float fieldY = UtMath.scalarLimitsInterpolation(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z, terrainChunk.chunkStartY, terrainChunk.chunkEndY-1);
-					return getWorldCoordinate(fieldX, fieldY, store).y;
-				}
-			}
-		}
-		UtLog.error("could not find elevation, returning zero");
-		return 0;
-
-	}
-
-	public float getElevationFast(float worldX, float worldZ)
 	{
 		//TODO: this only works properly if thres only 1 terrain chunk
 		// the calcualted fieldX and fieldY values are wrong if there is more than 1 chunk
@@ -260,6 +161,8 @@ public class Terrain implements RenderableProvider,Disposable {
 
 
 	}
+
+
 
 	public boolean intersect(Ray ray, Vector3 store) {
 		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
@@ -301,4 +204,121 @@ public class Terrain implements RenderableProvider,Disposable {
 			}
 		}
 	}
+
+
+
+	protected void createHeightFieldMultipleChunks(){
+
+		float heightRatio = fieldHeight / (float)fieldWidth;
+		corner00.z *= heightRatio;
+		corner11.z *= heightRatio;
+
+		final int vertexAttributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates;
+		final boolean isStatic = true;
+		final boolean smooth = true;
+		//final int maxDataPerChunk = smooth ? maxVertsPerChunks : maxVertsPerChunks /2;
+
+		chunkGrid = new Array<Array<TerrainChunk>>(true, 4, Array.class);
+		int chunk =0;
+		int gridX=0;
+		int gridY=0;
+		for(int chunkStartX = 0; chunkStartX < fieldWidth; chunkStartX+=chunkDataMaxWidth){
+			gridY = 0;
+			for(int chunkStartY=0; chunkStartY< fieldHeight; chunkStartY+=chunkDataMaxHeight){
+				int chunkEndX = UtMath.smallest(chunkStartX + chunkDataMaxWidth+1, fieldWidth);
+				int chunkEndY = UtMath.smallest(chunkStartY + chunkDataMaxHeight+1, fieldHeight);
+				int chunkWidth = chunkEndX - chunkStartX;
+				int chunkHeight = chunkEndY - chunkStartY;
+				final float[] chunkData = new float[chunkWidth*chunkHeight];
+				int chunkX =0;
+				int chunkY=0;
+				for (int x = chunkStartX; x < chunkEndX; x++){
+					chunkY=0;
+					for (int y = chunkStartY; y < chunkEndY; y++){
+						chunkData[chunkY * chunkWidth + chunkX] = fieldData[y * fieldWidth + x];
+						chunkY++;
+					}
+					chunkX++;
+				}
+
+
+				//System.out.println("creating chunk: "+chunk);
+				TerrainChunk terrainChunk = new TerrainChunk(isStatic,chunkWidth,chunkHeight,smooth,vertexAttributes);
+				terrainChunk.terrain = this;
+				terrainChunk.gridX = gridX;
+				terrainChunk.gridY = gridY;
+				terrainChunk.fieldStartX = chunkStartX;
+				terrainChunk.fieldStartY = chunkStartY;
+				terrainChunk.fieldEndX = chunkEndX;
+				terrainChunk.fieldEndY = chunkEndY;
+				terrainChunk.set(chunkData);
+
+				chunk++;
+				putTerrainChunk(gridX, gridY, terrainChunk);
+				gridY++;
+
+			}
+
+			gridX++;
+		}
+
+		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
+			for (TerrainChunk terrainChunk : terrainChunks) {
+				// TODO: i think this is what is causing slight "stretching" of the diffuse texture
+				// and is probably also why the elevation finding code seems to be slightly off
+				// also if you use scalarLimitsExtrapolate instead of Interpolate, then
+				// get the weighted normal of the highest (in Y) edge- youll get an index
+				// out of bounds error.
+				// I think this is because chunks need one extra row/col of verticies to connect
+				// chunks, i dont think this properly accounts for that... (ie somekind of +1 or -1 thing)
+				float chunkWorldStartX = UtMath.scalarLimitsExtrapolation(terrainChunk.fieldStartX + terrainChunk.gridX, 0, fieldWidth, corner00.x, corner11.x);
+				float chunkWorldStartY = UtMath.scalarLimitsExtrapolation(terrainChunk.fieldStartY + terrainChunk.gridY, 0, fieldHeight, corner00.z, corner11.z);
+				float chunkWorldEndX = UtMath.scalarLimitsExtrapolation(terrainChunk.fieldEndX + terrainChunk.gridX, 0, fieldWidth, corner00.x, corner11.x);
+				float chunkWorldEndY = UtMath.scalarLimitsExtrapolation(terrainChunk.fieldEndY + terrainChunk.gridY, 0, fieldHeight, corner00.z, corner11.z);
+
+				terrainChunk.configureField(chunkWorldStartX, chunkWorldStartY, chunkWorldEndX, chunkWorldEndY, color, magnitude);
+			}
+		}
+
+
+	}
+
+	public Vector3 verifyWorldCoordinateSlow(Vector3 worldCoordinate, Vector3 store){
+		// convert world coordinates to field coordinates
+		float worldX = worldCoordinate.x;
+		float worldZ = worldCoordinate.z;
+		store.set(worldX,0,worldZ);
+		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
+			for (TerrainChunk terrainChunk : terrainChunks) {
+				if(	UtMath.isBetween(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x) && UtMath.isBetween(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z) ){
+
+					float fieldX = UtMath.scalarLimitsInterpolation(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x, terrainChunk.fieldStartX, terrainChunk.fieldEndX -1);
+					float fieldY = UtMath.scalarLimitsInterpolation(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z, terrainChunk.fieldStartY, terrainChunk.fieldEndY -1);
+					return getWorldCoordinate(fieldX, fieldY, store);
+				}
+			}
+		}
+
+		throw new IllegalStateException("no coord found for: "+UtMath.round(worldCoordinate,2));
+	}
+
+	public float getElevationSlow(float worldX, float worldZ)
+	{
+		Vector3 store = new Vector3();
+		store.set(worldX, 0, worldZ);
+		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
+			for (TerrainChunk terrainChunk : terrainChunks) {
+				if(	UtMath.isBetween(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x) && UtMath.isBetween(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z) ){
+
+					float fieldX = UtMath.scalarLimitsInterpolation(worldX, terrainChunk.corner00.x, terrainChunk.corner11.x, terrainChunk.fieldStartX, terrainChunk.fieldEndX -1);
+					float fieldY = UtMath.scalarLimitsInterpolation(worldZ, terrainChunk.corner00.z, terrainChunk.corner11.z, terrainChunk.fieldStartY, terrainChunk.fieldEndY -1);
+					return getWorldCoordinate(fieldX, fieldY, store).y;
+				}
+			}
+		}
+		UtLog.error("could not find elevation, returning zero");
+		return 0;
+
+	}
+
 }

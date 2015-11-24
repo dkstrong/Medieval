@@ -44,7 +44,7 @@ public class RtsCamController implements InputProcessor {
 		setMinMaxValues(SIDE, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(ROT, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(TILT, UtMath.PI / 42f, UtMath.PI/3f);
-		setMinMaxValues(ZOOM, 4, 300);
+		setMinMaxValues(ZOOM, 10, 200);
 
 		setMaxSpeed(FWD, 24f * 2f*2f, 0.25f);
 		setMaxSpeed(SIDE, 24f*2f*2f, 0.25f);
@@ -52,7 +52,7 @@ public class RtsCamController implements InputProcessor {
 		setMaxSpeed(TILT, 2f, 0.3f);
 		setMaxSpeed(ZOOM, 60f, 0.25f);
 
-		minElevation = 1;
+		minElevation = 1; // TODO: should set this from terrain- min elevaition should be 1/3 the terrain magnitude
 	}
 
 	public void printCamValues(){
@@ -138,16 +138,16 @@ public class RtsCamController implements InputProcessor {
 		center.x = UtMath.clamp(center.x, minValue[SIDE], maxValue[SIDE]);
 		center.z = UtMath.clamp(center.z, minValue[FWD], maxValue[FWD]);
 
-		/*
+
 		final float elevation = elevationProvider.getElevationAt(center.x, center.z);
 		//float targetY = (int) (Math.ceil(elevation / 2f) * 2f);
 		if(elevation < minElevation){
 			center.y = minElevation;
 		}else {
-			center.y = elevation * 0.45f;
+			center.y = elevation /7f;
 		}
-		*/
-		center.y = minElevation;
+		//*
+		//center.y = minElevation;
 
 
 
@@ -155,10 +155,10 @@ public class RtsCamController implements InputProcessor {
 		cameraManager.cam.position.y = center.y + (distance * sinTilt);
 		cameraManager.cam.position.z = center.z + (distance * cosTilt * cosRot);
 
-//		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) + minElevation*0.45f;
-//		if(cameraManager.cam.position.y < elevationCam){
-//			cameraManager.cam.position.y = elevationCam;
-//		}
+		final float elevationCam = elevationProvider.getElevationAt(cameraManager.cam.position.x, cameraManager.cam.position.z) +minElevation/7f + 0.1f;
+		if(cameraManager.cam.position.y < elevationCam){
+			cameraManager.cam.position.y = elevationCam;
+		}
 
 
 		//cameraManager.cam.position.y += elevationAt;
