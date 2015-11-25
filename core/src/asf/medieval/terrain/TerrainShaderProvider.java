@@ -20,11 +20,11 @@ public class TerrainShaderProvider extends BaseShaderProvider {
 	public TerrainShaderProvider() {
 		config = new DefaultShader.Config();
 
-		//config.vertexShader = Gdx.files.internal("Shaders/terrain_v.glsl").readString();
-		//config.fragmentShader = Gdx.files.internal("Shaders/terrain_f.glsl").readString();
+		config.vertexShader = Gdx.files.internal("Shaders/terrain_v.glsl").readString();
+		config.fragmentShader = Gdx.files.internal("Shaders/terrain_f.glsl").readString();
 
-		config.vertexShader = Gdx.files.internal("Shaders/test_v.glsl").readString();
-		config.fragmentShader =Gdx.files.internal("Shaders/test_f.glsl").readString();
+		//config.vertexShader = Gdx.files.internal("Shaders/test_v.glsl").readString();
+		//config.fragmentShader =Gdx.files.internal("Shaders/test_f.glsl").readString();
 
 
 		//config.vertexShader = Gdx.files.internal("Shaders/unofficial_v.glsl").readString();
@@ -38,75 +38,65 @@ public class TerrainShaderProvider extends BaseShaderProvider {
 
 		DefaultShader shader= new DefaultShader(renderable, config, prefix, config.vertexShader, config.fragmentShader);
 
-		BaseShader.Uniform tex1In = new BaseShader.Uniform("u_tex1", TerrainTextureAttribute.Tex1);
-		BaseShader.Uniform tex2In = new BaseShader.Uniform("u_tex2", TerrainTextureAttribute.Tex2);
-		BaseShader.Uniform tex3In = new BaseShader.Uniform("u_tex3", TerrainTextureAttribute.Tex3);
-		BaseShader.Uniform tex1ScaleIn = new BaseShader.Uniform("u_tex1Scale");
-		BaseShader.Uniform tex2ScaleIn = new BaseShader.Uniform("u_tex2Scale");
-		BaseShader.Uniform tex3ScaleIn = new BaseShader.Uniform("u_tex3Scale");
-		BaseShader.Uniform timeIn = new BaseShader.Uniform("u_time");
-		BaseShader.Uniform mouseCoordsIn = new BaseShader.Uniform("u_mouseCoords");
+		BaseShader.Uniform u_tex1 = new BaseShader.Uniform("u_tex1", TerrainTextureAttribute.Tex1);
+		BaseShader.Uniform u_tex2 = new BaseShader.Uniform("u_tex2", TerrainTextureAttribute.Tex2);
+		BaseShader.Uniform u_tex3 = new BaseShader.Uniform("u_tex3", TerrainTextureAttribute.Tex3);
+		BaseShader.Uniform u_tex4 = new BaseShader.Uniform("u_tex4", TerrainTextureAttribute.Tex4);
+		BaseShader.Uniform u_texMask1 = new BaseShader.Uniform("u_texMask1", TerrainTextureAttribute.TexMask1);
+		BaseShader.Uniform u_tex1Scale = new BaseShader.Uniform("u_tex1Scale");
+		BaseShader.Uniform u_tex2Scale = new BaseShader.Uniform("u_tex2Scale");
+		BaseShader.Uniform u_tex3Scale = new BaseShader.Uniform("u_tex3Scale");
+		BaseShader.Uniform u_tex4Scale = new BaseShader.Uniform("u_tex4Scale");
+		BaseShader.Uniform u_texMask1Scale = new BaseShader.Uniform("u_texMask1Scale");
+		BaseShader.Uniform u_time = new BaseShader.Uniform("u_time");
+		BaseShader.Uniform u_mouseCoords = new BaseShader.Uniform("u_mouseCoords");
 
-
-		shader.register(tex1In, tex1Set);
-		shader.register(tex2In, tex2Set);
-		shader.register(tex3In, tex3Set);
-		shader.register(tex1ScaleIn, tex1ScaleSet);
-		shader.register(tex2ScaleIn, tex2ScaleSet);
-		shader.register(tex3ScaleIn, tex3ScaleSet);
-		shader.register(timeIn, timeSet);
-		shader.register(mouseCoordsIn, mouseCoordsSet);
+		shader.register(u_tex1, new TexSetter(TerrainTextureAttribute.Tex1));
+		shader.register(u_tex2, new TexSetter(TerrainTextureAttribute.Tex2));
+		shader.register(u_tex3, new TexSetter(TerrainTextureAttribute.Tex3));
+		shader.register(u_tex4, new TexSetter(TerrainTextureAttribute.Tex4));
+		shader.register(u_texMask1, new TexSetter(TerrainTextureAttribute.TexMask1));
+		shader.register(u_tex1Scale, new TexScaleSetter(TerrainTextureAttribute.Tex1));
+		shader.register(u_tex2Scale, new TexScaleSetter(TerrainTextureAttribute.Tex2));
+		shader.register(u_tex3Scale, new TexScaleSetter(TerrainTextureAttribute.Tex3));
+		shader.register(u_tex4Scale, new TexScaleSetter(TerrainTextureAttribute.Tex4));
+		shader.register(u_texMask1Scale, new TexScaleSetter(TerrainTextureAttribute.TexMask1));
+		shader.register(u_time, timeSet);
+		shader.register(u_mouseCoords, mouseCoordsSet);
 
 		return shader;
 	}
 
 
-	public final static BaseShader.Setter tex1Set = new BaseShader.LocalSetter() {
+	private static class TexSetter extends BaseShader.LocalSetter{
+		public long attribute;
+
+		public TexSetter(long attribute) {
+			this.attribute = attribute;
+		}
+
 		@Override
 		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-			final int unit = shader.context.textureBinder.bind(((TerrainTextureAttribute)(combinedAttributes.get(TerrainTextureAttribute.Tex1))).textureDescription);
+			final int unit = shader.context.textureBinder.bind(((TerrainTextureAttribute)(combinedAttributes.get(attribute))).textureDescription);
 			shader.set(inputID, unit);
 		}
-	};
+	}
 
-	public final static BaseShader.Setter tex2Set = new BaseShader.LocalSetter() {
+	private static class TexScaleSetter extends BaseShader.LocalSetter{
+		public long attribute;
+
+		public TexScaleSetter(long attribute) {
+			this.attribute = attribute;
+		}
+
 		@Override
 		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-			final int unit = shader.context.textureBinder.bind(((TerrainTextureAttribute)(combinedAttributes.get(TerrainTextureAttribute.Tex2))).textureDescription);
-			shader.set(inputID, unit);
+			shader.set(inputID, ((TerrainTextureAttribute)(combinedAttributes.get(attribute))).scaleU);
 		}
-	};
+	}
 
-	public final static BaseShader.Setter tex3Set = new BaseShader.LocalSetter() {
-		@Override
-		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-			final int unit = shader.context.textureBinder.bind(((TerrainTextureAttribute)(combinedAttributes.get(TerrainTextureAttribute.Tex3))).textureDescription);
-			shader.set(inputID, unit);
-		}
-	};
 
-	public final static BaseShader.Setter tex1ScaleSet = new BaseShader.LocalSetter() {
-		@Override
-		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-			shader.set(inputID, ((TerrainTextureAttribute)(combinedAttributes.get(TerrainTextureAttribute.Tex1))).scaleU);
-		}
-	};
-
-	public final static BaseShader.Setter tex2ScaleSet = new BaseShader.LocalSetter() {
-		@Override
-		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-			shader.set(inputID, ((TerrainTextureAttribute)(combinedAttributes.get(TerrainTextureAttribute.Tex2))).scaleU);
-		}
-	};
-
-	public final static BaseShader.Setter tex3ScaleSet = new BaseShader.LocalSetter() {
-		@Override
-		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-			shader.set(inputID, ((TerrainTextureAttribute)(combinedAttributes.get(TerrainTextureAttribute.Tex3))).scaleU);
-		}
-	};
-
-	public final static BaseShader.Setter timeSet = new BaseShader.LocalSetter() {
+	public final static BaseShader.Setter timeSet = new BaseShader.GlobalSetter() {
 		private float time;
 		@Override
 		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
@@ -114,13 +104,12 @@ public class TerrainShaderProvider extends BaseShaderProvider {
 		}
 	};
 
-	public final static BaseShader.Setter mouseCoordsSet = new BaseShader.LocalSetter() {
-		private Vector2 mousePos = new Vector2();
+	public final static BaseShader.Setter mouseCoordsSet = new BaseShader.GlobalSetter() {
 		@Override
 		public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-			mousePos.x = Gdx.input.getX() / (float)Gdx.graphics.getWidth();
-			mousePos.y = (Gdx.graphics.getHeight() - Gdx.input.getY())/ (float)Gdx.graphics.getHeight();
-			shader.set(inputID, mousePos);
+			float x = Gdx.input.getX() / (float)Gdx.graphics.getWidth();
+			float y = (Gdx.graphics.getHeight() - Gdx.input.getY())/ (float)Gdx.graphics.getHeight();
+			shader.set(inputID, x,y);
 		}
 	};
 

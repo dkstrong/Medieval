@@ -6,20 +6,23 @@
 
 uniform vec2 u_mouseCoords;
 uniform sampler2D u_diffuseTexture;
+uniform vec4 u_diffuseColor;
+
 uniform sampler2D u_tex1;
 uniform sampler2D u_tex2;
 uniform sampler2D u_tex3;
 uniform float u_tex1Scale;
 uniform float u_tex2Scale;
 uniform float u_tex3Scale;
-uniform vec4 u_diffuseColor;
+uniform float u_time;
+
+
 
 varying vec2 v_texCoord0;
 varying vec4 v_color;
 varying vec4 v_worldCoord;
 
 
-uniform float u_time;
 
 
 void main() {
@@ -39,51 +42,26 @@ void main() {
 	float m_regionWeight = 0.0;
 	float height = v_worldCoord.y;
 
-	if(height > 1.0)
-	{
-		m_regionMin = -1.0;
-		m_regionMax = 4.5;
-		m_regionRange = m_regionMax - m_regionMin;
-		m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
-		m_regionWeight = max(0.1, m_regionWeight);
-		weightedColor += texColor1 * m_regionWeight ;
+	m_regionMin = 0.0;
+	m_regionMax = 5.0;
+	m_regionRange = m_regionMax - m_regionMin;
+	m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
+	m_regionWeight = max(0.1, m_regionWeight);
+	weightedColor += texColor1 * m_regionWeight ;
 
+	m_regionMin = 3.0;
+	m_regionMax = 20.0;
+	m_regionRange = m_regionMax - m_regionMin;
+	m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
+	m_regionWeight = max(0.0, m_regionWeight);
+	weightedColor += texColor2 * m_regionWeight;
 
-        		weightedColor += texColor2 * (1.0-m_regionWeight);
-
-
-
-//        	m_regionMin = 0.7;
-//        	m_regionMax = 1.1;
-//        	m_regionRange = m_regionMax - m_regionMin;
-//        	m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
-//        	m_regionWeight = max(0.0, m_regionWeight);
-//        	weightedColor += texColor3 * m_regionWeight;
-	}
-	else
-	{
-//		m_regionMin = 1.0;
-//		m_regionMax = 2.0;
-//		m_regionRange = m_regionMax - m_regionMin;
-//		m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
-//		m_regionWeight = max(0.1, m_regionWeight);
-//		weightedColor += texColor1 * m_regionWeight ;
-
-		m_regionMin = 1.0;
-		m_regionMax = 1.5;
-		m_regionRange = m_regionMax - m_regionMin;
-		m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
-		m_regionWeight = max(0.0, m_regionWeight);
-		weightedColor += texColor2 * m_regionWeight;
-
-		m_regionMin = -1.0;
-		m_regionMax = 1.0f;
-		m_regionRange = m_regionMax - m_regionMin;
-		m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
-		m_regionWeight = max(0.0, m_regionWeight);
-		weightedColor += texColor3 * m_regionWeight;
-
-	}
+	m_regionMin = -1.0;
+	m_regionMax = 1.0;
+	m_regionRange = m_regionMax - m_regionMin;
+	m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
+	m_regionWeight = max(0.0, m_regionWeight);
+	weightedColor += texColor3 * m_regionWeight;
 
 
 

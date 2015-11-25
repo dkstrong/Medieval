@@ -131,7 +131,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
 
-		terrainParameter.heightmapName = "Models/Terrain/heightmap.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
+		terrainParameter.heightmapName = "Models/Terrain/mountains128.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
 
 		terrainParameter.seed = settings.random.nextLong();
 
@@ -159,6 +159,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		terrainParameter.tex2Scale = 14;
 		terrainParameter.tex3="Textures/Terrain/water.jpg";
 		terrainParameter.tex3Scale = 10;
+		terrainParameter.tex4="Textures/Terrain/brickRound_diffuse.png";
+		terrainParameter.tex4Scale = 70;
 
 		AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Models/Terrain/terrain.txt", Terrain.class,terrainParameter);
 		assetManager.load(terrainAssetDescriptor);

@@ -139,6 +139,7 @@ public class HudView implements View, InputProcessor {
 			topLeftLabel.setText("");
 		}
 
+
 		String soldierStatusString = "";
 		Token soldier = world.scenario.getSoldier(1);
 		if(soldier != null){
@@ -160,6 +161,8 @@ public class HudView implements View, InputProcessor {
 
 
 		);
+
+		topRightLabel.setText("");
 
 		if (hudSelectionView==null || hudSelectionView.selectedViews.size < 1) {
 			bottomLeftLabel.setText("");

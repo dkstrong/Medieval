@@ -3,8 +3,6 @@ package asf.medieval.terrain;
 import asf.medieval.utility.OpenSimplexNoise;
 import asf.medieval.utility.UtMath;
 import asf.medieval.utility.UtPixmap;
-import asf.medieval.utility.shadertest.ShaderTestAttribute;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
@@ -15,9 +13,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 
@@ -107,12 +103,18 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 		Texture tex1 = new Texture(resolve(param.tex1));
 		Texture tex2 = new Texture(resolve(param.tex2));
 		Texture tex3 = new Texture(resolve(param.tex3));
+		tex3.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+		Texture tex4 = new Texture(resolve(param.tex4));
+		tex4.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+		Texture texMask1 = new Texture(resolve("Textures/mask.png"));
 
 		Material mat = new Material(
 			new TextureAttribute(TextureAttribute.Diffuse, diffuseMap),
 			new TerrainTextureAttribute(TerrainTextureAttribute.Tex1, tex1, param.tex1Scale),
 			new TerrainTextureAttribute(TerrainTextureAttribute.Tex2, tex2, param.tex2Scale),
-			new TerrainTextureAttribute(TerrainTextureAttribute.Tex3, tex3, param.tex3Scale)
+			new TerrainTextureAttribute(TerrainTextureAttribute.Tex3, tex3, param.tex3Scale),
+			new TerrainTextureAttribute(TerrainTextureAttribute.Tex4, tex4, param.tex4Scale),
+			new TerrainTextureAttribute(TerrainTextureAttribute.TexMask1, texMask1, param.tex3Scale)
 		);
 
 
@@ -224,7 +226,7 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 		public float tex2Scale = 1f;
 		public String tex3;
 		public float tex3Scale = 1f;
-
-
+		public String tex4;
+		public float tex4Scale = 1f;
 	}
 }

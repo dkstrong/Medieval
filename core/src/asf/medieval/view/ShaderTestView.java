@@ -46,7 +46,7 @@ public class ShaderTestView implements View{
 			TextureAttribute.createDiffuse(diffuseMap),
 			new TextureAttribute(TerrainTextureAttribute.Tex1,diffuseMap),
 			new TextureAttribute(TerrainTextureAttribute.Tex2,diffuseMap2),
-			new TextureAttribute(TerrainTextureAttribute.TexMask,maskMap)
+			new TextureAttribute(TerrainTextureAttribute.TexMask1,maskMap)
 		);
 
 
