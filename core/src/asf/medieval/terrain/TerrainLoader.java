@@ -3,6 +3,8 @@ package asf.medieval.terrain;
 import asf.medieval.utility.OpenSimplexNoise;
 import asf.medieval.utility.UtMath;
 import asf.medieval.utility.UtPixmap;
+import asf.medieval.utility.shadertest.ShaderTestAttribute;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
@@ -12,6 +14,9 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
@@ -93,6 +98,27 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 		terrain.createHeightField();
 	}
 
+	protected Material getMaterial(TerrainChunk terrainChunk, TerrainParameter param) {
+		// TODO; the textures that are loaded here arent stored to be disposed.
+		// TODO: I need to dispose them somewhere..
+		// TODO: i might also want to try packing these into an atlas and providing
+		// TODO: texture regions to the material instead of seperate textures
+		Texture diffuseMap = getDiffuseMap(terrainChunk, param);
+		Texture tex1 = new Texture(resolve(param.tex1));
+		Texture tex2 = new Texture(resolve(param.tex2));
+		Texture tex3 = new Texture(resolve(param.tex3));
+
+		Material mat = new Material(
+			new TextureAttribute(TextureAttribute.Diffuse, diffuseMap),
+			new TerrainTextureAttribute(TerrainTextureAttribute.Tex1, tex1, param.tex1Scale),
+			new TerrainTextureAttribute(TerrainTextureAttribute.Tex2, tex2, param.tex2Scale),
+			new TerrainTextureAttribute(TerrainTextureAttribute.Tex3, tex3, param.tex3Scale)
+		);
+
+
+		return mat;
+	}
+
 	protected Texture getDiffuseMap(TerrainChunk terrainChunk, TerrainParameter param) {
 		if (param.diffusemapName != null) {
 			return loadDiffuseMap(param);
@@ -120,8 +146,8 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 				float chunkY = (y / (float) splatResolution) * terrainChunk.height;
 
 				float a = terrainChunk.getElevation((int) chunkX, (int) chunkY) / terrainChunk.magnitude.y;
-				Color.rgba8888ToColor(c1, UtPixmap.getColorStretchLinearTile(pix1, param.tex1Scale.x, param.tex1Scale.y, splatPix, x, y));
-				Color.rgba8888ToColor(c2, UtPixmap.getColorStretchLinearTile(pix2, param.tex2Scale.x, param.tex2Scale.y, splatPix, x, y));
+				Color.rgba8888ToColor(c1, UtPixmap.getColorStretchLinearTile(pix1, param.tex1Scale, param.tex1Scale, splatPix, x, y));
+				Color.rgba8888ToColor(c2, UtPixmap.getColorStretchLinearTile(pix2, param.tex2Scale, param.tex2Scale, splatPix, x, y));
 				//Color.rgb888ToColor(c3,UtPixmap.getColorStretchLinearTile(pix3, param.tex3Scale.x, param.tex3Scale.y, splatPix, x, y));
 				if (a < 0 || a > 1)
 					System.out.println("a: " + a);
@@ -193,11 +219,11 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 
 		public int generatedDiffuseMapSize;
 		public String tex1;
-		public final Vector2 tex1Scale = new Vector2(1, 1);
+		public float tex1Scale = 1f;
 		public String tex2;
-		public final Vector2 tex2Scale = new Vector2(1, 1);
+		public float tex2Scale = 1f;
 		public String tex3;
-		public final Vector2 tex3Scale = new Vector2(1, 1);
+		public float tex3Scale = 1f;
 
 
 	}

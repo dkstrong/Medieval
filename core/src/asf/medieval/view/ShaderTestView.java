@@ -2,6 +2,8 @@ package asf.medieval.view;
 
 import asf.medieval.shape.Box;
 import asf.medieval.shape.Shape;
+import asf.medieval.terrain.TerrainTextureAttribute;
+import asf.medieval.utility.shadertest.ShaderTestAttribute;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -34,12 +36,17 @@ public class ShaderTestView implements View{
 		shaper = new Box(5,10);
 		Vector3 dim = shaper.dimensions;
 		Texture diffuseMap = new Texture(Gdx.files.internal("Textures/Terrain/grass_1.png"));
+		Texture diffuseMap2 = new Texture(Gdx.files.internal("Textures/Terrain/dirt_1.png"));
+		Texture maskMap = new Texture(Gdx.files.internal("Textures/mask.png"));
 
 
 		Material mat = new Material(
-			ColorAttribute.createDiffuse(Color.BLUE),
+			//ColorAttribute.createDiffuse(Color.BLUE),
 			new ColorAttribute(ShaderTestAttribute.AlbedoColor, Color.ORANGE),
-			TextureAttribute.createDiffuse(diffuseMap)
+			TextureAttribute.createDiffuse(diffuseMap),
+			new TextureAttribute(TerrainTextureAttribute.Tex1,diffuseMap),
+			new TextureAttribute(TerrainTextureAttribute.Tex2,diffuseMap2),
+			new TextureAttribute(TerrainTextureAttribute.TexMask,maskMap)
 		);
 
 

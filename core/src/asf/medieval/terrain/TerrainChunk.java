@@ -4,6 +4,7 @@ package asf.medieval.terrain;
 import java.nio.ByteBuffer;
 
 import asf.medieval.utility.UtMath;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -462,11 +463,9 @@ public class TerrainChunk implements Disposable {
 	}
 
 	public Renderable renderable;
-	private Texture diffusemap;
 
-	public void createRenderable(Texture diffusemap) {
+	public void createRenderable(Material mat) {
 
-		this.diffusemap = diffusemap;
 		// max verts per mesh is 32767
 		renderable = new Renderable();
 		renderable.meshPart.mesh = mesh;
@@ -475,8 +474,8 @@ public class TerrainChunk implements Disposable {
 		renderable.meshPart.size = mesh.getNumIndices();
 		//System.out.println("size:"+renderable.meshPart.size);
 		renderable.meshPart.update();
-		renderable.material = new Material(TextureAttribute.createDiffuse(diffusemap));
-		renderable.userData = "Terrain";
+		renderable.material = mat;
+
 
 	}
 
@@ -484,8 +483,6 @@ public class TerrainChunk implements Disposable {
 	public void dispose() {
 		if (mesh != null)
 			mesh.dispose();
-		if (diffusemap != null)
-			diffusemap.dispose();
 	}
 
 	/**

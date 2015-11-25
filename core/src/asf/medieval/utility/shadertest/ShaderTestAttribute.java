@@ -1,4 +1,4 @@
-package asf.medieval.view;
+package asf.medieval.utility.shadertest;
 
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;

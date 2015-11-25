@@ -1,40 +1,46 @@
 package asf.medieval.view;
 
-import com.badlogic.gdx.Gdx;
+import asf.medieval.terrain.TerrainShaderProvider;
+import asf.medieval.terrain.TerrainTextureAttribute;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 
 /**
  * https://github.com/libgdx/libgdx/wiki/ModelBatch#shaderprovider
  * Created by daniel on 11/21/15.
  */
-public class MedievalShaderProvider extends DefaultShaderProvider {
-	DefaultShader.Config testShaderConfig;
-
-	DefaultShader.Config unofficialShaderConfig;
+public class MedievalShaderProvider implements ShaderProvider {
+	private final DefaultShaderProvider defaultShaderProvider;
+	private final TerrainShaderProvider terrainShaderProvider;
 
 	public MedievalShaderProvider() {
-		testShaderConfig = new DefaultShader.Config();
-		testShaderConfig.vertexShader = Gdx.files.internal("Shaders/test_v.glsl").readString();
-		testShaderConfig.fragmentShader =Gdx.files.internal("Shaders/test_f.glsl").readString();
+		defaultShaderProvider = new DefaultShaderProvider();
+		terrainShaderProvider = new TerrainShaderProvider();
 
-		unofficialShaderConfig = new DefaultShader.Config();
-		unofficialShaderConfig.vertexShader = Gdx.files.internal("Shaders/unofficial_v.glsl").readString();
-		unofficialShaderConfig.fragmentShader = Gdx.files.internal("Shaders/unofficial_f.glsl").readString();
+		defaultShaderProvider.config.numDirectionalLights = 2;
+		defaultShaderProvider.config.numPointLights = 0;
+		defaultShaderProvider.config.numSpotLights = 0;
+		defaultShaderProvider.config.numBones = 12;
+
 	}
 
 	@Override
-	protected Shader createShader (Renderable renderable) {
-		if(renderable.material.has(ShaderTestAttribute.AlbedoColor)){
-			return new DefaultShader(renderable, testShaderConfig);
-			//return new ShaderTestShader();
+	public Shader getShader(Renderable renderable) {
 
+		if(renderable.material.has(TerrainTextureAttribute.Tex1)){
+			return terrainShaderProvider.getShader(renderable);
 		}else{
-			//return new DefaultShader(renderable, unofficialShaderConfig);
-			return super.createShader(renderable);
+			return defaultShaderProvider.getShader(renderable);
 		}
+
+	}
+
+	@Override
+	public void dispose() {
+		terrainShaderProvider.dispose();
+		defaultShaderProvider.dispose();
 
 	}
 }

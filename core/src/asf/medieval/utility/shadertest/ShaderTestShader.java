@@ -1,4 +1,4 @@
-package asf.medieval.view;
+package asf.medieval.utility.shadertest;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;

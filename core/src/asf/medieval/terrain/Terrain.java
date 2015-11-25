@@ -86,7 +86,7 @@ public class Terrain implements RenderableProvider,Disposable {
 	{
 		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
 			for (TerrainChunk terrainChunk : terrainChunks) {
-				terrainChunk.createRenderable(terrainLoader.getDiffuseMap(terrainChunk, parameter));
+				terrainChunk.createRenderable(terrainLoader.getMaterial(terrainChunk, parameter));
 			}
 		}
 	}

@@ -136,7 +136,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		terrainParameter.seed = settings.random.nextLong();
 
 
-		terrainParameter.terrainScale = 250;
+		terrainParameter.terrainScale = 200;
 		terrainParameter.terrainMagnitude = 30;
 
 //		terrainParameter.fieldWidth = 128;
@@ -153,12 +153,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		//"Textures/Floor/wallTiles.png"
 		//terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg"; // sand512.jpg
 		terrainParameter.generatedDiffuseMapSize = 1024;
-		terrainParameter.tex1="Textures/Terrain/grass_2.png"; // grass_2
-		terrainParameter.tex1Scale.set(2,2);
+		terrainParameter.tex1="Textures/Terrain/grass_2.png"; // grass_2.png
+		terrainParameter.tex1Scale = 14;
 		terrainParameter.tex2="Textures/Terrain/dirt.png";
-		terrainParameter.tex2Scale.set(2,2);
-		terrainParameter.tex3="Textures/Terrain/snow2_512.png";
-		terrainParameter.tex2Scale.set(4,4);
+		terrainParameter.tex2Scale = 14;
+		terrainParameter.tex3="Textures/Terrain/water.jpg";
+		terrainParameter.tex3Scale = 10;
 
 		AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Models/Terrain/terrain.txt", Terrain.class,terrainParameter);
 		assetManager.load(terrainAssetDescriptor);
@@ -221,7 +221,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 			//addGameObject(characterGameObject = new CharacterGameObject(this, mission.characterToken));
 			//cameraManager.setChaseTarget(characterGameObject);
-			addGameObject(new ShaderTestView(this));
+			//addGameObject(new ShaderTestView(this));
 
 
 			addGameObject(terrainView =new TerrainView(this));
