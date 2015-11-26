@@ -14,6 +14,7 @@ import asf.medieval.net.OfflineGameClient;
 import asf.medieval.model.Player;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
+import asf.medieval.view.editor.EditorView;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -22,7 +23,6 @@ import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -35,13 +35,11 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultRenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import java.io.InterruptedIOException;
 import java.util.Random;
 
 /**
@@ -55,17 +53,19 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		public boolean server;
 		public String hostName;
 		public boolean client;
+		public boolean editor;
 		public Random random;
 	}
 
-	protected final MedievalApp app;
-	protected final Settings settings;
+	public final MedievalApp app;
+	public final Settings settings;
 	public final CameraManager cameraManager;
 	public final Environment environment;
 	public final Stage stage;
 	public final DecalBatch decalBatch;
 	public final DirectionalShadowLight shadowLight;
 	public final ModelBatch shadowBatch;
+	public final MedievalShaderProvider modelShaderProvider;
 	public final ModelBatch modelBatch;
 	public final AssetManager assetManager;
 	private boolean loading = true;
@@ -82,9 +82,10 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	public GameClient gameClient;
 
 	public final Scenario scenario;
-	protected final Array<View> gameObjects;
-	protected HudView hudView;
-	protected TerrainView terrainView;
+	public final Array<View> gameObjects;
+	public HudView hudView;
+	public EditorView editorView;
+	public TerrainView terrainView;
 
 	public MedievalWorld(MedievalApp app, Settings settings)  {
 		this.app = app;
@@ -107,7 +108,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		decalBatch = new DecalBatch(32, new CameraGroupStrategy(cameraManager.cam));
 
 		// https://github.com/libgdx/libgdx/wiki/ModelBatch
-		modelBatch = new ModelBatch(null,new MedievalShaderProvider(), new DefaultRenderableSorter());
+		modelShaderProvider = new MedievalShaderProvider();
+		modelBatch = new ModelBatch(null,modelShaderProvider, new DefaultRenderableSorter());
 
 		assetManager = new AssetManager();
 
@@ -129,41 +131,30 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
+		/*
 		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
-
 		terrainParameter.heightmapName = "Models/Terrain/mountains128.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
-
 		terrainParameter.seed = settings.random.nextLong();
-
-
-		terrainParameter.terrainScale = 200;
-		terrainParameter.terrainMagnitude = 30;
-
-//		terrainParameter.fieldWidth = 128;
-//		terrainParameter.fieldHeight = 200;
-//		terrainParameter.chunkWidth = 25;
-//		terrainParameter.chunkHeight = 25;
 		terrainParameter.fieldWidth = 180;
 		terrainParameter.fieldHeight = 180;
+		terrainParameter.scale = 200;
+		terrainParameter.magnitude = 30;
 		terrainParameter.chunkWidth = 180;
 		terrainParameter.chunkHeight = 180;
-		//terrainParameter.terrainMagnitude = 70;
-
-		//"Textures/Terrain/sand512.jpg"
-		//"Textures/Floor/wallTiles.png"
-		//terrainParameter.diffusemapName = "Textures/Terrain/sand512.jpg"; // sand512.jpg
-		terrainParameter.generatedDiffuseMapSize = 1024;
-		terrainParameter.tex1="Textures/Terrain/grass_2.png"; // grass_2.png
+		terrainParameter.weightMap1 = "Textures/Terrain/sand512.jpg"; // sand512.jpg
+		terrainParameter.tex1="Textures/Terrain/dirt.png"; // grass_2.png
 		terrainParameter.tex1Scale = 14;
-		terrainParameter.tex2="Textures/Terrain/dirt.png";
-		terrainParameter.tex2Scale = 14;
+		terrainParameter.tex2="Textures/Terrain/GrassRock.jpg";
+		terrainParameter.tex2Scale = 4;
 		terrainParameter.tex3="Textures/Terrain/water.jpg";
 		terrainParameter.tex3Scale = 10;
-		terrainParameter.tex4="Textures/Terrain/brickRound_diffuse.png";
+		terrainParameter.tex4="Textures/Terrain/stone_diffuse_02.png";  // brickRound_diffuse
 		terrainParameter.tex4Scale = 70;
-
 		AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Models/Terrain/terrain.txt", Terrain.class,terrainParameter);
 		assetManager.load(terrainAssetDescriptor);
+		*/
+
+		assetManager.load("Terrain/test.ter",Terrain.class);
 
 
 
@@ -232,6 +223,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			scenario.terrain = terrainView.terrain;
 
 			scenario.setListener(this);
+
+
+			if(settings.editor){
+				addGameObject(editorView = new EditorView(this));
+			}
+
 
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
 			inputMultiplexer.addProcessor(hudView);
@@ -373,12 +370,18 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		if (hudView != null)
 			hudView.resize(width, height);
 
+		if(editorView!= null)
+			editorView.resize(width,height);
+
 		cameraManager.resize(width, height);
 
 	}
 
 	@Override
 	public void dispose() {
+		if(editorView!=null)
+			editorView.dispose();
+
 		if(gameServer!= null)
 			gameServer.dispose();
 

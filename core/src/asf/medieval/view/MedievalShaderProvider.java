@@ -12,8 +12,8 @@ import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
  * Created by daniel on 11/21/15.
  */
 public class MedievalShaderProvider implements ShaderProvider {
-	private final DefaultShaderProvider defaultShaderProvider;
-	private final TerrainShaderProvider terrainShaderProvider;
+	public final DefaultShaderProvider defaultShaderProvider;
+	public final TerrainShaderProvider terrainShaderProvider;
 
 	public MedievalShaderProvider() {
 		defaultShaderProvider = new DefaultShaderProvider();

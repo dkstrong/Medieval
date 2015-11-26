@@ -175,7 +175,6 @@ uniform vec4 u_fogColor;
 varying float v_fog;
 #endif // fogFlag
 
-uniform sampler2D u_weightMap1;
 uniform sampler2D u_tex1;
 uniform sampler2D u_tex2;
 uniform sampler2D u_tex3;
@@ -223,22 +222,54 @@ void main() {
 	//vec4 texMaskColor1 = texture2D(u_texMask13, fract(v_texCoord0 * u_texMask1Scale));
 	//float mask = texture2D(u_texMask1, fract(v_texCoord0 * 1.0)+distort).a;
 
-	vec4 weightMap1Color = texture2D(u_weightMap1, v_texCoord0);
-	weightMap1Color = vec4(1.75,0.5,6.0,0.0);
-	weightMap1Color = normalize(weightMap1Color);
+	vec4 texColor1 = texture2D(u_tex1, fract(v_texCoord0 * u_tex1Scale));
+	vec4 texColor2 = texture2D(u_tex2, fract(v_texCoord0 * u_tex2Scale));
+	vec4 texColor3 = texture2D(u_tex3, fract(v_texCoord0 * u_tex3Scale)+distort);
+	vec4 texColor4 = texture2D(u_tex4, fract(v_texCoord0 * u_tex4Scale));
 
-	vec4 tex1Color = texture2D(u_tex1, fract(v_texCoord0 * u_tex1Scale));
-	vec4 tex2Color = texture2D(u_tex2, fract(v_texCoord0 * u_tex2Scale));
-	vec4 tex3Color = texture2D(u_tex3, fract(v_texCoord0 * u_tex3Scale)+distort);
-	vec4 tex4Color = texture2D(u_tex4, fract(v_texCoord0 * u_tex4Scale));
+	float m_tex1Weight =0.0;
+	float m_tex2Weight=0.0;
+	float m_tex3Weight=0.0;
+	float m_tex4Weight=0.0;
+
+	float m_regionMin = 0.0;
+	float m_regionMax = 0.0;
+	float m_regionRange = 0.0;
+	float m_regionWeight = 0.0;
+
+	m_regionMin = 0.0;
+	m_regionMax = 5.0;
+	m_regionRange = m_regionMax - m_regionMin;
+	m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
+	m_tex1Weight = max(0.1, m_regionWeight);
+
+	m_regionMin = 3.0;
+	m_regionMax = 20.0;
+	m_regionRange = m_regionMax - m_regionMin;
+	m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
+	m_tex2Weight = max(0.0, m_regionWeight);
+
+	m_regionMin = -1.0 - distort.x;
+	m_regionMax = 1.0- distort.x;
+	m_regionRange = m_regionMax - m_regionMin;
+	m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
+	m_tex3Weight = max(0.0, m_regionWeight);
+
+	//m_regionMin = 4.7;
+	//m_regionMax = 5.1;
+	//m_regionRange = m_regionMax - m_regionMin;
+	//m_regionWeight = (m_regionRange - abs(height - m_regionMax)) / m_regionRange;
+	//m_tex4Weight = max(0.0, m_regionWeight);
+
+	float totalWeight = m_tex1Weight+ m_tex2Weight+m_tex3Weight+m_tex4Weight;
+	m_tex1Weight = m_tex1Weight / totalWeight;
+	m_tex2Weight = m_tex2Weight / totalWeight;
+	m_tex3Weight = m_tex3Weight / totalWeight;
+	m_tex4Weight = m_tex4Weight / totalWeight;
+
+	diffuse = texColor1 * m_tex1Weight + texColor2 * m_tex2Weight + texColor3 * m_tex3Weight + texColor4 * m_tex4Weight;
 
 
-	diffuse = 	tex1Color * weightMap1Color.r +
-				tex2Color * weightMap1Color.g +
-				tex3Color * weightMap1Color.b +
-				tex4Color * weightMap1Color.a;
-
-	//diffuse = vec4(1.0,0.0,0.0,1.0);
 
 	/////  End calc diffuse from height
 	//////

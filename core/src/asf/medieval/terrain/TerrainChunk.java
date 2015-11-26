@@ -476,7 +476,6 @@ public class TerrainChunk implements Disposable {
 		renderable.meshPart.update();
 		renderable.material = mat;
 
-
 	}
 
 	@Override
