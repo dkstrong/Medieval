@@ -133,26 +133,7 @@ public class HudCommandView implements View,InputProcessor {
 			case Input.Keys.SPACE:
 				spacebarDown = true;
 				break;
-			case Input.Keys.I:
-				Command command = new Command();
-				command.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				world.gameClient.sendCommand(command);
-				break;
-			case Input.Keys.J:
-				Command jimmyCommand = new Command();
-				jimmyCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				jimmyCommand.jimmy = true;
-				world.gameClient.sendCommand(jimmyCommand);
-				break;
-			case Input.Keys.B:
-				Command buildCommand = new Command();
-				buildCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				buildCommand.structure = true;
-				world.gameClient.sendCommand(buildCommand);
-				break;
-			case Input.Keys.C:
-				world.cameraManager.rtsCamController.printCamValues();
-				break;
+
 		}
 		return false;
 	}
@@ -164,6 +145,26 @@ public class HudCommandView implements View,InputProcessor {
 			case Input.Keys.SPACE:
 				spacebarDown = false;
 				break;
+			case Input.Keys.I:
+				Command command = new Command();
+				command.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
+				world.gameClient.sendCommand(command);
+				return true;
+			case Input.Keys.J:
+				Command jimmyCommand = new Command();
+				jimmyCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
+				jimmyCommand.jimmy = true;
+				world.gameClient.sendCommand(jimmyCommand);
+				return true;
+			case Input.Keys.B:
+				Command buildCommand = new Command();
+				buildCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
+				buildCommand.structure = true;
+				world.gameClient.sendCommand(buildCommand);
+				return true;
+			case Input.Keys.C:
+				world.cameraManager.rtsCamController.printCamValues();
+				return true;
 		}
 		return false;
 	}

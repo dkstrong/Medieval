@@ -71,8 +71,12 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 		if(terrainSplatEditorView.isEnabled()){
 			text+="\nSplat Painting";
-			text+="\nBrush: "+terrainSplatEditorView.brushPaint;
-			text+="\nRadius: "+terrainSplatEditorView.brushRadius;
+			if(terrainSplatEditorView.editDrawablePixmap != null){
+				text+="\nTool: "+terrainSplatEditorView.editDrawablePixmap.getTool();
+				text+="\nBrush: "+terrainSplatEditorView.getBrushPaint();
+				text+="\nRadius: "+terrainSplatEditorView.editDrawablePixmap.getBrushRadius();
+				text+="\nOpacity: "+terrainSplatEditorView.editDrawablePixmap.getBrushOpacity();
+			}
 		}
 
 		bottomRightLabel.setText(text);
