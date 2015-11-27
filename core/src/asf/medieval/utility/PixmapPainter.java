@@ -1,5 +1,6 @@
 package asf.medieval.utility;
 
+import asf.medieval.model.steer.behavior.Blend;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -14,38 +15,35 @@ import com.badlogic.gdx.utils.Disposable;
 /**
  * Created by daniel on 11/26/15.
  */
-public class DrawablePixmap implements InputProcessor,Disposable {
+public class PixmapPainter implements InputProcessor,Disposable {
 
 	public enum Tool {
 		Fill,
-		FloodFill,
-		HardBrush,
-		SoftBrush,
-		OutlineBrush
-
+		Brush,
+		Point,
+		Eraser;
 	}
 
 	public Pixmap pixmap;
 	public Texture texture;
 
-	public Pixmap.Blending blending = Pixmap.Blending.None;
-	private Tool tool = Tool.SoftBrush;
+	private Tool tool = Tool.Brush;
+	private final Brush brush = new Brush();
 	private final Color brushColor = new Color();
-	private int brushRadius = 1;
 	private float brushOpacity = 1f;
 
 	private final Array<Pair> drawedPixels = new Array<Pair>(false, 64, Pair.class);
 
-	public DrawablePixmap(int width, int height, Pixmap.Format format) {
+	public PixmapPainter(int width, int height, Pixmap.Format format) {
 		pixmap = new Pixmap(width, height, format);
 		texture = new Texture(new PixmapTextureData(pixmap, pixmap.getFormat(), false, false));
 	}
 
-	public DrawablePixmap(Texture srcTexture) {
+	public PixmapPainter(Texture srcTexture) {
 		this(srcTexture.getWidth(), srcTexture.getHeight(),srcTexture);
 	}
 
-	public DrawablePixmap(int width, int height, Texture srcTexture) {
+	public PixmapPainter(int width, int height, Texture srcTexture) {
 		srcTexture.getTextureData().prepare();
 		Pixmap srcPixmap = srcTexture.getTextureData().consumePixmap();
 		if (srcPixmap.getFormat() != Pixmap.Format.RGBA8888) {
@@ -85,23 +83,16 @@ public class DrawablePixmap implements InputProcessor,Disposable {
 		this.tool = tool;
 	}
 
+	public Brush getBrush() {
+		return brush;
+	}
+
 	public Color getBrushColor() {
 		return brushColor;
 	}
 
 	public void setBrushColor(float r, float g, float b, float a) {
 		brushColor.set(r,g,b,a);
-
-	}
-
-	public int getBrushRadius() {
-		return brushRadius;
-	}
-
-	public void setBrushRadius(int brushRadius) {
-		this.brushRadius = brushRadius;
-		if (this.brushRadius < 0)
-			this.brushRadius = 0;
 	}
 
 	public float getBrushOpacity() {
@@ -112,55 +103,36 @@ public class DrawablePixmap implements InputProcessor,Disposable {
 		this.brushOpacity = UtMath.clamp(brushOpacity, 0f, 1f);
 	}
 
+	public void draw(int x, int y) {
+		draw(-1,-1,x,y);
+	}
 
-	private void prepareDraw()
-	{
+	public void draw(int x1, int y1, int x2, int y2) {
 		if(tool == null){
 			UtLog.warning("tried to draw but no tool is selected");
 			return;
 		}
 
-		if(blending == null)
-			blending = Pixmap.Blending.None;
-
-		Pixmap.setBlending(blending);
-	}
-
-	public void draw(int x, int y) {
-		prepareDraw();
-
-		drawTool(x, y);
-
-		texture.draw(pixmap, 0, 0);
-	}
-
-	public void draw(int x1, int y1, int x2, int y2) {
-		prepareDraw();
+		if(Pixmap.getBlending() != Pixmap.Blending.None){
+			Pixmap.setBlending(Pixmap.Blending.None);
+		}
 
 		if(x1>=0 && y2 >=0){
 			float dist = Vector2.dst(x1,y1,x2,y2);
-			float alphaStep = UtMath.largest(brushRadius, .1f) / (8f * dist);
+			float alphaStep = UtMath.largest(brush.getRadius(), .1f) / (8f * dist);
 
 			int count=0;
 			for (float a = 0; a < 1f && count < 100; a += alphaStep) {
 				int xL = Math.round(UtMath.interpolateLinear(a, x1,x2));
 				int yL = Math.round(UtMath.interpolateLinear(a, y1,y2));
-				if(!hasDrawnPixel(xL, yL)){
-					drawTool(xL, yL);
-					drawedPixels.add(new Pair(xL, yL));
-				}
+				drawTool(xL, yL);
 				count++;
 			}
 		}else{
 			drawedPixels.clear();
 		}
 
-		if(!hasDrawnPixel(x2, y2)){
-			drawTool(x2, y2);
-			drawedPixels.add(new Pair(x2, y2));
-		}
-
-
+		drawTool(x2, y2);
 		texture.draw(pixmap, 0, 0);
 	}
 
@@ -170,36 +142,67 @@ public class DrawablePixmap implements InputProcessor,Disposable {
 				pixmap.setColor(brushColor);
 				pixmap.fill();
 				break;
-			case FloodFill:
-				pixmap.setColor(brushColor);
-				pixmap.fill(); // TODO: flood fill algorithm
-				break;
-			case OutlineBrush:
-				pixmap.setColor(brushColor);
-				pixmap.drawCircle(x, y, brushRadius);
-				break;
-			case HardBrush:
-				pixmap.setColor(brushColor);
-				pixmap.fillCircle(x,y,brushRadius);
-				break;
-			case SoftBrush:
-				Color c = new Color();
-				Color.rgba8888ToColor(c,pixmap.getPixel(x, y));
+			case Brush:
+				//pixmap.setColor(brushColor);
+				//pixmap.fillCircle(x,y+brushRadius*2+brushRadius,brushRadius);
+				for (Pair pair : brush.pairs) {
 
-				c.r = brushOpacity * brushColor.r + (1-brushOpacity) * c.r;
-				c.g = brushOpacity * brushColor.g + (1-brushOpacity) * c.g;
-				c.b = brushOpacity * brushColor.b + (1-brushOpacity) * c.b;
-				c.a = brushOpacity * brushColor.a + (1-brushOpacity) * c.a;
-
-
-				pixmap.drawPixel(x, y, Color.rgba8888(c));
+					drawPoint(x+pair.x, y+pair.y,brushOpacity);
+				}
+				break;
+			case Point:
+				drawPoint(x,y,brushOpacity);
+				break;
+			case Eraser:
+				for (Pair pair : brush.pairs) {
+					erasePoint(x + pair.x, y + pair.y, brushOpacity);
+				}
 				break;
 		}
 	}
 
-	private boolean hasDrawnPixel(int x, int y){
+	private void drawPoint(int x, int y, float opacity){
+		if(!hasDrawnPixel(x, y,opacity)){
+			Color c;
+			if(opacity < 1f)
+			{
+				c = new Color();
+				Color.rgba8888ToColor(c,pixmap.getPixel(x, y));
+
+				c.r = opacity * brushColor.r + (1-opacity) * c.r;
+				c.g = opacity * brushColor.g + (1-opacity) * c.g;
+				c.b = opacity * brushColor.b + (1-opacity) * c.b;
+				c.a = opacity * brushColor.a + (1-opacity) * c.a;
+				//UtDebugPrint.print(c);
+			}else{
+				c = brushColor;
+			}
+
+			pixmap.drawPixel(x, y, Color.rgba8888(c));
+
+			drawedPixels.add(new Pair(x, y,opacity));
+		}
+	}
+
+	private void erasePoint(int x, int y, float opacity){
+		if(!hasDrawnPixel(x, y,opacity)){
+			Color c;
+			c = new Color();
+			Color.rgba8888ToColor(c,pixmap.getPixel(x, y));
+
+			c.r = UtMath.largest((1-opacity) * c.r - opacity * brushColor.r ,0f);
+			c.g = UtMath.largest((1-opacity) * c.g - opacity * brushColor.g ,0f);
+			c.b = UtMath.largest((1-opacity) * c.b - opacity * brushColor.b ,0f);
+			c.a = UtMath.largest((1-opacity) * c.a - opacity * brushColor.a ,0f);
+
+			pixmap.drawPixel(x, y, Color.rgba8888(c));
+			drawedPixels.add(new Pair(x, y,opacity));
+		}
+	}
+
+	private boolean hasDrawnPixel(int x, int y, float opacity){
 		for (Pair drawedPixel : drawedPixels) {
-			if(drawedPixel.equals(x,y))
+			if(drawedPixel.equals(x,y,opacity))
 				return true;
 		}
 		return false;
@@ -210,8 +213,6 @@ public class DrawablePixmap implements InputProcessor,Disposable {
 		texture.dispose();
 		pixmap.dispose();
 	}
-
-
 
 	@Override
 	public boolean keyDown(int keycode) {
@@ -224,38 +225,30 @@ public class DrawablePixmap implements InputProcessor,Disposable {
 		switch(keycode)
 		{
 			case Input.Keys.LEFT_BRACKET:
-				if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
+				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
+					brush.setRadius(brush.getRadius()-1);
+				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
 					setBrushOpacity(brushOpacity - 0.1f);
-				}else{
-					setBrushRadius(brushRadius-1);
 				}
 				return true;
 			case Input.Keys.RIGHT_BRACKET:
-				if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
+				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
+					brush.setRadius(brush.getRadius()+1);
+				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
 					setBrushOpacity(brushOpacity + 0.1f);
-				}else{
-					setBrushRadius(brushRadius+1);
 				}
 				return true;
 			case Input.Keys.B:
-				if(tool == Tool.HardBrush){
-					tool = Tool.SoftBrush;
-				}else if(tool == Tool.SoftBrush){
-					tool = Tool.OutlineBrush;
-				}else if(tool == Tool.OutlineBrush){
-					tool = Tool.HardBrush;
-				}else{
-					tool = Tool.HardBrush;
-				}
+				tool = Tool.Brush;
+				return true;
+			case Input.Keys.E:
+				tool = Tool.Eraser;
 				return true;
 			case Input.Keys.F:
-				if(tool == Tool.FloodFill){
-					tool = Tool.Fill;
-				}else if(tool == Tool.Fill){
-					tool = Tool.FloodFill;
-				}else{
-					tool = Tool.FloodFill;
-				}
+				tool = Tool.Fill;
+				return true;
+			case Input.Keys.P:
+				tool = Tool.Point;
 				return true;
 
 		}
@@ -290,16 +283,14 @@ public class DrawablePixmap implements InputProcessor,Disposable {
 	@Override
 	public boolean scrolled(int amount)
 	{
-		if(!Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
-			if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
-				setBrushRadius(brushRadius-amount);
-				return true;
-			}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-				setBrushOpacity(brushOpacity-amount * 0.1f);
-				return true;
-			}
-
+		if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
+			brush.setRadius(brush.getRadius()-amount);
+			return true;
+		}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
+			setBrushOpacity(brushOpacity-amount * 0.05f);
+			return true;
 		}
 		return false;
 	}
+
 }

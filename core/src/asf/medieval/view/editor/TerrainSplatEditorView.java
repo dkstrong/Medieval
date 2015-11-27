@@ -2,7 +2,7 @@ package asf.medieval.view.editor;
 
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
-import asf.medieval.utility.DrawablePixmap;
+import asf.medieval.utility.PixmapPainter;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
@@ -11,6 +11,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -33,11 +34,11 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 	public final Vector3 translation = new Vector3();
 	public final Quaternion rotation = new Quaternion();
 
-	private int brushPaint = 1;
+	private int selectedTexChannel = 1;
 
 	private Texture currentTexture;
 	private String currentTextureLoc;
-	public DrawablePixmap editDrawablePixmap;
+	public PixmapPainter editPixmapPainter;
 	private String editTextureLoc;
 	private FileHandle editFh;
 
@@ -79,14 +80,14 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 			this.enabled = true;
 			currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
 
-			editDrawablePixmap = new DrawablePixmap(2048,2048,currentTexture); // currentTexture
+			editPixmapPainter = new PixmapPainter(128,128, Pixmap.Format.RGBA8888); // currentTexture
 
 			editTextureLoc = "tmp/"+currentTextureLoc;
 			editFh = Gdx.files.local(editTextureLoc);
 
-			world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1,editDrawablePixmap.texture,1);
+			world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, editPixmapPainter.texture,1);
 
-			setBrushPaint(brushPaint);
+			setSelectedTexChannel(selectedTexChannel);
 
 
 		}else if(!enabled && this.enabled){
@@ -94,8 +95,8 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 
 			currentTexture = null;
 			currentTextureLoc = null;
-			editDrawablePixmap.dispose();
-			editDrawablePixmap= null;
+			editPixmapPainter.dispose();
+			editPixmapPainter = null;
 			editTextureLoc = null;
 			editFh = null;
 
@@ -110,17 +111,17 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 	}
 
 
-	public int getBrushPaint() {
-		return brushPaint;
+	public int getSelectedTexChannel() {
+		return selectedTexChannel;
 	}
 
-	public void setBrushPaint(int brushPaint) {
-		this.brushPaint = brushPaint;
+	public void setSelectedTexChannel(int selectedTexChannel) {
+		this.selectedTexChannel = selectedTexChannel;
 
-		if(brushPaint == 1) editDrawablePixmap.setBrushColor(1, 0, 0, 0);
-		else if(brushPaint == 2) editDrawablePixmap.setBrushColor(0, 1, 0, 0);
-		else if(brushPaint == 3) editDrawablePixmap.setBrushColor(0, 0, 1, 0);
-		else if(brushPaint == 4) editDrawablePixmap.setBrushColor(0, 0, 0, 1);
+		if(selectedTexChannel == 1) editPixmapPainter.setBrushColor(1, 0, 0, 0);
+		else if(selectedTexChannel == 2) editPixmapPainter.setBrushColor(0, 1, 0, 0);
+		else if(selectedTexChannel == 3) editPixmapPainter.setBrushColor(0, 0, 1, 0);
+		else if(selectedTexChannel == 4) editPixmapPainter.setBrushColor(0, 0, 0, 1);
 	}
 
 	@Override
@@ -140,19 +141,19 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 			return false;
 		switch(keycode){
 			case Input.Keys.NUM_1:
-				setBrushPaint(1);
+				setSelectedTexChannel(1);
 				return true;
 			case Input.Keys.NUM_2:
-				setBrushPaint(2);
+				setSelectedTexChannel(2);
 				return true;
 			case Input.Keys.NUM_3:
-				setBrushPaint(3);
+				setSelectedTexChannel(3);
 				return true;
 			case Input.Keys.NUM_4:
-				setBrushPaint(4);
+				setSelectedTexChannel(4);
 				return true;
 		}
-		if(editDrawablePixmap!= null && editDrawablePixmap.keyUp(keycode)){
+		if(editPixmapPainter != null && editPixmapPainter.keyUp(keycode)){
 			return true;
 		}
 		return false;
@@ -220,10 +221,10 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 
 		Terrain terrain = world.terrainView.terrain;
 
-		int texX = Math.round(UtMath.scalarLimitsInterpolation(translation.x, terrain.corner00.x, terrain.corner11.x, 0, editDrawablePixmap.pixmap.getWidth() - 1));
-		int texY = Math.round(UtMath.scalarLimitsInterpolation(translation.z, terrain.corner00.z, terrain.corner11.z, 0, editDrawablePixmap.pixmap.getHeight() - 1));
+		int texX = Math.round(UtMath.scalarLimitsInterpolation(translation.x, terrain.corner00.x, terrain.corner11.x, 0, editPixmapPainter.pixmap.getWidth() - 1));
+		int texY = Math.round(UtMath.scalarLimitsInterpolation(translation.z, terrain.corner00.z, terrain.corner11.z, 0, editPixmapPainter.pixmap.getHeight() - 1));
 
-		editDrawablePixmap.draw(lastX, lastY, texX, texY);
+		editPixmapPainter.draw(lastX, lastY, texX, texY);
 
 		lastX = texX;
 		lastY = texY;
@@ -242,7 +243,7 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 		if(!enabled)
 			return false;
 
-		if(editDrawablePixmap!= null && editDrawablePixmap.scrolled(amount)){
+		if(editPixmapPainter != null && editPixmapPainter.scrolled(amount)){
 			return true;
 		}
 
