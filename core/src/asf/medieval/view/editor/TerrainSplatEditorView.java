@@ -20,13 +20,14 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 
 /**
  * Created by daniel on 11/26/15.
  */
-public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
+public class TerrainSplatEditorView implements View,Disposable,InputProcessor,PixmapPainter.PixmapCoordProvider {
 	public final MedievalWorld world;
 	private boolean enabled;
 
@@ -81,6 +82,7 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 			currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
 
 			editPixmapPainter = new PixmapPainter(128,128, Pixmap.Format.RGBA8888); // currentTexture
+			editPixmapPainter.coordProvider = this;
 
 			editTextureLoc = "tmp/"+currentTextureLoc;
 			editFh = Gdx.files.local(editTextureLoc);
@@ -101,9 +103,6 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 			editFh = null;
 
 		}
-
-		leftDown = false;
-		rightDown = false;
 	}
 
 	public boolean isEnabled(){
@@ -164,22 +163,12 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 		return false;
 	}
 
-	private boolean leftDown;
-	private boolean rightDown;
-	private int lastX = -1;
-	private int lastY = -1;
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if(button == Input.Buttons.LEFT)
-			leftDown = true;
-		if(button == Input.Buttons.RIGHT)
-			rightDown = true;
+
 		if(!enabled)
 			return false;
-
-		if(leftDown)
-		{
-			paint(screenX,screenY);
+		if(editPixmapPainter != null && editPixmapPainter.touchDown(screenX, screenY, pointer, button)){
 			return true;
 		}
 		return false;
@@ -187,18 +176,11 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if(button == Input.Buttons.LEFT){
-			leftDown = false;
-			lastX = -1;
-			lastY = -1;
-		}else if(button == Input.Buttons.RIGHT){
-			rightDown = false;
-			lastX = -1;
-			lastY = -1;
-		}
-
 		if(!enabled)
 			return false;
+		if(editPixmapPainter != null && editPixmapPainter.touchUp(screenX, screenY, pointer, button)){
+			return true;
+		}
 
 		return false;
 	}
@@ -207,28 +189,20 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		if(!enabled)
 			return false;
-		if(leftDown)
-		{
-			paint(screenX,screenY);
+		if(editPixmapPainter != null && editPixmapPainter.touchDragged(screenX, screenY, pointer)){
 			return true;
 		}
 		return false;
 	}
 
-	private void paint(int screenX, int screenY){
-
+	@Override
+	public void getPixmapCoord(int screenX, int screenY, int pixmapWidth, int pixmapHeight, Vector2 store) {
 		world.hudView.hudCommandView.getWorldCoord(screenX, screenY,translation);
-
 		Terrain terrain = world.terrainView.terrain;
-
-		int texX = Math.round(UtMath.scalarLimitsInterpolation(translation.x, terrain.corner00.x, terrain.corner11.x, 0, editPixmapPainter.pixmap.getWidth() - 1));
-		int texY = Math.round(UtMath.scalarLimitsInterpolation(translation.z, terrain.corner00.z, terrain.corner11.z, 0, editPixmapPainter.pixmap.getHeight() - 1));
-
-		editPixmapPainter.draw(lastX, lastY, texX, texY);
-
-		lastX = texX;
-		lastY = texY;
+		store.x =UtMath.scalarLimitsInterpolation(translation.x, terrain.corner00.x, terrain.corner11.x, 0, pixmapWidth - 1);
+		store.y = UtMath.scalarLimitsInterpolation(translation.z, terrain.corner00.z, terrain.corner11.z, 0, pixmapHeight - 1);
 	}
+
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
@@ -249,4 +223,6 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 
 		return false;
 	}
+
+
 }
