@@ -189,6 +189,7 @@ uniform float u_texMask1Scale;
 uniform float u_time;
 
 varying vec4 v_worldCoord;
+varying vec2 v_texCoord0;
 
 void main() {
 	#if defined(normalFlag) 
@@ -217,15 +218,15 @@ void main() {
 	////	Begin calc diffuse from height
 
 	float height = v_worldCoord.y;
-	vec2 v_texCoord0 = v_diffuseUV;
+	//vec2 v_texCoord0 = v_diffuseUV;
 	vec2 distort = vec2(0.01275,0.0125) * vec2(snoise(v_texCoord0 + vec2(0.0, u_time/3.0)),
 							snoise(v_texCoord0 + vec2(u_time/3.0, 0.0)) );
 	//vec4 texMaskColor1 = texture2D(u_texMask13, fract(v_texCoord0 * u_texMask1Scale));
 	//float mask = texture2D(u_texMask1, fract(v_texCoord0 * 1.0)+distort).a;
 
 	vec4 weightMap1Color = texture2D(u_weightMap1, v_texCoord0);
-	weightMap1Color = vec4(1.75,0.5,6.0,0.0);
-	weightMap1Color = normalize(weightMap1Color);
+	//weightMap1Color = vec4(1.75,0.5,6.0,0.0);
+	//weightMap1Color = normalize(weightMap1Color);
 
 	vec4 tex1Color = texture2D(u_tex1, fract(v_texCoord0 * u_tex1Scale));
 	vec4 tex2Color = texture2D(u_tex2, fract(v_texCoord0 * u_tex2Scale));

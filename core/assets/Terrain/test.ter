@@ -1,0 +1,9 @@
+<Terrain name="test" scale="200.0" magnitude="30.0" chunkWidth="180" chunkHeight="180">
+	<heightData heightmapName="Models/Terrain/mountains128.png"/>
+	<weightMap1 tex="Terrain/test_weightmap.png"/>
+	<tex1 tex="Textures/Terrain/grass.png" scale="5.0"/>
+	<tex2 tex="Textures/Terrain/dirt.png" scale="4.0"/>
+	<tex3 tex="Textures/Terrain/water.jpg" scale="10.0"/>
+	<tex4 tex="Textures/Terrain/stone_diffuse_02.png" scale="70.0"/>
+</Terrain>
+

@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
@@ -207,6 +208,8 @@ public class Terrain implements RenderableProvider, Disposable {
 		if (material != null)
 			return material;
 
+		System.out.println("create new terrain tex");
+
 		TerrainLoader.TerrainParameter param = this.parameter;
 
 		Texture weightMap1 = new Texture(resolve(param.weightMap1));
@@ -238,6 +241,43 @@ public class Terrain implements RenderableProvider, Disposable {
 
 		this.material = mat;
 		return mat;
+	}
+
+	public Texture getMaterialAttribute(long attributeId)
+	{
+		if (material == null)
+			throw new IllegalStateException("Can not set material attribute before Terrain has been initialized");
+		Attribute attribute = material.get(attributeId);
+		if(attribute instanceof  TerrainTextureAttribute){
+			TerrainTextureAttribute terrainTextureAttribute = (TerrainTextureAttribute) attribute;
+			return terrainTextureAttribute.textureDescription.texture;
+		}else if(attribute !=null){
+			throw new IllegalArgumentException("provided attribute id is not a TerrainTextureAttribute");
+		}
+		return null;
+	}
+
+
+	public void setMaterialAttribute(long attributeId, Texture texture, float textureScale){
+		Attribute attribute = material.get(attributeId);
+
+		if (attribute instanceof TerrainTextureAttribute) {
+			TerrainTextureAttribute terrainTextureAttribute = (TerrainTextureAttribute) attribute;
+			Texture oldTex = terrainTextureAttribute.textureDescription.texture;
+			if (disposables.removeValue(oldTex, true)) {
+				oldTex.dispose();
+			}
+
+			attribute = null;
+		}
+
+		Texture newTex = texture;
+		disposables.add(newTex);
+		TerrainTextureAttribute terrainTextureAttribute = new TerrainTextureAttribute(attributeId,newTex,textureScale);
+		material.set(terrainTextureAttribute);
+
+		// doesnt change parameter because this is just to swap out the texture to an unmanaged texture
+
 	}
 
 	public void setMaterialAttribute(long attributeId, String textureLocation, float textureScale) {
@@ -524,6 +564,12 @@ public class Terrain implements RenderableProvider, Disposable {
 		float chunkY = fieldY - (gridY * chunkDataMaxHeight);
 		return chunk.getWorldCoordinate(chunkX, chunkY, store);
 
+	}
+
+	public Vector2 getFieldCoordiante(Vector3 worldCoordinate, Vector2 store){
+		store.x = UtMath.scalarLimitsInterpolation(worldCoordinate.x, corner00.x, corner11.x, 0, fieldWidth - 1);
+		store.y = UtMath.scalarLimitsInterpolation(worldCoordinate.z, corner00.z, corner11.z, 0, fieldHeight - 1);
+		return store;
 	}
 
 	public float getElevation(Vector3 worldCoordinate) {

@@ -200,11 +200,14 @@ varying vec2 v_terrainTex3UV;
 #endif
 
 varying vec4 v_worldCoord;
+varying vec2 v_texCoord0;
 
 void main() {
 	#ifdef diffuseTextureFlag
 		v_diffuseUV = u_diffuseUVTransform.xy + a_texCoord0 * u_diffuseUVTransform.zw;
 	#endif //diffuseTextureFlag
+
+	v_texCoord0 = a_texCoord0;
 
 	#ifdef terrainTex1Flag
 		//v_diffuseUV = u_diffuseUVTransform.xy + a_texCoord0 * u_diffuseUVTransform.zw;

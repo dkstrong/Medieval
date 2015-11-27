@@ -5,7 +5,7 @@ import asf.medieval.utility.FileWatcher;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
@@ -17,8 +17,11 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable {
+public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor {
 	public final MedievalWorld world;
+	private boolean enabled;
+
+	public final TerrainSplatEditorView terrainSplatEditorView;
 
 	private Container bottomRightLabelContainer;
 	private Label bottomRightLabel;
@@ -38,6 +41,8 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		fileWatcher.addWatch(Gdx.files.local("Terrain"));
 		fileWatcher.addWatch(Gdx.files.local("Shaders"));
 
+		terrainSplatEditorView = new TerrainSplatEditorView(world);
+
 
 
 	}
@@ -50,15 +55,25 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 	@Override
 	public void update(float delta) {
-
+		if(terrainSplatEditorView.isEnabled())
+			terrainSplatEditorView.update(delta);
 	}
 
 	@Override
 	public void render(float delta) {
+		if(terrainSplatEditorView.isEnabled())
+			terrainSplatEditorView.render(delta);
+
 		final Terrain terrain = world.terrainView.terrain;
 		String text = "";
 
 		text +="Loaded Terrain: "+terrain.parameter.name;
+
+		if(terrainSplatEditorView.isEnabled()){
+			text+="\nSplat Painting";
+			text+="\nBrush: "+terrainSplatEditorView.brushPaint;
+			text+="\nRadius: "+terrainSplatEditorView.brushRadius;
+		}
 
 		bottomRightLabel.setText(text);
 	}
@@ -84,5 +99,64 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	@Override
 	public void dispose() {
 		fileWatcher.dispose();
+		terrainSplatEditorView.dispose();
+	}
+
+
+
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		if(!enabled){
+			terrainSplatEditorView.setEnabled(false);
+		}else{
+			terrainSplatEditorView.setEnabled(true);
+		}
+	}
+
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		return false;
 	}
 }

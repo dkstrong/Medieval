@@ -2,6 +2,7 @@ package asf.medieval.utility;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.g2d.PixmapPacker;
 
 /**
  * Created by daniel on 11/21/15.
@@ -152,5 +153,17 @@ public class UtPixmap {
 		UtMath.interpolateBilinear(srcXFloat - srcX, srcYFloat - srcY , c00, c10, c01, c11,cStore);
 
 		return Color.rgba8888(cStore);
+	}
+
+	public static Pixmap copyPixmap(Pixmap src){
+		Pixmap dst = new Pixmap(src.getWidth(), src.getHeight(), src.getFormat());
+
+		for(int x=0; x<src.getWidth(); x++){
+			for(int y=0; y<src.getHeight(); y++){
+				dst.drawPixel(x,y,src.getPixel(x,y));
+			}
+		}
+
+		return dst;
 	}
 }
