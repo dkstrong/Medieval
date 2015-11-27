@@ -42,23 +42,39 @@ public class DrawablePixmap implements InputProcessor,Disposable {
 	}
 
 	public DrawablePixmap(Texture srcTexture) {
+		this(srcTexture.getWidth(), srcTexture.getHeight(),srcTexture);
+	}
+
+	public DrawablePixmap(int width, int height, Texture srcTexture) {
 		srcTexture.getTextureData().prepare();
 		Pixmap srcPixmap = srcTexture.getTextureData().consumePixmap();
 		if (srcPixmap.getFormat() != Pixmap.Format.RGBA8888) {
 			UtLog.warning("pixmap was not rgba8888, weightmaps should be rgba8888");
 		}
 
-		pixmap = new Pixmap(srcPixmap.getWidth(), srcPixmap.getHeight(), srcPixmap.getFormat());
+		pixmap = new Pixmap(width, height, srcPixmap.getFormat());
 
-		for (int x = 0; x < srcPixmap.getWidth(); x++) {
-			for (int y = 0; y < srcPixmap.getHeight(); y++) {
-				pixmap.drawPixel(x, y, srcPixmap.getPixel(x, y));
+		if(width == srcPixmap.getWidth() && height == srcPixmap.getHeight())
+		{
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					pixmap.drawPixel(x, y, srcPixmap.getPixel(x,y));
+				}
+			}
+		}
+		else
+		{
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					pixmap.drawPixel(x, y, UtPixmap.getColorStretchLinear(srcPixmap, pixmap, x, y));
+				}
 			}
 		}
 
 		srcPixmap.dispose();
 
 		texture = new Texture(new PixmapTextureData(pixmap, pixmap.getFormat(), false, false));
+
 	}
 
 	public Tool getTool() {

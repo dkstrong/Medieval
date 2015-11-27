@@ -79,7 +79,7 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor {
 			this.enabled = true;
 			currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
 
-			editDrawablePixmap = new DrawablePixmap(currentTexture); // currentTexture
+			editDrawablePixmap = new DrawablePixmap(2048,2048,currentTexture); // currentTexture
 
 			editTextureLoc = "tmp/"+currentTextureLoc;
 			editFh = Gdx.files.local(editTextureLoc);
