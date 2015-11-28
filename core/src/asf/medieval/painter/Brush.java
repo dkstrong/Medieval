@@ -1,4 +1,4 @@
-package asf.medieval.utility;
+package asf.medieval.painter;
 
 import com.badlogic.gdx.utils.Array;
 

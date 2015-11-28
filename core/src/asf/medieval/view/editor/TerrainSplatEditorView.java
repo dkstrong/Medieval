@@ -2,7 +2,7 @@ package asf.medieval.view.editor;
 
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
-import asf.medieval.utility.PixmapPainter;
+import asf.medieval.painter.PixmapPainter;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;

@@ -1,5 +1,6 @@
-package asf.medieval.utility;
+package asf.medieval.painter;
 
+import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.PixmapPacker;
@@ -71,7 +72,7 @@ public class UtPixmap {
 		Color.rgba8888ToColor(c10,srcPix.getPixel(sX1,sY0));
 		Color.rgba8888ToColor(c01,srcPix.getPixel(sX0,sY1));
 		Color.rgba8888ToColor(c11,srcPix.getPixel(sX1,sY1));
-		UtMath.interpolateBilinear(sxFloat - sX0, syFloat - sY0 , c00, c10, c01, c11,cStore);
+		UtMath.interpolateBilinear(sxFloat - sX0, syFloat - sY0, c00, c10, c01, c11, cStore);
 
 		return Color.rgba8888(cStore);
 

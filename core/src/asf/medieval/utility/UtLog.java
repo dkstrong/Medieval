@@ -22,15 +22,15 @@ public enum UtLog {
 	}
 
 	public static void info(Object message){
-		doLog(UtLog.TRACE, String.valueOf(message), null);
+		doLog(UtLog.INFO, String.valueOf(message), null);
 	}
 
 	public static void warning(Object message){
-		doLog(UtLog.TRACE, String.valueOf(message), null);
+		doLog(UtLog.WARNING, String.valueOf(message), null);
 	}
 
 	public static void error(Object message){
-		doLog(UtLog.TRACE, String.valueOf(message), null);
+		doLog(UtLog.ERROR, String.valueOf(message), null);
 	}
 
 
@@ -39,15 +39,15 @@ public enum UtLog {
 	}
 
 	public static void info(Object message, Throwable e){
-		doLog(UtLog.TRACE, String.valueOf(message), e);
+		doLog(UtLog.INFO, String.valueOf(message), e);
 	}
 
 	public static void warning(Object message, Throwable e){
-		doLog(UtLog.TRACE, String.valueOf(message), e);
+		doLog(UtLog.WARNING, String.valueOf(message), e);
 	}
 
 	public static void error(Object message, Throwable e){
-		doLog(UtLog.TRACE, String.valueOf(message), e);
+		doLog(UtLog.ERROR, String.valueOf(message), e);
 	}
 
 	private static final Date date = new Date();
