@@ -142,21 +142,18 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			final float dist = Vector2.dst(x1, y1, x2, y2);
 			final float alphaStep = UtMath.largest(brush.getRadius(), 1f) / (8f * dist);
 
-			System.out.println("alphaStep: "+alphaStep);
 			int count = 0;
-			for (float a = 0; a < 1f && count < 100; a += alphaStep) {
+			for (float a = 0; a < 1f && count < 200; a += alphaStep) {
 
 				int xL = Math.round(Interpolation.linear.apply(x1, x2, a));
 				int yL = Math.round(Interpolation.linear.apply(y1, y2, a));
 				drawTool(xL, yL);
 				count++;
-				if(count >= 100)
+				if(count >= 200)
 					UtLog.warning("probably infinite loop");
 			}
 		} else {
-
 			clearDrawedPixels();
-			affectedPixels.clear();
 		}
 
 		drawTool(x2, y2);
@@ -251,19 +248,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 	}
 
-	public void updateInput(float delta){
-		if(!leftDown && previewPainting && coordProvider != null){
-			previewDrawMode = tool == Tool.Brush || tool == Tool.Eraser || previewDrawMode;
-			if(previewDrawMode){
-				history.undoPreview(affectedPixels, this);
 
-				coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), pixmap.getWidth(), pixmap.getHeight(),tempStore);
-				int texX = Math.round(tempStore.x);
-				int texY = Math.round(tempStore.y);
-				draw(-1,-1,texX, texY);
-			}
-		}
-	}
 
 	@Override
 	public boolean keyDown(int keycode) {
@@ -332,6 +317,8 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		if(button == Input.Buttons.LEFT){
 			if(leftDown){
 				history.addHistory(pixmap);
+				//history.addHistory(affectedPixels);
+				affectedPixels.clear();
 				leftDown = false;
 				lastX = -1;
 				lastY = -1;
@@ -356,6 +343,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	{
 		if(previewDrawMode){
 			history.undoPreview(affectedPixels, this);
+			affectedPixels.clear();
 			previewDrawMode=false;
 		}
 		if(coordProvider == null){
@@ -367,6 +355,28 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		draw(lastX, lastY, texX, texY);
 		lastX = texX;
 		lastY = texY;
+	}
+
+
+	public void updateInput(float delta){
+		if(!leftDown && previewPainting && coordProvider != null){
+			previewDrawMode = tool == Tool.Brush || tool == Tool.Eraser;
+			if(previewDrawMode){
+				history.undoPreview(affectedPixels, this);
+				affectedPixels.clear();
+
+				coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), pixmap.getWidth(), pixmap.getHeight(),tempStore);
+				int texX = Math.round(tempStore.x);
+				int texY = Math.round(tempStore.y);
+				draw(-1,-1,texX, texY);
+			}else{
+				// TODO: or i ifi want to have fill mode as a preview,
+				// then make it so fill populates the affectedPixels and
+				// get rid of this else case..
+				history.undoPreview(affectedPixels, this);
+				affectedPixels.clear();
+			}
+		}
 	}
 
 	@Override
