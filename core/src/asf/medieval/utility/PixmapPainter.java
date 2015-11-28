@@ -20,6 +20,10 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		Fill, Brush, Eraser
 	}
 
+	public static class History{
+		private final Array<Point> affectedPixels = new Array<Point>(false, 64, Point.class);
+	}
+
 	public interface PixmapCoordProvider{
 		public void getPixmapCoord(int screenX, int screenY, int pixmapWidth, int pixmapHeight, Vector2 store);
 	}
@@ -173,7 +177,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	}
 
 	private void drawPoint(int x, int y, float opacity) {
-		if (!hasDrawnPixel(x, y, opacity)) {
+		if (!hasDrawnPixel(x, y)) {
 			Color c;
 			if (opacity < 1f) {
 				c = new Color();
@@ -188,14 +192,15 @@ public class PixmapPainter implements InputProcessor, Disposable {
 				c = brushColor;
 			}
 
-			pixmap.drawPixel(x, y, Color.rgba8888(c));
-			drawedPixels.add(new Point(x, y, opacity));
-			affectedPixels.add(new Point(x,y,opacity));
+			int colorCode = Color.rgba8888(c);
+			pixmap.drawPixel(x, y, colorCode);
+			drawedPixels.add(new Point(x, y, colorCode));
+			affectedPixels.add(new Point(x,y,colorCode));
 		}
 	}
 
 	private void erasePoint(int x, int y, float opacity) {
-		if (!hasDrawnPixel(x, y, opacity)) {
+		if (!hasDrawnPixel(x, y)) {
 			Color c;
 			c = new Color();
 			Color.rgba8888ToColor(c, pixmap.getPixel(x, y));
@@ -205,15 +210,17 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			c.b = UtMath.largest((1 - opacity) * c.b - opacity * brushColor.b, 0f);
 			c.a = UtMath.largest((1 - opacity) * c.a - opacity * brushColor.a, 0f);
 
-			pixmap.drawPixel(x, y, Color.rgba8888(c));
-			drawedPixels.add(new Point(x, y, opacity));
-			affectedPixels.add(new Point(x,y,opacity));
+			int colorCode = Color.rgba8888(c);
+
+			pixmap.drawPixel(x, y, colorCode);
+			drawedPixels.add(new Point(x, y, colorCode));
+			affectedPixels.add(new Point(x,y,colorCode));
 		}
 	}
 
-	private boolean hasDrawnPixel(int x, int y, float opacity) {
+	private boolean hasDrawnPixel(int x, int y) {
 		for (Point drawedPixel : drawedPixels) {
-			if (drawedPixel.equals(x, y, opacity))
+			if(drawedPixel.x == x && drawedPixel.y == y)
 				return true;
 		}
 		return false;

@@ -161,7 +161,7 @@ public class Brush {
 
 	private boolean hasPixel(int x, int y){
 		for (Point point : pairs) {
-			if(point.equals(x,y,1))
+			if(point.x == x && point.y == y)
 				return true;
 		}
 		return false;

@@ -8,36 +8,14 @@ import com.badlogic.gdx.math.MathUtils;
 public class Point {
 	public int x;
 	public int y;
-	public float opacity;
+	public int color;
 
-	public Point(int x, int y, float opacity) {
+	public Point(int x, int y, int color) {
 		this.x = x;
 		this.y = y;
-		this.opacity = opacity;
+		this.color = color;
 	}
 
-	public boolean equals(int x, int y, float opacity){
-		return x == this.x && y == this.y && MathUtils.isEqual(opacity, this.opacity, 0.0001f);
-	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
 
-		Point point = (Point) o;
-
-		if (x != point.x) return false;
-		if (y != point.y) return false;
-		return Float.compare(point.opacity, opacity) == 0;
-
-	}
-
-	@Override
-	public int hashCode() {
-		int result = x;
-		result = 31 * result + y;
-		result = 31 * result + (opacity != +0.0f ? Float.floatToIntBits(opacity) : 0);
-		return result;
-	}
 }
