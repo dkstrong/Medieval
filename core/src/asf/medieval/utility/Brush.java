@@ -6,7 +6,7 @@ import com.badlogic.gdx.utils.Array;
  * Created by daniel on 11/27/15.
  */
 public class Brush {
-	public Array<Pair> pairs = new Array<Pair>(false, 16, Pair.class);
+	public Array<Point> pairs = new Array<Point>(false, 16, Point.class);
 	private int minX=0;
 	private int maxX=0;
 	private int minY=0;
@@ -160,15 +160,15 @@ public class Brush {
 	}
 
 	private boolean hasPixel(int x, int y){
-		for (Pair pair : pairs) {
-			if(pair.equals(x,y,1))
+		for (Point point : pairs) {
+			if(point.equals(x,y,1))
 				return true;
 		}
 		return false;
 	}
 
 	private void putPixel(int x, int y){
-		pairs.add(new Pair(x,y, 1));
+		pairs.add(new Point(x,y, 1));
 		if(x<minX) minX = x;
 		else if(x>maxX) maxX = x;
 		if(y<minY) minY = y;

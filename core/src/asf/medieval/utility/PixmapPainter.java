@@ -1,6 +1,5 @@
 package asf.medieval.utility;
 
-import asf.medieval.model.steer.behavior.Blend;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -12,18 +11,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
-import java.awt.image.PixelInterleavedSampleModel;
-
 /**
  * Created by daniel on 11/26/15.
  */
 public class PixmapPainter implements InputProcessor, Disposable {
 
 	public enum Tool {
-		Fill,
-		Brush,
-		Point,
-		Eraser;
+		Fill, Brush, Eraser
 	}
 
 	public interface PixmapCoordProvider{
@@ -35,16 +29,22 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	public Pixmap pixmap;
 	public Texture texture;
 	public int maxHistory = 64;
-	public int currentHistory = 0; //
-	private final Array<Pixmap> history = new Array<Pixmap>(true, maxHistory, Pixmap.class);
+	public boolean previewPainting = true;
 
 	private Tool tool = Tool.Brush;
 	private final Brush brush = new Brush();
 	private final Color brushColor = new Color();
 	private float brushOpacity = 1f;
 
+	private boolean previewDrawMode = true;
+	private boolean leftDown;
+	private int lastX = -1;
+	private int lastY = -1;
+	private int currentHistory = 0;
+	private final Array<Pixmap> history = new Array<Pixmap>(true, maxHistory, Pixmap.class);
 
-	private final Array<Pair> drawedPixels = new Array<Pair>(false, 64, Pair.class);
+	private final Array<Point> drawedPixels = new Array<Point>(false, 64, Point.class);
+	private final Array<Point> affectedPixels = new Array<Point>(false, 64, Point.class);
 
 	public PixmapPainter(int width, int height, Pixmap.Format format) {
 		pixmap = new Pixmap(width, height, format);
@@ -144,6 +144,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			}
 		} else {
 			drawedPixels.clear();
+			affectedPixels.clear();
 		}
 
 		drawTool(x2, y2);
@@ -159,17 +160,13 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			case Brush:
 				//pixmap.setColor(brushColor);
 				//pixmap.fillCircle(x,y+brushRadius*2+brushRadius,brushRadius);
-				for (Pair pair : brush.pairs) {
-
-					drawPoint(x + pair.x, y + pair.y, brushOpacity);
+				for (Point point : brush.pairs) {
+					drawPoint(x + point.x, y + point.y, brushOpacity);
 				}
 				break;
-			case Point:
-				drawPoint(x, y, brushOpacity);
-				break;
 			case Eraser:
-				for (Pair pair : brush.pairs) {
-					erasePoint(x + pair.x, y + pair.y, brushOpacity);
+				for (Point point : brush.pairs) {
+					erasePoint(x + point.x, y + point.y, brushOpacity);
 				}
 				break;
 		}
@@ -192,8 +189,8 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			}
 
 			pixmap.drawPixel(x, y, Color.rgba8888(c));
-
-			drawedPixels.add(new Pair(x, y, opacity));
+			drawedPixels.add(new Point(x, y, opacity));
+			affectedPixels.add(new Point(x,y,opacity));
 		}
 	}
 
@@ -209,12 +206,13 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			c.a = UtMath.largest((1 - opacity) * c.a - opacity * brushColor.a, 0f);
 
 			pixmap.drawPixel(x, y, Color.rgba8888(c));
-			drawedPixels.add(new Pair(x, y, opacity));
+			drawedPixels.add(new Point(x, y, opacity));
+			affectedPixels.add(new Point(x,y,opacity));
 		}
 	}
 
 	private boolean hasDrawnPixel(int x, int y, float opacity) {
-		for (Pair drawedPixel : drawedPixels) {
+		for (Point drawedPixel : drawedPixels) {
 			if (drawedPixel.equals(x, y, opacity))
 				return true;
 		}
@@ -256,12 +254,12 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 	}
 
-	private void recallHistory(int index) {
+	public void recallHistoryFast(int index)
+	{
 		if(history.size <=0){
 			System.out.println("history is empty");
 			return;
 		}
-		System.out.println("history size:" +history.size);
 		if (index < 0) {
 			index =0;
 			System.out.println("there is no history at: " + index + ", using index=" + index);
@@ -272,8 +270,36 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		currentHistory = index;
 		Pixmap pixmapHistory = history.get(currentHistory);
 
-		Pixmap.setBlending(Pixmap.Blending.None);
-		System.out.println("recalling: "+currentHistory);
+		if (Pixmap.getBlending() != Pixmap.Blending.None) {
+			Pixmap.setBlending(Pixmap.Blending.None);
+		}
+
+		for (Point drawedPixel : affectedPixels) {
+			pixmap.drawPixel(drawedPixel.x, drawedPixel.y, pixmapHistory.getPixel(drawedPixel.x,drawedPixel.y));
+		}
+
+
+		texture.draw(pixmap, 0, 0);
+	}
+
+	public void recallHistory(int index) {
+		if(history.size <=0){
+			System.out.println("history is empty");
+			return;
+		}
+		if (index < 0) {
+			index =0;
+			System.out.println("there is no history at: " + index + ", using index=" + index);
+		} else if (index >= history.size) {
+			index = history.size-1;
+			System.out.println("there is no history at: " + index + ", using index=" + index);
+		}
+		currentHistory = index;
+		Pixmap pixmapHistory = history.get(currentHistory);
+
+		if (Pixmap.getBlending() != Pixmap.Blending.None) {
+			Pixmap.setBlending(Pixmap.Blending.None);
+		}
 
 		for (int x = 0; x < pixmapHistory.getWidth(); x++) {
 			for (int y = 0; y < pixmapHistory.getHeight(); y++) {
@@ -293,6 +319,39 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 		while (history.size > 0) {
 			history.removeIndex(0).dispose();
+		}
+	}
+
+	private static final Vector2 tempStore= new Vector2();
+	public void updateInput(float delta){
+		if(leftDown){
+			if(previewDrawMode){
+				recallHistoryFast(currentHistory);
+				previewDrawMode=false;
+			}
+			if(coordProvider == null){
+				throw new IllegalStateException("coord provider is null");
+			}
+			coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), pixmap.getWidth(), pixmap.getHeight(),tempStore);
+			int texX = Math.round(tempStore.x);
+			int texY = Math.round(tempStore.y);
+			draw(lastX, lastY, texX, texY);
+			lastX = texX;
+			lastY = texY;
+		}else if(previewPainting){
+			previewDrawMode = tool == Tool.Brush || tool == Tool.Eraser || previewDrawMode;
+			if(previewDrawMode){
+				recallHistoryFast(currentHistory);
+
+				if(coordProvider == null){
+					throw new IllegalStateException("coord provider is null");
+				}
+
+				coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), pixmap.getWidth(), pixmap.getHeight(),tempStore);
+				int texX = Math.round(tempStore.x);
+				int texY = Math.round(tempStore.y);
+				draw(texX, texY);
+			}
 		}
 	}
 
@@ -327,9 +386,6 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			case Input.Keys.F:
 				tool = Tool.Fill;
 				return true;
-			case Input.Keys.P:
-				tool = Tool.Point;
-				return true;
 			case Input.Keys.Z:
 				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
 					if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
@@ -348,20 +404,15 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		return false;
 	}
 
-	private boolean leftDown;
-	private int lastX = -1;
-	private int lastY = -1;
+
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if(button == Input.Buttons.LEFT){
 			leftDown = true;
 			lastX = -1;
 			lastY = -1;
-			touchPaint(screenX,screenY);
 			return true;
 		}
-
-
 		return false;
 	}
 
@@ -370,10 +421,10 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		if(button == Input.Buttons.LEFT){
 			if(leftDown){
 				addHistory();
+				leftDown = false;
+				lastX = -1;
+				lastY = -1;
 			}
-			leftDown = false;
-			lastX = -1;
-			lastY = -1;
 			return true;
 		}
 		return false;
@@ -383,27 +434,15 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		if(leftDown)
 		{
-			touchPaint(screenX, screenY);
 			return true;
 		}
 		return false;
 	}
 
-	private static final Vector2 tempStore= new Vector2();
-	private void touchPaint(int screenX, int screenY){
-		if(coordProvider == null){
-			throw new IllegalStateException("coord provider is null");
-		}
-		coordProvider.getPixmapCoord(screenX, screenY, pixmap.getWidth(), pixmap.getHeight(),tempStore);
-		int texX = Math.round(tempStore.x);
-		int texY = Math.round(tempStore.y);
-		draw(lastX, lastY, texX, texY);
-		lastX = texX;
-		lastY = texY;
-	}
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
+
 		return false;
 	}
 

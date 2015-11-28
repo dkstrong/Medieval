@@ -5,12 +5,12 @@ import com.badlogic.gdx.math.MathUtils;
 /**
  * Created by daniel on 11/27/15.
  */
-public class Pair {
+public class Point {
 	public int x;
 	public int y;
 	public float opacity;
 
-	public Pair(int x, int y, float opacity) {
+	public Point(int x, int y, float opacity) {
 		this.x = x;
 		this.y = y;
 		this.opacity = opacity;
@@ -25,11 +25,11 @@ public class Pair {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 
-		Pair pair = (Pair) o;
+		Point point = (Point) o;
 
-		if (x != pair.x) return false;
-		if (y != pair.y) return false;
-		return Float.compare(pair.opacity, opacity) == 0;
+		if (x != point.x) return false;
+		if (y != point.y) return false;
+		return Float.compare(point.opacity, opacity) == 0;
 
 	}
 

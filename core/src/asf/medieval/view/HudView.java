@@ -162,7 +162,6 @@ public class HudView implements View, InputProcessor {
 
 		);
 
-		topRightLabel.setText("");
 
 		if (hudSelectionView==null || hudSelectionView.selectedViews.size < 1) {
 			bottomLeftLabel.setText("");

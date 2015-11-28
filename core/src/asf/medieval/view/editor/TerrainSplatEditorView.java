@@ -43,6 +43,8 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor,Pi
 	private String editTextureLoc;
 	private FileHandle editFh;
 
+
+
 	public TerrainSplatEditorView(MedievalWorld world) {
 		this.world = world;
 
@@ -58,7 +60,8 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor,Pi
 	@Override
 	public void update(float delta)
 	{
-
+		if(editPixmapPainter!=null)
+			editPixmapPainter.updateInput(delta);
 
 	}
 
@@ -81,7 +84,7 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor,Pi
 			this.enabled = true;
 			currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
 
-			editPixmapPainter = new PixmapPainter(128,128, Pixmap.Format.RGBA8888); // currentTexture
+			editPixmapPainter = new PixmapPainter(1024,1024, Pixmap.Format.RGBA8888); // currentTexture
 			editPixmapPainter.coordProvider = this;
 
 			editTextureLoc = "tmp/"+currentTextureLoc;
@@ -208,6 +211,9 @@ public class TerrainSplatEditorView implements View,Disposable,InputProcessor,Pi
 	public boolean mouseMoved(int screenX, int screenY) {
 		if(!enabled)
 			return false;
+		if(editPixmapPainter != null && editPixmapPainter.mouseMoved(screenX, screenY)){
+			return true;
+		}
 		world.hudView.hudCommandView.getWorldCoord(Gdx.input.getX(), Gdx.input.getY(),translation);
 		return false;
 	}
