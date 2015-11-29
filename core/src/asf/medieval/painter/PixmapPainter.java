@@ -36,7 +36,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	public Pixmap pixmap;
 	public Texture texture;
 	public final History history=new History();
-	public boolean previewPainting = true;
+	private boolean previewPainting = false;
 
 	private Tool tool = Tool.Brush;
 	private final Brush brush = new Brush();
@@ -96,6 +96,9 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 	}
 
+
+
+
 	public Tool getTool() {
 		return tool;
 	}
@@ -142,15 +145,10 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			final float dist = Vector2.dst(x1, y1, x2, y2);
 			final float alphaStep = UtMath.largest(brush.getRadius(), 1f) / (8f * dist);
 
-			int count = 0;
-			for (float a = 0; a < 1f && count < 200; a += alphaStep) {
-
+			for (float a = 0; a < 1f ; a += alphaStep) {
 				int xL = Math.round(Interpolation.linear.apply(x1, x2, a));
 				int yL = Math.round(Interpolation.linear.apply(y1, y2, a));
 				drawTool(xL, yL);
-				count++;
-				if(count >= 200)
-					UtLog.warning("probably infinite loop");
 			}
 		} else {
 			clearDrawedPixels();
@@ -163,16 +161,16 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	private void drawTool(int x, int y) {
 		switch (tool) {
 			case Fill:
-				pixmap.setColor(brushColor);
-				pixmap.fill();
+				for(int fx=0; fx<pixmap.getWidth(); fx++){
+					for(int fy=0; fy<pixmap.getHeight(); fy++){
+						drawPoint(fx,fy,brushOpacity);
+					}
+				}
 				break;
 			case Brush:
-				//pixmap.setColor(brushColor);
-				//pixmap.fillCircle(x,y+brushRadius*2+brushRadius,brushRadius);
 				for (Point point : brush.pairs) {
 					drawPoint(x + point.x, y + point.y, brushOpacity);
 				}
-
 				break;
 			case Eraser:
 				for (Point point : brush.pairs) {
@@ -316,8 +314,8 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if(button == Input.Buttons.LEFT){
 			if(leftDown){
-				history.addHistory(pixmap);
-				//history.addHistory(affectedPixels);
+				//history.addHistory(pixmap);
+				history.addHistory(affectedPixels);
 				affectedPixels.clear();
 				leftDown = false;
 				lastX = -1;
@@ -360,22 +358,28 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 	public void updateInput(float delta){
 		if(!leftDown && previewPainting && coordProvider != null){
-			previewDrawMode = tool == Tool.Brush || tool == Tool.Eraser;
-			if(previewDrawMode){
-				history.undoPreview(affectedPixels, this);
-				affectedPixels.clear();
+			previewDrawMode = true;
+			history.undoPreview(affectedPixels, this);
+			affectedPixels.clear();
 
-				coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), pixmap.getWidth(), pixmap.getHeight(),tempStore);
-				int texX = Math.round(tempStore.x);
-				int texY = Math.round(tempStore.y);
-				draw(-1,-1,texX, texY);
-			}else{
-				// TODO: or i ifi want to have fill mode as a preview,
-				// then make it so fill populates the affectedPixels and
-				// get rid of this else case..
-				history.undoPreview(affectedPixels, this);
-				affectedPixels.clear();
-			}
+			coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), pixmap.getWidth(), pixmap.getHeight(),tempStore);
+			int texX = Math.round(tempStore.x);
+			int texY = Math.round(tempStore.y);
+			draw(-1,-1,texX, texY);
+		}
+	}
+
+	public boolean isPreviewPainting() {
+		return previewPainting;
+	}
+
+	public void setPreviewPainting(boolean previewPainting) {
+		this.previewPainting = previewPainting;
+
+		if(!previewPainting && previewDrawMode){
+			history.undoPreview(affectedPixels, this);
+			affectedPixels.clear();
+			previewDrawMode=false;
 		}
 	}
 

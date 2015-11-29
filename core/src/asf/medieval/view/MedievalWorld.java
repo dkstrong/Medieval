@@ -234,7 +234,6 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			if(editorView!=null){
 				inputMultiplexer.addProcessor(editorView);
 				inputMultiplexer.addProcessor(editorView.terrainEditorView);
-				inputMultiplexer.addProcessor(editorView.terrainEditorView.terrainSplatEditorView);
 			}
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
 			inputMultiplexer.addProcessor(hudView);
