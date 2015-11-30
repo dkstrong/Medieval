@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Tree;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
@@ -22,26 +24,34 @@ import com.badlogic.gdx.utils.Align;
 public class UtEditor {
 
 
+	public static Window createModalWindow(String title, Skin skin){
+		Window window = new Window(title, skin, "dialog");
+		window.setModal(true);
 
-
-	private UtEditor(){
-
+		return window;
 	}
 
-	protected static Label createLabel(String labelText, Skin skin) {
+	public static FileChooser createFileChooser(FileChooser.Listener listener, Skin skin){
+		FileChooser fileChooser = new FileChooser(true, true, false, listener, skin);
+
+		return fileChooser;
+	}
+
+
+	public static Label createLabel(String labelText, Skin skin) {
 		Label label = new Label(labelText, skin);
 		label.setAlignment(Align.left,Align.left);
 		return label;
 	}
 
-	protected static TextButton createTextButton(String buttonText, Skin skin, EventListener listener) {
+	public static TextButton createTextButton(String buttonText, Skin skin, EventListener listener) {
 		TextButton textButton = new TextButton(buttonText, skin);
 		if(listener!=null)
 			textButton.addListener(listener);
 		return textButton;
 	}
 
-	protected static ImageButton createImageButtonToggle(Texture texture, Skin skin, EventListener listener) {
+	public static ImageButton createImageButtonToggle(Texture texture, Skin skin, EventListener listener) {
 		TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(texture));
 
 		ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle(skin.get("toggle",ImageButton.ImageButtonStyle.class));
@@ -54,7 +64,7 @@ public class UtEditor {
 		return imageButton;
 	}
 
-	protected static ImageButton createImageButtonToggle(String styleName, Skin skin, EventListener listener) {
+	public static ImageButton createImageButtonToggle(String styleName, Skin skin, EventListener listener) {
 
 		ImageButton imageButton = new ImageButton(skin, styleName);
 
@@ -64,14 +74,14 @@ public class UtEditor {
 		return imageButton;
 	}
 
-	protected static TextButton createTextButtonToggle(String buttonText, Skin skin, EventListener listener) {
+	public static TextButton createTextButtonToggle(String buttonText, Skin skin, EventListener listener) {
 		TextButton textButton = new TextButton(buttonText, skin,"toggle");
 		if(listener!=null)
 			textButton.addListener(listener);
 		return textButton;
 	}
 
-	protected static Actor createRow(Actor... actors){
+	public static Actor createRow(Actor... actors){
 
 		HorizontalGroup hg = new HorizontalGroup();
 		for (Actor actor : actors) {
@@ -81,12 +91,12 @@ public class UtEditor {
 
 	}
 
-	protected static Tree createTree(Skin skin){
+	public static Tree createTree(Skin skin){
 		Tree tree = new Tree(skin);
 		return tree;
 	}
 
-	protected static Image createImage(Texture texture){
+	public static Image createImage(Texture texture){
 		TextureRegion tr = new TextureRegion(texture);
 		tr.setRegionWidth(32);
 		tr.setRegionHeight(32);
@@ -96,8 +106,7 @@ public class UtEditor {
 		return image;
 	}
 
-	protected static Tree.Node createTreeNode(Actor actor){
-
+	public static Tree.Node createTreeNode(Actor actor){
 
 		Tree.Node treeNode = new Tree.Node(actor);
 		treeNode.setSelectable(false);
@@ -112,15 +121,8 @@ public class UtEditor {
 		return treeNode;
 	}
 
-	protected static Tree.Node createTreeNode(String label, String value, Skin skin){
+	private UtEditor(){
 
-		Label lbl = new Label(label+":", skin);
-		Label vlu = new Label(value, skin);
-
-
-		Tree.Node treeNode = new Tree.Node(createRow(lbl, vlu));
-		treeNode.setSelectable(false);
-
-		return treeNode;
 	}
+
 }

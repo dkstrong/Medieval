@@ -2,8 +2,10 @@ package asf.medieval.view.editor;
 
 import asf.medieval.painter.PixmapPainter;
 import asf.medieval.terrain.Terrain;
+import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.terrain.TerrainTextureAttribute;
 import asf.medieval.utility.FileWatcher;
+import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -21,15 +24,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.XmlWriter;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
@@ -37,12 +45,17 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, PixmapPainter.PixmapCoordProvider {
+public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, PixmapPainter.PixmapCoordProvider, FileChooser.Listener {
 	public final MedievalWorld world;
 	private boolean enabled;
 
 	private InternalClickListener internalCl = new InternalClickListener();
 	private Table toolTable;
+	private Button fileMenuButton;
+	private Container<Window> fileMenuWindowContainer;
+	private Window fileMenuWindow;
+	private Button fileMenuWindowCloseButton;
+	private FileChooser fileChooser;
 	private ButtonGroup<TextButton> heightOrWeightButtonGroup;
 	private TextButton heightMapButton, weightMapButton;
 	private Cell<?> table3Cell;
@@ -87,26 +100,34 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		toolTable.align(Align.topLeft);
 
 
-		Table table1 = new Table(world.app.skin);
-		toolTable.row();
-		toolTable.add(table1).fill().align(Align.topLeft);
+		// file settings / file operations
 		{
-			table1.row();
-			table1.add(UtEditor.createLabel(terrain.parameter.displayName, world.app.skin));
-			table1.add(UtEditor.createTextButton("..", world.app.skin, null));
+			Table table1 = new Table(world.app.skin);
 			table1.row();
 			table1.add(UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
-			table1.add(UtEditor.createTextButton("..", world.app.skin, null));
-			table1.row();
-			table1.add(UtEditor.createLabel(terrain.parameter.heightmapName, world.app.skin));
-			table1.add(UtEditor.createTextButton("..", world.app.skin, null));
+			table1.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
+			toolTable.row();
+			toolTable.add(table1).fill().align(Align.topLeft);
+
+
+			fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
+			fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton =UtEditor.createTextButton("[X]",world.app.skin, internalCl));
+
+			fileChooser = UtEditor.createFileChooser(this, world.app.skin);
+			fileMenuWindow.row();
+			fileMenuWindow.add(fileChooser).fill().expand();
+
+			fileMenuWindowContainer = new Container<Window>(fileMenuWindow);
+			fileMenuWindowContainer.setFillParent(true);
+			fileMenuWindowContainer.center();
+			fileMenuWindowContainer.minSize(400, 300);
+
+
+
 		}
-
-		Table table2 = new Table(world.app.skin);
-		toolTable.row();
-		toolTable.add(table2).fill().align(Align.topLeft);
+		// heightmap or weightmap selector
 		{
-
+			Table table2 = new Table(world.app.skin);
 			table2.row();
 			table2.add(heightMapButton = UtEditor.createTextButtonToggle("Elevation", world.app.skin, internalCl)).fill();
 			table2.add(weightMapButton = UtEditor.createTextButtonToggle("Texture", world.app.skin, internalCl)).fill();
@@ -115,20 +136,27 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			heightOrWeightButtonGroup.setMaxCheckCount(1);
 			heightOrWeightButtonGroup.setMinCheckCount(0);
 			heightOrWeightButtonGroup.setUncheckLast(true);
+
+			toolTable.row();
+			toolTable.add(table2).fill().align(Align.topLeft);
 		}
 
-		table3 = new Table(world.app.skin);
-		table3.add(UtEditor.createLabel("label", world.app.skin));
-		toolTable.row().align(Align.topLeft);
-		table3Cell = toolTable.add(table3).fill().align(Align.topLeft);
-
-		heightTable = new Table(world.app.skin);
+		// No tools selected
 		{
-
+			table3 = new Table(world.app.skin);
+			table3.add(UtEditor.createLabel("label", world.app.skin));
+			toolTable.row().align(Align.topLeft);
+			table3Cell = toolTable.add(table3).fill().align(Align.topLeft);
 		}
 
-		weightTable = new Table(world.app.skin);
+		// Heightmap tools
 		{
+			heightTable = new Table(world.app.skin);
+		}
+
+		// Weightmap Tools
+		{
+			weightTable = new Table(world.app.skin);
 			// Texture Channel Selector
 			{
 				uiTexMappings.add(new UiTexMapping(TerrainTextureAttribute.Tex1, terrain.parameter.tex1, terrain.parameter.tex1Scale));
@@ -233,6 +261,8 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 	}
 
+
+
 	private class UiTexMapping{
 		TerrainTextureAttribute texAttribute;
 		Texture tex;
@@ -328,6 +358,19 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		}
 	}
 
+	@Override
+	public void onFileSave(FileHandle fh) {
+		String name = fh.nameWithoutExtension();
+		saveTerrain(name);
+		fileMenuWindowContainer.remove();
+	}
+
+	@Override
+	public void onFileOpen(FileHandle fh) {
+		String name = fh.nameWithoutExtension();
+		world.terrainView.terrain.loadTerrain(name);
+		fileMenuWindowContainer.remove();
+	}
 
 	@Override
 	public void onFileChanged(WatchEvent<Path> event) {
@@ -337,8 +380,8 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 		if (fileChanged.endsWith(".ter")) {
 			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
-			final Terrain terrain = world.terrainView.terrain;
-			terrain.loadTerrain();
+			//final Terrain terrain = world.terrainView.terrain;
+			//terrain.loadTerrain(terrain.parameter.name);
 		} else if (fileChanged.endsWith(".glsl")) {
 			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
 			final Terrain terrain = world.terrainView.terrain;
@@ -550,9 +593,109 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 				Button checked = toolSelectionButtonGroup.getChecked();
 				PixmapPainter.Tool checkedTool = (PixmapPainter.Tool)checked.getUserObject();
 				setSelectedPixmapTool(checkedTool);
+			}else if(actor == fileMenuButton){
+				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name+".ter");
+				world.stage.addActor(fileMenuWindowContainer);
+			}else if(actor == fileMenuWindowCloseButton){
+				fileMenuWindowContainer.remove();
 			}
 
 
 		}
+	}
+
+
+
+	private void saveTerrain(String name)
+	{
+		TerrainLoader.TerrainParameter parameter = world.terrainView.terrain.parameter;
+
+		if(name != null)
+			parameter.name = name;
+
+		if(parameter.name == null || parameter.name.trim().isEmpty()){
+			parameter.name="untitled-terrain";
+			// TODO: make name unique to other terrains if it is not
+		}
+
+		parameter.weightMap1 ="Terrain/" + name+"_weightmap.png";
+
+		FileHandle terrainFile =Gdx.files.local("Terrain/" + name + ".ter");
+
+		StringWriter stringWriter = new StringWriter();
+		XmlWriter xmlWriter = new XmlWriter(stringWriter);
+		try {
+			xmlWriter
+				.element("Terrain")
+				.attribute("name", name)
+				.attribute("scale", parameter.scale)
+				.attribute("magnitude", parameter.magnitude)
+				.attribute("chunkWidth", parameter.chunkWidth)
+				.attribute("chunkHeight", parameter.chunkHeight);
+			if(parameter.heightmapName != null && !parameter.heightmapName.trim().isEmpty()){
+				xmlWriter.element("heightData")
+					.attribute("heightmapName", parameter.heightmapName)
+					.pop();
+			}else{
+				xmlWriter.
+					element("heightData")
+					.attribute("seed", parameter.seed)
+					.attribute("fieldWidth", parameter.fieldWidth)
+					.attribute("fieldHeight", parameter.fieldHeight)
+					.pop();
+			}
+
+			if(parameter.weightMap1 != null){
+				xmlWriter.element("weightMap1")
+					.attribute("tex", parameter.weightMap1)
+					.pop();
+			}
+
+			if(parameter.tex1 != null){
+				xmlWriter.element("tex1")
+					.attribute("tex", parameter.tex1)
+					.attribute("scale", parameter.tex1Scale)
+					.pop();
+			}
+
+			if(parameter.tex2 != null){
+				xmlWriter.element("tex2")
+					.attribute("tex", parameter.tex2)
+					.attribute("scale", parameter.tex2Scale)
+					.pop();
+			}
+
+			if(parameter.tex3 != null){
+				xmlWriter.element("tex3")
+					.attribute("tex", parameter.tex3)
+					.attribute("scale", parameter.tex3Scale)
+					.pop();
+			}
+
+			if(parameter.tex4 != null){
+				xmlWriter.element("tex4")
+					.attribute("tex", parameter.tex4)
+					.attribute("scale", parameter.tex4Scale)
+					.pop();
+			}
+
+			xmlWriter.pop();
+			terrainFile.writeString(stringWriter.toString(), false);
+		} catch (IOException e1) {
+
+			UtLog.error("failed to write terrain file", e1);
+		}
+
+
+		FileHandle weightmap1Fh = Gdx.files.local(parameter.weightMap1);
+
+		//ensure that previews or whatnot havent screwed nothing up and that were saving the last history state..
+		editPixmapPainter.history.recallHistory(editPixmapPainter.history.history.size-1,editPixmapPainter);
+		PixmapIO.writePNG(weightmap1Fh, editPixmapPainter.pixmap);
+
+		System.out.println("Saved file: "+terrainFile.name());
+
+		// TODO: update UI
+
 	}
 }

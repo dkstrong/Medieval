@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Attribute;
@@ -329,96 +330,8 @@ public class Terrain implements RenderableProvider, Disposable {
 			parameter.tex4Scale = texScale;
 		}
 	}
-	public void saveTerrain()
-	{
-		saveTerrain(null);
-	}
 
-	public void saveTerrain(String name)
-	{
-		if(name != null)
-			parameter.name = name;
 
-		if(parameter.name == null || parameter.name.trim().isEmpty()){
-			parameter.name="untitled terrain";
-			// TODO: make name unique to other terrains if it is not
-		}
-
-		FileHandle terrainFile =resolveLocal("Terrain/" + name+".ter");
-
-		StringWriter stringWriter = new StringWriter();
-		XmlWriter xmlWriter = new XmlWriter(stringWriter);
-		try {
-			xmlWriter
-				.element("Terrain")
-				.attribute("name", name)
-				.attribute("scale", parameter.scale)
-				.attribute("magnitude", parameter.magnitude)
-				.attribute("chunkWidth", parameter.chunkWidth)
-				.attribute("chunkHeight", parameter.chunkHeight);
-			if(parameter.heightmapName != null && !parameter.heightmapName.trim().isEmpty()){
-				xmlWriter.element("heightData")
-					.attribute("heightmapName", parameter.heightmapName)
-					.pop();
-			}else{
-				xmlWriter.
-					element("heightData")
-					.attribute("seed", parameter.seed)
-					.attribute("fieldWidth", parameter.fieldWidth)
-					.attribute("fieldHeight", parameter.fieldHeight)
-					.pop();
-			}
-
-			if(parameter.weightMap1 != null){
-				xmlWriter.element("weightMap1")
-					.attribute("tex", parameter.weightMap1)
-					.pop();
-			}
-
-			if(parameter.tex1 != null){
-				xmlWriter.element("tex1")
-					.attribute("tex", parameter.tex1)
-					.attribute("scale", parameter.tex1Scale)
-					.pop();
-			}
-
-			if(parameter.tex2 != null){
-				xmlWriter.element("tex2")
-					.attribute("tex", parameter.tex2)
-					.attribute("scale", parameter.tex2Scale)
-					.pop();
-			}
-
-			if(parameter.tex3 != null){
-				xmlWriter.element("tex3")
-					.attribute("tex", parameter.tex3)
-					.attribute("scale", parameter.tex3Scale)
-					.pop();
-			}
-
-			if(parameter.tex4 != null){
-				xmlWriter.element("tex4")
-					.attribute("tex", parameter.tex4)
-					.attribute("scale", parameter.tex4Scale)
-					.pop();
-			}
-
-			xmlWriter.pop();
-			terrainFile.writeString(stringWriter.toString(), false);
-		} catch (IOException e1) {
-
-			UtLog.error("failed to write terrain file", e1);
-		}
-
-	}
-
-	public void loadTerrain(){
-		if(this.parameter == null){
-			loadNewTerrain("untitled terrain");
-		}else{
-			loadTerrain(parameter.name);
-		}
-	}
 
 	public void loadNewTerrain(String name)
 	{
@@ -432,7 +345,7 @@ public class Terrain implements RenderableProvider, Disposable {
 	{
 		if(name == null || name.trim().isEmpty()){
 			if(this.parameter == null){
-				loadNewTerrain("untitled terrain");
+				loadNewTerrain("untitled-terrain");
 				return;
 			}
 			name = this.parameter.name;
@@ -446,7 +359,7 @@ public class Terrain implements RenderableProvider, Disposable {
 
 	public void loadTerrain(FileHandle terrainFile){
 		if(terrainFile == null){
-			loadNewTerrain("untitled terrain");
+			loadNewTerrain("untitled-terrain");
 			return;
 		}
 		String name = terrainFile.nameWithoutExtension();
