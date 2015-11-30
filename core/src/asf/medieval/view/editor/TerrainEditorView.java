@@ -31,6 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -51,6 +52,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 	private InternalClickListener internalCl = new InternalClickListener();
 	private Table toolTable;
+	private Label terrainNameLabel;
 	private Button fileMenuButton;
 	private Container<Window> fileMenuWindowContainer;
 	private Window fileMenuWindow;
@@ -61,6 +63,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	private Cell<?> table3Cell;
 	private Table table3, heightTable, weightTable;
 
+	// weightmap splat ui
 	private ButtonGroup<Button> texSelectionButtonGroup;
 	private final Array<UiTexMapping> uiTexMappings = new Array<UiTexMapping>(true, 4, UiTexMapping.class);
 	private Label texLocValueLabel, scaleValueLabel;
@@ -69,31 +72,17 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	private Label toolRadiusLabel, toolOpacityValueLabel;
 
 
-	// weightmap splat
+	// weightmap splat 3d interface
 	private boolean weightPaintingEnabled = false;
 	private boolean weightPaintingPreview = true;
 	private UiTexMapping selectedTexChannel = null;
-	private Texture currentTexture;
-	private String currentTextureLoc;
 	public PixmapPainter editPixmapPainter;
-	private String editTextureLoc;
-	private FileHandle editFh;
-
 
 	public TerrainEditorView(MedievalWorld world) {
 		this.world = world;
 
+		refreshHeightMapWeightMapPainters();
 
-		currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
-
-		//editPixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888); // currentTexture
-		editPixmapPainter = new PixmapPainter(currentTexture); // currentTexture
-		editPixmapPainter.coordProvider = this;
-
-		editTextureLoc = "tmp/" + currentTextureLoc;
-		editFh = Gdx.files.local(editTextureLoc);
-
-		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, editPixmapPainter.texture, 1);
 		Terrain terrain = world.terrainView.terrain;
 
 		toolTable = new Table(world.app.skin);
@@ -104,7 +93,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		{
 			Table table1 = new Table(world.app.skin);
 			table1.row();
-			table1.add(UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
+			table1.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
 			table1.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
 			toolTable.row();
 			toolTable.add(table1).fill().align(Align.topLeft);
@@ -159,10 +148,11 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			weightTable = new Table(world.app.skin);
 			// Texture Channel Selector
 			{
-				uiTexMappings.add(new UiTexMapping(TerrainTextureAttribute.Tex1, terrain.parameter.tex1, terrain.parameter.tex1Scale));
-				uiTexMappings.add(new UiTexMapping(TerrainTextureAttribute.Tex2, terrain.parameter.tex2,terrain.parameter.tex2Scale));
-				uiTexMappings.add(new UiTexMapping(TerrainTextureAttribute.Tex3, terrain.parameter.tex3,terrain.parameter.tex3Scale));
-				uiTexMappings.add(new UiTexMapping(TerrainTextureAttribute.Tex4, terrain.parameter.tex4,terrain.parameter.tex4Scale));
+
+				uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex1));
+				uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex2));
+				uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex3));
+				uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex4));
 
 				texSelectionButtonGroup = new ButtonGroup<Button>();
 				texSelectionButtonGroup.setMaxCheckCount(1);
@@ -261,44 +251,85 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 	}
 
-
-
-	private class UiTexMapping{
+	private static class UiTexMapping{
 		TerrainTextureAttribute texAttribute;
 		Texture tex;
 		String texLocation;
 		String texLocationFileName;
 		float texScale;
-
-		final ImageButton toolbarButton;
-
-		final Color weightmapColor;
-
-		private UiTexMapping(long materialAttributeId, String texLocation, float texScale){
-			Terrain terrain = world.terrainView.terrain;
-			texAttribute = (TerrainTextureAttribute)terrain.material.get(materialAttributeId);
-			tex = texAttribute.textureDescription.texture;
-			this.texLocation = texLocation;
-			texLocationFileName = Paths.get(texLocation).getFileName().toString();
-			this.texScale = texScale;
-
-			toolbarButton = UtEditor.createImageButtonToggle(tex, world.app.skin, internalCl);
-			toolbarButton.setUserObject(this);
-
-			if(materialAttributeId == TerrainTextureAttribute.Tex1){
-				this.weightmapColor = new Color(1,0,0,0);
-			}else if(materialAttributeId == TerrainTextureAttribute.Tex2){
-				this.weightmapColor = new Color(0,1,0,0);
-			}else if(materialAttributeId == TerrainTextureAttribute.Tex3){
-				this.weightmapColor = new Color(0,0,1,0);
-			}else{
-				this.weightmapColor = new Color(0,0,0,1);
-			}
-
-		}
-
+		ImageButton toolbarButton;
+		Color weightmapColor;
 	}
 
+	private UiTexMapping createUiTexMapping(long materialAttributeId){
+		UiTexMapping uiTexMapping = new UiTexMapping();
+		refreshUiTexMapping(uiTexMapping, materialAttributeId);
+		return uiTexMapping;
+	}
+
+	private void refreshUiTexMapping(UiTexMapping uiTexMapping, long materialAttributeId){
+		Terrain terrain = world.terrainView.terrain;
+		uiTexMapping.texAttribute = (TerrainTextureAttribute)terrain.material.get(materialAttributeId);
+		uiTexMapping.tex = uiTexMapping.texAttribute.textureDescription.texture;
+
+		if(materialAttributeId == TerrainTextureAttribute.Tex1){
+			uiTexMapping.texLocation = terrain.parameter.tex1;
+			uiTexMapping.texScale = terrain.parameter.tex1Scale;
+			uiTexMapping.weightmapColor = new Color(1,0,0,0);
+		}else if(materialAttributeId == TerrainTextureAttribute.Tex2){
+			uiTexMapping.texLocation = terrain.parameter.tex2;
+			uiTexMapping.texScale = terrain.parameter.tex2Scale;
+			uiTexMapping.weightmapColor = new Color(0,1,0,0);
+		}else if(materialAttributeId == TerrainTextureAttribute.Tex3){
+			uiTexMapping.texLocation = terrain.parameter.tex3;
+			uiTexMapping.texScale = terrain.parameter.tex3Scale;
+			uiTexMapping.weightmapColor = new Color(0,0,1,0);
+		}else if(materialAttributeId == TerrainTextureAttribute.Tex4){
+			uiTexMapping.texLocation = terrain.parameter.tex4;
+			uiTexMapping.texScale = terrain.parameter.tex4Scale;
+			uiTexMapping.weightmapColor = new Color(0,0,0,1);
+		}
+
+		if(uiTexMapping.toolbarButton == null)
+		{
+			uiTexMapping.toolbarButton = UtEditor.createImageButtonToggle(uiTexMapping.tex, world.app.skin, internalCl);
+			uiTexMapping.toolbarButton.setUserObject(uiTexMapping);
+		}else{
+			TextureRegionDrawable trd = (TextureRegionDrawable) uiTexMapping.toolbarButton.getStyle().imageUp;
+			trd.getRegion().setTexture(uiTexMapping.tex);
+		}
+	}
+
+	private void refreshUi(){
+		Terrain terrain = world.terrainView.terrain;
+		terrainNameLabel.setText(terrain.parameter.name + ".ter");
+
+		// TODO: handle if the number of textures changes...
+		refreshUiTexMapping(uiTexMappings.get(0), TerrainTextureAttribute.Tex1);
+		refreshUiTexMapping(uiTexMappings.get(1), TerrainTextureAttribute.Tex2);
+		refreshUiTexMapping(uiTexMappings.get(2), TerrainTextureAttribute.Tex3);
+		refreshUiTexMapping(uiTexMappings.get(3), TerrainTextureAttribute.Tex4);
+
+		setSelectedTexChannel(selectedTexChannel);
+		setSelectedPixmapTool(getSelectedPixmapTool());
+		setSelectedPixmapRadius(getSelectedPixmapRadius());
+		setSelectedPixmapOpacity(getSetSelectedPixmapOpacity());
+
+		setWeightPaintingEnabled(weightPaintingEnabled);
+	}
+	/** Be sure to call refreshUi() after refreshing the painters.. **/
+	private void refreshHeightMapWeightMapPainters()
+	{
+		if(editPixmapPainter!=null){
+			editPixmapPainter.dispose();
+			editPixmapPainter = null;
+		}
+		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
+		//editPixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
+		editPixmapPainter = new PixmapPainter(currentTexture);
+		editPixmapPainter.coordProvider = this;
+		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, editPixmapPainter.texture, 1);
+	}
 
 	public void resize(int width, int height) {
 		//topLeftLabelContainer.setBounds(0, 0, width, height);
@@ -350,25 +381,22 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		}
 	}
 
-	public void setWeightPaintingEnabled(boolean weightPaintingEnabled){
-		this.weightPaintingEnabled = weightPaintingEnabled;
-		editPixmapPainter.setPreviewPainting(this.enabled && this.weightPaintingEnabled && weightPaintingPreview);
-		if(weightPaintingEnabled){
-			table3Cell.setActor(weightTable);
-		}
-	}
+
 
 	@Override
 	public void onFileSave(FileHandle fh) {
 		String name = fh.nameWithoutExtension();
 		saveTerrain(name);
+		refreshUi();
 		fileMenuWindowContainer.remove();
 	}
 
 	@Override
 	public void onFileOpen(FileHandle fh) {
-		String name = fh.nameWithoutExtension();
-		world.terrainView.terrain.loadTerrain(name);
+		//String name = fh.nameWithoutExtension();
+		world.terrainView.terrain.loadTerrain(fh);
+		refreshHeightMapWeightMapPainters();
+		refreshUi();
 		fileMenuWindowContainer.remove();
 	}
 
@@ -393,8 +421,10 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	@Override
 	public void dispose() {
 		setEnabled(false);
-		editPixmapPainter.dispose();
-		editPixmapPainter = null;
+		if(editPixmapPainter!=null){
+			editPixmapPainter.dispose();
+			editPixmapPainter = null;
+		}
 	}
 
 	private final Vector3 tempTranslation = new Vector3();
@@ -409,11 +439,20 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 	public void setSelectedTexChannel(UiTexMapping selectedTexChannel) {
 		this.selectedTexChannel = selectedTexChannel;
-		editPixmapPainter.setBrushColor(selectedTexChannel.weightmapColor);
+		if(editPixmapPainter!=null)
+			editPixmapPainter.setBrushColor(selectedTexChannel.weightmapColor);
 		selectedTexChannel.toolbarButton.setChecked(true);
 
 		texLocValueLabel.setText(selectedTexChannel.texLocationFileName);
 		scaleValueLabel.setText(selectedTexChannel.texScale+"x");
+	}
+
+	public void setWeightPaintingEnabled(boolean weightPaintingEnabled){
+		this.weightPaintingEnabled = weightPaintingEnabled;
+		editPixmapPainter.setPreviewPainting(this.enabled && this.weightPaintingEnabled && weightPaintingPreview);
+		if(weightPaintingEnabled){
+			table3Cell.setActor(weightTable);
+		}
 	}
 
 	public PixmapPainter.Tool getSelectedPixmapTool(){
@@ -695,7 +734,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 		System.out.println("Saved file: "+terrainFile.name());
 
-		// TODO: update UI
-
 	}
+
+
 }

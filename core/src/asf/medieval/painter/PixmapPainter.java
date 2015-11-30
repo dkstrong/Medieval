@@ -242,8 +242,6 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	public void dispose() {
 		texture.dispose();
 		pixmap.dispose();
-
-
 	}
 
 
