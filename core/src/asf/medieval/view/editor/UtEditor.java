@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Tree;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -42,6 +43,19 @@ public class UtEditor {
 		Label label = new Label(labelText, skin);
 		label.setAlignment(Align.left,Align.left);
 		return label;
+	}
+
+	public static TextField createTextField(String defaultText, Skin skin, TextField.TextFieldFilter filter, TextField.TextFieldListener listener){
+		TextField textField = new TextField(defaultText, skin);
+
+		textField.setOnlyFontChars(true);
+
+		if(filter != null)
+			textField.setTextFieldFilter(filter);
+		if(listener!=null)
+			textField.setTextFieldListener(listener);
+
+		return textField;
 	}
 
 	public static TextButton createTextButton(String buttonText, Skin skin, EventListener listener) {

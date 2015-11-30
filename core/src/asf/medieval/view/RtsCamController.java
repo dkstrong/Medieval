@@ -44,7 +44,7 @@ public class RtsCamController implements InputProcessor {
 		setMinMaxValues(SIDE, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(ROT, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
 		setMinMaxValues(TILT, UtMath.PI / 42f, UtMath.PI/3f);
-		setMinMaxValues(ZOOM, 10, 200);
+		setMinMaxValues(ZOOM, 10, 1200);
 
 		setMaxSpeed(FWD, 24f * 2f*2f, 0.25f);
 		setMaxSpeed(SIDE, 24f*2f*2f, 0.25f);

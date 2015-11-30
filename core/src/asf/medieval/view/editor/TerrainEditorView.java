@@ -24,11 +24,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -40,7 +40,6 @@ import com.badlogic.gdx.utils.XmlWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 
 /**
@@ -63,6 +62,19 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	private Cell<?> table3Cell;
 	private Table table3, heightTable, weightTable;
 
+	// heightmap weightmap selection
+	private boolean heightPaintingEnabled = false;
+	private boolean weightPaintingEnabled = false;
+
+	// heightmap ui
+	private TextField scaleTextField;
+	private TextButton scaleUpButton, scaleDownButton;
+	private TextField magnitudeTextField;
+	private TextButton magnitudeUpButton, magnitudeDownButton;
+
+
+	// heightmap 3d interface
+
 	// weightmap splat ui
 	private ButtonGroup<Button> texSelectionButtonGroup;
 	private final Array<UiTexMapping> uiTexMappings = new Array<UiTexMapping>(true, 4, UiTexMapping.class);
@@ -73,16 +85,20 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 
 	// weightmap splat 3d interface
-	private boolean weightPaintingEnabled = false;
 	private boolean weightPaintingPreview = true;
 	private UiTexMapping selectedTexChannel = null;
 	public PixmapPainter editPixmapPainter;
 
 	public TerrainEditorView(MedievalWorld world) {
 		this.world = world;
-
 		refreshHeightMapWeightMapPainters();
+		initUi();
+	}
 
+	//////////////////////////////////////////////////////
+	/// Begin methods that set up and refresh the ui
+	//////////////////////////////////////////////////////
+	private void initUi() {
 		Terrain terrain = world.terrainView.terrain;
 
 		toolTable = new Table(world.app.skin);
@@ -100,7 +116,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 
 			fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
-			fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton =UtEditor.createTextButton("[X]",world.app.skin, internalCl));
+			fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton = UtEditor.createTextButton("[X]", world.app.skin, internalCl));
 
 			fileChooser = UtEditor.createFileChooser(this, world.app.skin);
 			fileMenuWindow.row();
@@ -110,7 +126,6 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			fileMenuWindowContainer.setFillParent(true);
 			fileMenuWindowContainer.center();
 			fileMenuWindowContainer.minSize(400, 300);
-
 
 
 		}
@@ -123,7 +138,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 			heightOrWeightButtonGroup = new ButtonGroup<TextButton>(heightMapButton, weightMapButton);
 			heightOrWeightButtonGroup.setMaxCheckCount(1);
-			heightOrWeightButtonGroup.setMinCheckCount(0);
+			heightOrWeightButtonGroup.setMinCheckCount(1);
 			heightOrWeightButtonGroup.setUncheckLast(true);
 
 			toolTable.row();
@@ -133,14 +148,31 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		// No tools selected
 		{
 			table3 = new Table(world.app.skin);
-			table3.add(UtEditor.createLabel("label", world.app.skin));
 			toolTable.row().align(Align.topLeft);
 			table3Cell = toolTable.add(table3).fill().align(Align.topLeft);
+
+
+			table3.row();
+			table3.add(UtEditor.createLabel("label",world.app.skin));
+
+
 		}
 
 		// Heightmap tools
 		{
 			heightTable = new Table(world.app.skin);
+
+			heightTable.row();
+			heightTable.add(UtEditor.createLabel("Scale", world.app.skin));
+			heightTable.add(scaleTextField=UtEditor.createTextField(terrain.parameter.scale+"", world.app.skin,internalCl,internalCl));
+			heightTable.add(scaleUpButton=UtEditor.createTextButton("/\\",world.app.skin, internalCl));
+			heightTable.add(scaleDownButton=UtEditor.createTextButton("\\/",world.app.skin, internalCl));
+
+			heightTable.row();
+			heightTable.add(UtEditor.createLabel("Magnitude", world.app.skin));
+			heightTable.add(magnitudeTextField=UtEditor.createTextField(terrain.parameter.magnitude+"", world.app.skin, internalCl,internalCl));
+			heightTable.add(magnitudeUpButton=UtEditor.createTextButton("/\\",world.app.skin, internalCl));
+			heightTable.add(magnitudeDownButton=UtEditor.createTextButton("\\/",world.app.skin, internalCl));
 		}
 
 		// Weightmap Tools
@@ -191,10 +223,10 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			// PixmapPainter Tool selector
 			{
 
-				toolBucketFillButton = UtEditor.createImageButtonToggle("bucketfill",world.app.skin,internalCl);
-				toolBrushButton = UtEditor.createImageButtonToggle("paintbrush",world.app.skin,internalCl);
-				toolSprayButton = UtEditor.createImageButtonToggle("spraypaint",world.app.skin,null);
-				toolEraserButton = UtEditor.createImageButtonToggle("eraser",world.app.skin,internalCl);
+				toolBucketFillButton = UtEditor.createImageButtonToggle("bucketfill", world.app.skin, internalCl);
+				toolBrushButton = UtEditor.createImageButtonToggle("paintbrush", world.app.skin, internalCl);
+				toolSprayButton = UtEditor.createImageButtonToggle("spraypaint", world.app.skin, null);
+				toolEraserButton = UtEditor.createImageButtonToggle("eraser", world.app.skin, internalCl);
 
 				toolBucketFillButton.setUserObject(PixmapPainter.Tool.Fill);
 				toolBrushButton.setUserObject(PixmapPainter.Tool.Brush);
@@ -243,15 +275,14 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 		}
 
-
-		setSelectedTexChannel(uiTexMappings.get(0));
-		setSelectedPixmapTool(getSelectedPixmapTool());
-		setSelectedPixmapRadius(getSelectedPixmapRadius());
-		setSelectedPixmapOpacity(getSetSelectedPixmapOpacity());
-
+		setHeigtPaintingEnabled(true);
+		setUiPixmapTexChannel(uiTexMappings.get(0));
+		setUiPixmapTool(getUiPixmapTool());
+		setUiPixmapRadius(getUiPixmapRadius());
+		setUiPixmapOpacity(getUiPixmapOpacity());
 	}
 
-	private static class UiTexMapping{
+	private static class UiTexMapping {
 		TerrainTextureAttribute texAttribute;
 		Texture tex;
 		String texLocation;
@@ -261,48 +292,50 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		Color weightmapColor;
 	}
 
-	private UiTexMapping createUiTexMapping(long materialAttributeId){
+	private UiTexMapping createUiTexMapping(long materialAttributeId) {
 		UiTexMapping uiTexMapping = new UiTexMapping();
 		refreshUiTexMapping(uiTexMapping, materialAttributeId);
 		return uiTexMapping;
 	}
 
-	private void refreshUiTexMapping(UiTexMapping uiTexMapping, long materialAttributeId){
+	private void refreshUiTexMapping(UiTexMapping uiTexMapping, long materialAttributeId) {
 		Terrain terrain = world.terrainView.terrain;
-		uiTexMapping.texAttribute = (TerrainTextureAttribute)terrain.material.get(materialAttributeId);
+		uiTexMapping.texAttribute = (TerrainTextureAttribute) terrain.material.get(materialAttributeId);
 		uiTexMapping.tex = uiTexMapping.texAttribute.textureDescription.texture;
 
-		if(materialAttributeId == TerrainTextureAttribute.Tex1){
+		if (materialAttributeId == TerrainTextureAttribute.Tex1) {
 			uiTexMapping.texLocation = terrain.parameter.tex1;
 			uiTexMapping.texScale = terrain.parameter.tex1Scale;
-			uiTexMapping.weightmapColor = new Color(1,0,0,0);
-		}else if(materialAttributeId == TerrainTextureAttribute.Tex2){
+			uiTexMapping.weightmapColor = new Color(1, 0, 0, 0);
+		} else if (materialAttributeId == TerrainTextureAttribute.Tex2) {
 			uiTexMapping.texLocation = terrain.parameter.tex2;
 			uiTexMapping.texScale = terrain.parameter.tex2Scale;
-			uiTexMapping.weightmapColor = new Color(0,1,0,0);
-		}else if(materialAttributeId == TerrainTextureAttribute.Tex3){
+			uiTexMapping.weightmapColor = new Color(0, 1, 0, 0);
+		} else if (materialAttributeId == TerrainTextureAttribute.Tex3) {
 			uiTexMapping.texLocation = terrain.parameter.tex3;
 			uiTexMapping.texScale = terrain.parameter.tex3Scale;
-			uiTexMapping.weightmapColor = new Color(0,0,1,0);
-		}else if(materialAttributeId == TerrainTextureAttribute.Tex4){
+			uiTexMapping.weightmapColor = new Color(0, 0, 1, 0);
+		} else if (materialAttributeId == TerrainTextureAttribute.Tex4) {
 			uiTexMapping.texLocation = terrain.parameter.tex4;
 			uiTexMapping.texScale = terrain.parameter.tex4Scale;
-			uiTexMapping.weightmapColor = new Color(0,0,0,1);
+			uiTexMapping.weightmapColor = new Color(0, 0, 0, 1);
 		}
 
-		if(uiTexMapping.toolbarButton == null)
-		{
+		if (uiTexMapping.toolbarButton == null) {
 			uiTexMapping.toolbarButton = UtEditor.createImageButtonToggle(uiTexMapping.tex, world.app.skin, internalCl);
 			uiTexMapping.toolbarButton.setUserObject(uiTexMapping);
-		}else{
+		} else {
 			TextureRegionDrawable trd = (TextureRegionDrawable) uiTexMapping.toolbarButton.getStyle().imageUp;
 			trd.getRegion().setTexture(uiTexMapping.tex);
 		}
 	}
 
-	private void refreshUi(){
+	private void refreshUi() {
 		Terrain terrain = world.terrainView.terrain;
 		terrainNameLabel.setText(terrain.parameter.name + ".ter");
+
+		setUiParamScale(getParamScale());
+		setUiParamMagnitude(getParamMagnitude());
 
 		// TODO: handle if the number of textures changes...
 		refreshUiTexMapping(uiTexMappings.get(0), TerrainTextureAttribute.Tex1);
@@ -310,53 +343,86 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		refreshUiTexMapping(uiTexMappings.get(2), TerrainTextureAttribute.Tex3);
 		refreshUiTexMapping(uiTexMappings.get(3), TerrainTextureAttribute.Tex4);
 
-		setSelectedTexChannel(selectedTexChannel);
-		setSelectedPixmapTool(getSelectedPixmapTool());
-		setSelectedPixmapRadius(getSelectedPixmapRadius());
-		setSelectedPixmapOpacity(getSetSelectedPixmapOpacity());
+		setUiPixmapTexChannel(selectedTexChannel);
+		setUiPixmapTool(getUiPixmapTool());
+		setUiPixmapRadius(getUiPixmapRadius());
+		setUiPixmapOpacity(getUiPixmapOpacity());
 
-		setWeightPaintingEnabled(weightPaintingEnabled);
-	}
-	/** Be sure to call refreshUi() after refreshing the painters.. **/
-	private void refreshHeightMapWeightMapPainters()
-	{
-		if(editPixmapPainter!=null){
-			editPixmapPainter.dispose();
-			editPixmapPainter = null;
+		if(weightPaintingEnabled){
+			setWeightPaintingEnabled(true);
+		}else{
+			setHeigtPaintingEnabled(true);
 		}
-		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
-		//editPixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
-		editPixmapPainter = new PixmapPainter(currentTexture);
-		editPixmapPainter.coordProvider = this;
-		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, editPixmapPainter.texture, 1);
+
 	}
+
 
 	public void resize(int width, int height) {
 		//topLeftLabelContainer.setBounds(0, 0, width, height);
 	}
 
+	private float buttonHoldTimer;
+	private float buttonHoldDelay;
+	private float buttonHoldInterval;
+
 	@Override
 	public void update(float delta) {
-		if(!enabled)
+		if (!enabled)
 			return;
-		if (weightPaintingEnabled && editPixmapPainter != null)
-			editPixmapPainter.updateInput(delta);
+
+		if(heightPaintingEnabled)
+		{
+			if(scaleUpButton.isPressed()){
+				buttonHoldTimer+=delta;
+				if(buttonHoldTimer > buttonHoldDelay + buttonHoldInterval){
+					setParamScale(getParamScale()+1f);
+					buttonHoldTimer = buttonHoldDelay;
+				}
+			}else if(scaleDownButton.isPressed()){
+				buttonHoldTimer+=delta;
+				if(buttonHoldTimer > buttonHoldDelay + buttonHoldInterval){
+					setParamScale(getParamScale()-1f);
+					buttonHoldTimer = buttonHoldDelay;
+				}
+			}else if(magnitudeUpButton.isPressed()){
+				buttonHoldTimer+=delta;
+				if(buttonHoldTimer > buttonHoldDelay + buttonHoldInterval){
+					setParamMagnitude(getParamMagnitude() + 1f);
+					buttonHoldTimer = buttonHoldDelay;
+				}
+			}else if(magnitudeDownButton.isPressed()){
+				buttonHoldTimer+=delta;
+				if(buttonHoldTimer > buttonHoldDelay + buttonHoldInterval){
+					setParamMagnitude(getParamMagnitude() - 1f);
+					buttonHoldTimer = buttonHoldDelay;
+				}
+			}
+		}
+		else if(weightPaintingEnabled)
+		{
+			if (editPixmapPainter != null)
+				editPixmapPainter.updateInput(delta);
+		}
+
 	}
 
 	@Override
 	public void render(float delta) {
-		if(!enabled)
+		if (!enabled)
 			return;
 
 
-		if(!world.editorView.isToolbarVisible()){
+		if (!world.editorView.isToolbarVisible()) {
 
 			String text = "";
-			if (weightPaintingEnabled && editPixmapPainter != null) {
-				text += "Tex: " + selectedTexChannel.texLocationFileName+"  ";
-				text += "Tool: " + editPixmapPainter.getTool()+"   ";
-				text += "Radius: " + editPixmapPainter.getBrush().getRadius()+"   ";
-				text += "Opacity: " + editPixmapPainter.getBrushOpacity();
+			if (weightPaintingEnabled) {
+				if(editPixmapPainter != null)
+				{
+					text += "Tex: " + getUiPixmapTexChannel().texLocationFileName + "  ";
+					text += "Tool: " + getUiPixmapTool() + "   ";
+					text += "Radius: " + getUiPixmapRadius() + "   ";
+					text += "Opacity: " + getUiPixmapOpacity();
+				}
 			}
 
 			world.editorView.minTextLabel.setText(text);
@@ -366,66 +432,66 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 	}
 
+	@Override
+	public void dispose() {
+		setEnabled(false);
+		if (editPixmapPainter != null) {
+			editPixmapPainter.dispose();
+			editPixmapPainter = null;
+		}
+	}
+	////////////////////////////////////////
+	/// Begin methods that mutate the UI (ie button actions)
+	////////////////////////////////////////
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
 	public void setEnabled(boolean enabled) {
 
 		if (enabled && !this.enabled) {
 			this.enabled = true;
 			world.editorView.containerCell.setActor(toolTable);
-			//toolTable.invalidateHierarchy();
-			setWeightPaintingEnabled(weightPaintingEnabled);
+			refreshUi();
 		} else if (!enabled && this.enabled) {
 			this.enabled = false;
 			world.editorView.containerCell.setActor(new Container());
-			//toolTable.remove();
-			setWeightPaintingEnabled(weightPaintingEnabled);
+			refreshUi();
+		}
+	}
+
+	public void setHeigtPaintingEnabled(boolean heightPaintingEnabled) {
+		this.heightPaintingEnabled = heightPaintingEnabled;
+		if (heightPaintingEnabled) {
+			heightMapButton.setChecked(true);
+			table3Cell.setActor(heightTable);
+			setWeightPaintingEnabled(false);
+		}
+	}
+
+	public void setWeightPaintingEnabled(boolean weightPaintingEnabled) {
+		this.weightPaintingEnabled = weightPaintingEnabled;
+		editPixmapPainter.setPreviewPainting(this.enabled && this.weightPaintingEnabled && weightPaintingPreview);
+		if (weightPaintingEnabled) {
+			weightMapButton.setChecked(true);
+			table3Cell.setActor(weightTable);
+			setHeigtPaintingEnabled(false);
 		}
 	}
 
 
 
-	@Override
-	public void onFileSave(FileHandle fh) {
-		String name = fh.nameWithoutExtension();
-		saveTerrain(name);
-		refreshUi();
-		fileMenuWindowContainer.remove();
+	public void setUiParamScale(float scale){
+		scaleTextField.setText(String.valueOf(scale));
 	}
 
-	@Override
-	public void onFileOpen(FileHandle fh) {
-		//String name = fh.nameWithoutExtension();
-		world.terrainView.terrain.loadTerrain(fh);
-		refreshHeightMapWeightMapPainters();
-		refreshUi();
-		fileMenuWindowContainer.remove();
+
+
+	public void setUiParamMagnitude(float magnitude){
+		magnitudeTextField.setText(String.valueOf(magnitude));
 	}
 
-	@Override
-	public void onFileChanged(WatchEvent<Path> event) {
-		System.out.println("file changed:" + event.context() + ", kind: " + event.kind());
-
-		String fileChanged = String.valueOf(event.context());
-
-		if (fileChanged.endsWith(".ter")) {
-			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
-			//final Terrain terrain = world.terrainView.terrain;
-			//terrain.loadTerrain(terrain.parameter.name);
-		} else if (fileChanged.endsWith(".glsl")) {
-			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
-			final Terrain terrain = world.terrainView.terrain;
-			terrain.getTerrainChunk(0, 0).renderable.shader = null;
-			world.modelShaderProvider.terrainShaderProvider.clearShaderCache();
-		}
-	}
-
-	@Override
-	public void dispose() {
-		setEnabled(false);
-		if(editPixmapPainter!=null){
-			editPixmapPainter.dispose();
-			editPixmapPainter = null;
-		}
-	}
 
 	private final Vector3 tempTranslation = new Vector3();
 
@@ -437,60 +503,58 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		store.y = UtMath.scalarLimitsInterpolation(tempTranslation.z, terrain.corner00.z, terrain.corner11.z, 0, pixmapHeight - 1);
 	}
 
-	public void setSelectedTexChannel(UiTexMapping selectedTexChannel) {
+
+	public UiTexMapping getUiPixmapTexChannel(){
+		return selectedTexChannel;
+	}
+
+	public void setUiPixmapTexChannel(UiTexMapping selectedTexChannel) {
 		this.selectedTexChannel = selectedTexChannel;
-		if(editPixmapPainter!=null)
+		if (editPixmapPainter != null)
 			editPixmapPainter.setBrushColor(selectedTexChannel.weightmapColor);
 		selectedTexChannel.toolbarButton.setChecked(true);
 
 		texLocValueLabel.setText(selectedTexChannel.texLocationFileName);
-		scaleValueLabel.setText(selectedTexChannel.texScale+"x");
+		scaleValueLabel.setText(selectedTexChannel.texScale + "x");
 	}
 
-	public void setWeightPaintingEnabled(boolean weightPaintingEnabled){
-		this.weightPaintingEnabled = weightPaintingEnabled;
-		editPixmapPainter.setPreviewPainting(this.enabled && this.weightPaintingEnabled && weightPaintingPreview);
-		if(weightPaintingEnabled){
-			table3Cell.setActor(weightTable);
-		}
-	}
-
-	public PixmapPainter.Tool getSelectedPixmapTool(){
+	public PixmapPainter.Tool getUiPixmapTool() {
 		return editPixmapPainter.getTool();
 	}
 
-	public void setSelectedPixmapTool(PixmapPainter.Tool tool){
+	public void setUiPixmapTool(PixmapPainter.Tool tool) {
 		editPixmapPainter.setTool(tool);
-		if(toolBucketFillButton.getUserObject() == tool){
+		if (toolBucketFillButton.getUserObject() == tool) {
 			toolBucketFillButton.setChecked(true);
-		}else if(toolBrushButton.getUserObject() == tool){
+		} else if (toolBrushButton.getUserObject() == tool) {
 			toolBrushButton.setChecked(true);
-		} else if(toolEraserButton.getUserObject() == tool){
+		} else if (toolEraserButton.getUserObject() == tool) {
 			toolEraserButton.setChecked(true);
 		}
 	}
 
-	public int getSelectedPixmapRadius(){
+	public int getUiPixmapRadius() {
 		return editPixmapPainter.getBrush().getRadius();
 	}
-	public void setSelectedPixmapRadius(int radius){
+
+	public void setUiPixmapRadius(int radius) {
 		editPixmapPainter.getBrush().setRadius(radius);
 		toolRadiusLabel.setText(String.valueOf(radius));
 	}
 
-	public float getSetSelectedPixmapOpacity(){
+	public float getUiPixmapOpacity() {
 		return editPixmapPainter.getBrushOpacity();
 	}
 
-	public void setSelectedPixmapOpacity(float opacity){
+	public void setUiPixmapOpacity(float opacity) {
 		editPixmapPainter.setBrushOpacity(opacity);
 
 		toolOpacityValueLabel.setText(String.valueOf(UtMath.round(opacity, 2)));
 	}
 
-	public boolean isEnabled() {
-		return enabled;
-	}
+	////////////////////////////////////////////////
+	/// Begin methods that listen for user input
+	////////////////////////////////////////////////
 
 	@Override
 	public boolean keyDown(int keycode) {
@@ -501,46 +565,50 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	public boolean keyUp(int keycode) {
 		if (!enabled)
 			return false;
-		switch (keycode) {
-			case Input.Keys.NUM_1:
-				setSelectedTexChannel(uiTexMappings.get(0));
+		if(weightPaintingEnabled)
+		{
+			switch (keycode) {
+				case Input.Keys.NUM_1:
+					setUiPixmapTexChannel(uiTexMappings.get(0));
+					return true;
+				case Input.Keys.NUM_2:
+					setUiPixmapTexChannel(uiTexMappings.get(1));
+					return true;
+				case Input.Keys.NUM_3:
+					setUiPixmapTexChannel(uiTexMappings.get(2));
+					return true;
+				case Input.Keys.NUM_4:
+					setUiPixmapTexChannel(uiTexMappings.get(3));
+					return true;
+				case Input.Keys.LEFT_BRACKET:
+					if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+						setUiPixmapRadius(getUiPixmapRadius() - 1);
+					} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+						setUiPixmapOpacity(getUiPixmapOpacity() - 0.1f);
+					}
+					return true;
+				case Input.Keys.RIGHT_BRACKET:
+					if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+						setUiPixmapRadius(getUiPixmapRadius() + 1);
+					} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+						setUiPixmapOpacity(getUiPixmapOpacity() + 0.1f);
+					}
+					return true;
+				case Input.Keys.B:
+					setUiPixmapTool(PixmapPainter.Tool.Brush);
+					return true;
+				case Input.Keys.E:
+					setUiPixmapTool(PixmapPainter.Tool.Eraser);
+					return true;
+				case Input.Keys.F:
+					setUiPixmapTool(PixmapPainter.Tool.Fill);
+					return true;
+			}
+			if (editPixmapPainter != null && editPixmapPainter.keyUp(keycode)) {
 				return true;
-			case Input.Keys.NUM_2:
-				setSelectedTexChannel(uiTexMappings.get(1));
-				return true;
-			case Input.Keys.NUM_3:
-				setSelectedTexChannel(uiTexMappings.get(2));
-				return true;
-			case Input.Keys.NUM_4:
-				setSelectedTexChannel(uiTexMappings.get(3));
-				return true;
-			case Input.Keys.LEFT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					setSelectedPixmapRadius(getSelectedPixmapRadius() - 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-					setSelectedPixmapOpacity(getSetSelectedPixmapOpacity() - 0.1f);
-				}
-				return true;
-			case Input.Keys.RIGHT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					setSelectedPixmapRadius(getSelectedPixmapRadius() + 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-					setSelectedPixmapOpacity(getSetSelectedPixmapOpacity() + 0.1f);
-				}
-				return true;
-			case Input.Keys.B:
-				setSelectedPixmapTool(PixmapPainter.Tool.Brush);
-				return true;
-			case Input.Keys.E:
-				setSelectedPixmapTool(PixmapPainter.Tool.Eraser);
-				return true;
-			case Input.Keys.F:
-				setSelectedPixmapTool(PixmapPainter.Tool.Fill);
-				return true;
+			}
 		}
-		if (weightPaintingEnabled && editPixmapPainter != null && editPixmapPainter.keyUp(keycode)) {
-			return true;
-		}
+
 		return false;
 	}
 
@@ -594,72 +662,211 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		if (!enabled)
 			return false;
 
-		if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-			setSelectedPixmapRadius(getSelectedPixmapRadius() - amount);
-			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-			setSelectedPixmapOpacity(getSetSelectedPixmapOpacity() - amount * 0.05f);
-			return true;
+		if(weightPaintingEnabled)
+		{
+			if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+				setUiPixmapRadius(getUiPixmapRadius() - amount);
+				return true;
+			} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+				setUiPixmapOpacity(getUiPixmapOpacity() - amount * 0.05f);
+				return true;
+			}
+
+			if (editPixmapPainter != null && editPixmapPainter.scrolled(amount)) {
+				return true;
+			}
 		}
 
-		if (weightPaintingEnabled && editPixmapPainter != null && editPixmapPainter.scrolled(amount)) {
-			return true;
-		}
 		return false;
 	}
 
-	private class InternalClickListener extends ClickListener {
+	private class InternalClickListener extends ClickListener implements TextField.TextFieldFilter, TextField.TextFieldListener{
+
 		public void clicked(InputEvent event, float x, float y) {
 			Actor actor = event.getListenerActor();
 
-			if(actor == heightMapButton || actor == weightMapButton){
+			if (actor == heightMapButton || actor == weightMapButton) {
 				TextButton checked = heightOrWeightButtonGroup.getChecked();
 
-				if(checked == heightMapButton){
-					table3Cell.setActor(heightTable);
-					setWeightPaintingEnabled(false);
-				}else if(checked == weightMapButton){
+				if (checked == heightMapButton) {
+					setHeigtPaintingEnabled(true);
+				} else if (checked == weightMapButton) {
 					setWeightPaintingEnabled(true);
-				}else{
+				} else {
 					table3Cell.setActor(table3);
+					setHeigtPaintingEnabled(false);
 					setWeightPaintingEnabled(false);
 				}
-			}else if(actor.getUserObject() instanceof UiTexMapping){
+			} else if (actor.getUserObject() instanceof UiTexMapping) {
 				Button checked = texSelectionButtonGroup.getChecked();
-				UiTexMapping checkedUiTexMapping = (UiTexMapping)checked.getUserObject();
-				setSelectedTexChannel(checkedUiTexMapping);
-			}else if(actor.getUserObject() instanceof PixmapPainter.Tool){
+				UiTexMapping checkedUiTexMapping = (UiTexMapping) checked.getUserObject();
+				setUiPixmapTexChannel(checkedUiTexMapping);
+			} else if (actor.getUserObject() instanceof PixmapPainter.Tool) {
 				Button checked = toolSelectionButtonGroup.getChecked();
-				PixmapPainter.Tool checkedTool = (PixmapPainter.Tool)checked.getUserObject();
-				setSelectedPixmapTool(checkedTool);
-			}else if(actor == fileMenuButton){
-				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name+".ter");
+				PixmapPainter.Tool checkedTool = (PixmapPainter.Tool) checked.getUserObject();
+				setUiPixmapTool(checkedTool);
+			} else if (actor == fileMenuButton) {
+				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
 				world.stage.addActor(fileMenuWindowContainer);
-			}else if(actor == fileMenuWindowCloseButton){
+			} else if (actor == fileMenuWindowCloseButton) {
 				fileMenuWindowContainer.remove();
+			}else if(actor == scaleUpButton){
+				if(buttonHoldTimer < buttonHoldDelay){
+					setParamScale(getParamScale() + 1f);
+				}
+				buttonHoldTimer=0;
+			}else if(actor == scaleDownButton){
+				if(buttonHoldTimer < buttonHoldDelay){
+					setParamScale(getParamScale() - 1f);
+				}
+				buttonHoldTimer = 0;
+			}else if(actor == magnitudeUpButton){
+				if(buttonHoldTimer < buttonHoldDelay) {
+					setParamMagnitude(getParamMagnitude() + 1f);
+				}
+				buttonHoldTimer = 0;
+			}else if(actor == magnitudeDownButton){
+				if(buttonHoldTimer < buttonHoldDelay) {
+					setParamMagnitude(getParamMagnitude() - 1f);
+				}
+				buttonHoldTimer = 0;
 			}
 
 
 		}
+
+		@Override
+		public boolean acceptChar(TextField textField, char c) {
+			if(textField == scaleTextField)
+				return Character.isDigit(c) || c=='.' || c =='-' || c=='\r' || c=='\n';
+			else if(textField == magnitudeTextField)
+				return Character.isDigit(c) || c=='.' || c =='-' || c=='\r' || c=='\n';
+			return true;
+		}
+
+		@Override
+		public void keyTyped(TextField textField, char c) {
+			if(textField == scaleTextField) {
+				if(c=='\n' || c=='\r'){
+					try{
+						setParamScale(Float.parseFloat(scaleTextField.getText()));
+					}catch(NumberFormatException nfe){
+						setParamScale(100f);
+					}
+					world.stage.setKeyboardFocus(null);
+				}
+			}else if(textField == magnitudeTextField) {
+				if(c=='\n' || c=='\r'){
+					try{
+						setParamMagnitude(Float.parseFloat(magnitudeTextField.getText()));
+					}catch(NumberFormatException nfe){
+						setParamMagnitude(30f);
+					}
+					world.stage.setKeyboardFocus(null);
+				}
+			}
+		}
+	}
+
+	////////////////////////////////////////////////////////////
+	/// Begin methods that edit the terrain or edit files
+	////////////////////////////////////////////////////////////
+
+	public float getParamScale(){
+		return world.terrainView.terrain.parameter.scale;
+	}
+
+	private void setParamScale(float scale){
+		if(scale < 1) scale= 1;
+		Terrain terrain = world.terrainView.terrain;
+		terrain.parameter.scale = scale;
+
+		terrain.init(terrain.parameter);
+		refreshHeightMapWeightMapPainters();
+		refreshUi();
+
+		//setUiParamScale(scale);
+	}
+
+	public float getParamMagnitude(){
+		return world.terrainView.terrain.parameter.magnitude;
+	}
+
+	private void setParamMagnitude(float magnitude){
+		// TODO: input validation
+		Terrain terrain = world.terrainView.terrain;
+		terrain.parameter.magnitude = magnitude;
+
+		terrain.init(terrain.parameter);
+		refreshHeightMapWeightMapPainters();
+		refreshUi();
+
+		//setUiParamMagnitude(magnitude);
+	}
+
+	@Override
+	public void onFileSave(FileHandle fh) {
+		String name = fh.nameWithoutExtension();
+		saveTerrain(name);
+		refreshUi();
+		fileMenuWindowContainer.remove();
+	}
+
+	@Override
+	public void onFileOpen(FileHandle fh) {
+		//String name = fh.nameWithoutExtension();
+		world.terrainView.terrain.loadTerrain(fh);
+		refreshHeightMapWeightMapPainters();
+		refreshUi();
+		fileMenuWindowContainer.remove();
+	}
+
+	@Override
+	public void onFileChanged(WatchEvent<Path> event) {
+		System.out.println("file changed:" + event.context() + ", kind: " + event.kind());
+
+		String fileChanged = String.valueOf(event.context());
+
+		if (fileChanged.endsWith(".ter")) {
+			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
+			//final Terrain terrain = world.terrainView.terrain;
+			//terrain.loadTerrain(terrain.parameter.name);
+		} else if (fileChanged.endsWith(".glsl")) {
+			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
+			final Terrain terrain = world.terrainView.terrain;
+			terrain.getTerrainChunk(0, 0).renderable.shader = null;
+			world.modelShaderProvider.terrainShaderProvider.clearShaderCache();
+		}
+	}
+
+	private void refreshHeightMapWeightMapPainters() {
+		// Be sure to call initUi() / refreshUi() after refreshing the painters..
+		if (editPixmapPainter != null) {
+			editPixmapPainter.dispose();
+			editPixmapPainter = null;
+		}
+		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
+		//editPixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
+		editPixmapPainter = new PixmapPainter(currentTexture);
+		editPixmapPainter.coordProvider = this;
+		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, editPixmapPainter.texture, 1);
 	}
 
 
-
-	private void saveTerrain(String name)
-	{
+	private void saveTerrain(String name) {
 		TerrainLoader.TerrainParameter parameter = world.terrainView.terrain.parameter;
 
-		if(name != null)
+		if (name != null)
 			parameter.name = name;
 
-		if(parameter.name == null || parameter.name.trim().isEmpty()){
-			parameter.name="untitled-terrain";
+		if (parameter.name == null || parameter.name.trim().isEmpty()) {
+			parameter.name = "untitled-terrain";
 			// TODO: make name unique to other terrains if it is not
 		}
 
-		parameter.weightMap1 ="Terrain/" + name+"_weightmap.png";
+		parameter.weightMap1 = "Terrain/" + name + "_weightmap.png";
 
-		FileHandle terrainFile =Gdx.files.local("Terrain/" + name + ".ter");
+		FileHandle terrainFile = Gdx.files.local("Terrain/" + name + ".ter");
 
 		StringWriter stringWriter = new StringWriter();
 		XmlWriter xmlWriter = new XmlWriter(stringWriter);
@@ -671,11 +878,11 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 				.attribute("magnitude", parameter.magnitude)
 				.attribute("chunkWidth", parameter.chunkWidth)
 				.attribute("chunkHeight", parameter.chunkHeight);
-			if(parameter.heightmapName != null && !parameter.heightmapName.trim().isEmpty()){
+			if (parameter.heightmapName != null && !parameter.heightmapName.trim().isEmpty()) {
 				xmlWriter.element("heightData")
 					.attribute("heightmapName", parameter.heightmapName)
 					.pop();
-			}else{
+			} else {
 				xmlWriter.
 					element("heightData")
 					.attribute("seed", parameter.seed)
@@ -684,34 +891,34 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 					.pop();
 			}
 
-			if(parameter.weightMap1 != null){
+			if (parameter.weightMap1 != null) {
 				xmlWriter.element("weightMap1")
 					.attribute("tex", parameter.weightMap1)
 					.pop();
 			}
 
-			if(parameter.tex1 != null){
+			if (parameter.tex1 != null) {
 				xmlWriter.element("tex1")
 					.attribute("tex", parameter.tex1)
 					.attribute("scale", parameter.tex1Scale)
 					.pop();
 			}
 
-			if(parameter.tex2 != null){
+			if (parameter.tex2 != null) {
 				xmlWriter.element("tex2")
 					.attribute("tex", parameter.tex2)
 					.attribute("scale", parameter.tex2Scale)
 					.pop();
 			}
 
-			if(parameter.tex3 != null){
+			if (parameter.tex3 != null) {
 				xmlWriter.element("tex3")
 					.attribute("tex", parameter.tex3)
 					.attribute("scale", parameter.tex3Scale)
 					.pop();
 			}
 
-			if(parameter.tex4 != null){
+			if (parameter.tex4 != null) {
 				xmlWriter.element("tex4")
 					.attribute("tex", parameter.tex4)
 					.attribute("scale", parameter.tex4Scale)
@@ -729,10 +936,10 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		FileHandle weightmap1Fh = Gdx.files.local(parameter.weightMap1);
 
 		//ensure that previews or whatnot havent screwed nothing up and that were saving the last history state..
-		editPixmapPainter.history.recallHistory(editPixmapPainter.history.history.size-1,editPixmapPainter);
+		editPixmapPainter.history.recallHistory(editPixmapPainter.history.history.size - 1, editPixmapPainter);
 		PixmapIO.writePNG(weightmap1Fh, editPixmapPainter.pixmap);
 
-		System.out.println("Saved file: "+terrainFile.name());
+		System.out.println("Saved file: " + terrainFile.name());
 
 	}
 
