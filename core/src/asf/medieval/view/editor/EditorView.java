@@ -9,16 +9,17 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Tree;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 
-import javax.xml.soap.Text;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 
@@ -31,42 +32,58 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	public final MedievalWorld world;
 	private final InternalClickListener internalCl = new InternalClickListener();
 
+	private Container<Table> minTableContainer;
+	private Table minTable;
+	protected Label minTextLabel;
+
+	private Container<Table> baseTableContainer;
 	private Table baseTable;
-	protected Tree baseTree;
+	protected Cell containerCell;
 	private ButtonGroup<TextButton> buttonGroup;
-	private TextButton gameButton,terrainButton, terrainTextureButton;
+	private TextButton gameButton, terrainButton;
+
+	private Container<?> gameToolbar;
 
 	private FileWatcher fileWatcher;
 	public final TerrainEditorView terrainEditorView;
 
 
-
 	public EditorView(MedievalWorld world) {
 		this.world = world;
 
+		minTable = new Table(world.app.skin);
+		minTable.setBackground("default-pane-trans");
+		minTable.row();
+		minTextLabel = new Label("", world.app.skin);
+		minTextLabel.setAlignment(Align.bottomLeft, Align.bottomLeft);
+		minTable.add(minTextLabel);
+
+		minTableContainer = new Container<Table>(minTable);
+		minTableContainer.setFillParent(true);
+		minTableContainer.align(Align.bottomLeft);
+
 
 		baseTable = new Table(world.app.skin);
-		baseTable.setBackground("default-pane");
-		world.stage.addActor(baseTable);
+		baseTable.setBackground("default-pane-trans");
+		//baseTable.align(Align.topLeft);
+		baseTableContainer = new Container<Table>(baseTable);
+		baseTableContainer.setFillParent(true);
+		baseTableContainer.align(Align.left);
+		baseTableContainer.fillY();
+		baseTableContainer.minWidth(250);
+		world.stage.addActor(baseTableContainer);
 
-		baseTree = new Tree(world.app.skin);
+		//baseTable.row();
+		//baseTable.add(createLabel("Mode", world.app.skin)).fill().align(Align.topLeft).colspan(2);
+		baseTable.row().padBottom(Value.percentWidth(0.1f));
+		baseTable.add(gameButton = UtEditor.createTextButtonToggle("Game", world.app.skin, internalCl)).fill();
+		baseTable.add(terrainButton = UtEditor.createTextButtonToggle("Terrain", world.app.skin, internalCl)).fill();
 		baseTable.row();
-		baseTable.add(baseTree).fill().expand().align(Align.topLeft);
+		gameToolbar = new Container<Label>(new Label("label", world.app.skin));
+		containerCell = baseTable.add(gameToolbar).fill().expand().align(Align.topLeft).colspan(2);
 
 
-		Tree.Node fileNode = addLabelNode(baseTree, "File");
-
-		addTextButtonNode(fileNode, "New");
-		addTextButtonNode(fileNode, "Load");
-		addTextButtonNode(fileNode, "Save");
-
-		Tree.Node modeNode = addLabelNode(baseTree, "Mode");
-
-		gameButton = addTextButtonNode(modeNode, "Game");
-		terrainButton = addTextButtonNode(modeNode, "Terrain");
-		terrainTextureButton= addTextButtonNode(modeNode, "Terrain Texture");
-
-		buttonGroup = new ButtonGroup<TextButton>(gameButton, terrainButton, terrainTextureButton);
+		buttonGroup = new ButtonGroup<TextButton>(gameButton, terrainButton);
 		buttonGroup.setMaxCheckCount(1);
 		buttonGroup.setMinCheckCount(1);
 
@@ -82,66 +99,32 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-
+		/*
 		Gdx.app.postRunnable(new Runnable() {
 			@Override
 			public void run() {
-				setModeTerrainTexture();
+				setModeTerrain();
 			}
 		});
+		*/
 
-	}
-
-	protected Tree.Node addLabelNode(Object parent, String labelText) {
-		Label label = new Label(labelText, world.app.skin);
-		Tree.Node childNode = new Tree.Node(label);
-		childNode.setSelectable(false);
-		childNode.setExpanded(true);
-		if (parent instanceof Tree) {
-			((Tree) parent).add(childNode);
-		} else if (parent instanceof Tree.Node) {
-			((Tree.Node) parent).add(childNode);
-		}
-		return childNode;
-	}
-
-	protected TextButton addTextButtonNode(Tree.Node parent, String buttonText) {
-		TextButton textButton = new TextButton(buttonText, world.app.skin,"toggle");
-		textButton.addListener(internalCl);
-		Tree.Node childNode = new Tree.Node(textButton);
-		childNode.setSelectable(false);
-		parent.add(childNode);
-		return textButton;
-	}
-
-	protected Table addTableNode(Tree.Node parent) {
-
-		Table table = new Table(world.app.skin);
-
-		Tree.Node childNode = new Tree.Node(table);
-		childNode.setSelectable(false);
-		parent.add(childNode);
-		return table;
 	}
 
 	public void resize(int width, int height) {
-
-		float tableWidth = 175;
-		baseTable.setBounds(0, 0, tableWidth, height);
 		terrainEditorView.resize(width, height);
-
 	}
 
 	@Override
 	public void update(float delta) {
-		if (terrainEditorView.isEnabled())
-			terrainEditorView.update(delta);
+		terrainEditorView.update(delta);
 	}
 
 	@Override
 	public void render(float delta) {
-		if (terrainEditorView.isEnabled())
-			terrainEditorView.render(delta);
+		if (!isToolbarVisible()) {
+			minTextLabel.setText("");
+		}
+		terrainEditorView.render(delta);
 	}
 
 	@Override
@@ -150,16 +133,37 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		terrainEditorView.dispose();
 	}
 
-	public void setModeGame(){
+	public void setModeGame() {
 		gameButton.setChecked(true);
 		terrainEditorView.setEnabled(false);
+
+		containerCell.setActor(gameToolbar);
+
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 
-	public void setModeTerrainTexture(){
-		terrainTextureButton.setChecked(true);
+	public void setModeTerrain() {
+		terrainButton.setChecked(true);
 		terrainEditorView.setEnabled(true);
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+	}
+
+	public void setToolbarVisible(boolean visible) {
+		if (visible) {
+			world.stage.addActor(baseTableContainer);
+			minTableContainer.remove();
+		} else {
+			baseTableContainer.remove();
+			world.stage.addActor(minTableContainer);
+		}
+	}
+
+	public boolean isToolbarVisible() {
+		return baseTableContainer.getParent() != null;
+	}
+
+	public void toggleToolbarVisible() {
+		setToolbarVisible(!isToolbarVisible());
 	}
 
 	@Override
@@ -170,13 +174,8 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	@Override
 	public boolean keyUp(int keycode) {
 		switch (keycode) {
-			case Input.Keys.F5:
-				// Game Mode
-				terrainEditorView.setEnabled(false);
-				return true;
-			case Input.Keys.F6:
-				// Terrain Edit Mode
-				terrainEditorView.setEnabled(true);
+			case Input.Keys.T:
+				toggleToolbarVisible();
 				return true;
 		}
 		return false;
@@ -222,24 +221,21 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 			Actor actor = event.getListenerActor();
 
 			TextButton checked = buttonGroup.getChecked();
-			if(checked == gameButton){
+			if (checked == gameButton) {
 				setModeGame();
-			}else if(checked == terrainButton){
-
-			}else if(checked == terrainTextureButton){
-				setModeTerrainTexture();
+			} else if (checked == terrainButton) {
+				setModeTerrain();
 			}
 		}
 	}
 
-	private class InternalChangeListener extends ChangeListener{
+	private class InternalChangeListener extends ChangeListener {
 
 		@Override
 		public void changed(ChangeEvent event, Actor actor) {
 
 		}
 	}
-
 
 
 }

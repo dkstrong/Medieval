@@ -115,8 +115,8 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		return brushColor;
 	}
 
-	public void setBrushColor(float r, float g, float b, float a) {
-		brushColor.set(r, g, b, a);
+	public void setBrushColor(Color c) {
+		brushColor.set(c);
 	}
 
 	public float getBrushOpacity() {
@@ -256,29 +256,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	@Override
 	public boolean keyUp(int keycode) {
 		switch (keycode) {
-			case Input.Keys.LEFT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					brush.setRadius(brush.getRadius() - 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-					setBrushOpacity(brushOpacity - 0.1f);
-				}
-				return true;
-			case Input.Keys.RIGHT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					brush.setRadius(brush.getRadius() + 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-					setBrushOpacity(brushOpacity + 0.1f);
-				}
-				return true;
-			case Input.Keys.B:
-				tool = Tool.Brush;
-				return true;
-			case Input.Keys.E:
-				tool = Tool.Eraser;
-				return true;
-			case Input.Keys.F:
-				tool = Tool.Fill;
-				return true;
+
 			case Input.Keys.Z:
 				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
 					if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
@@ -391,13 +369,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 	@Override
 	public boolean scrolled(int amount) {
-		if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-			brush.setRadius(brush.getRadius() - amount);
-			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-			setBrushOpacity(brushOpacity - amount * 0.05f);
-			return true;
-		}
+
 		return false;
 	}
 
