@@ -53,13 +53,18 @@
   }
 },
   com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
-  default: 	{imageUp: exit, up: default-round, down: default-round-down},
-  avatar: 	{imageUp: male, down: default-rect},
+  default: 	    {up: default-round, down: default-round-down},
+  toggle: 	    {up: default-round, down: default-round-down, checked: default-round-down},
+  avatar: 	    {imageUp: male, down: default-rect},
   menu: 		{imageUp: menu, down: default-rect},
   help: 		{imageUp: help, down: default-rect},
   exit: 		{imageUp: exit, down: default-rect},
   back: 		{imageUp: back, down: default-rect},
-  sound: 		{imageUp: Volume, imageChecked: VolumeMuted, down: default-rect}
+  sound: 		{imageUp: Volume, imageChecked: VolumeMuted, down: default-rect},
+  bucketfill: 	{imageUp: bucketfill, up: default-round, down: default-round-down, checked: default-round-down},
+  eraser: 		{imageUp: eraser, up: default-round, down: default-round-down, checked: default-round-down},
+  paintbrush:	{imageUp: paintbrush, up: default-round, down: default-round-down, checked: default-round-down},
+  spraypaint:	{imageUp: spraypaint, up: default-round, down: default-round-down, checked: default-round-down},
 },
   com.badlogic.gdx.scenes.scene2d.ui.SplitPane$SplitPaneStyle: {
   default-vertical: {handle: default-splitpane-vertical},

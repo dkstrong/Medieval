@@ -34,21 +34,35 @@ back
   index: -1
 black
   rotate: false
-  xy: 29, 44
+  xy: 106, 59
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
+bucketfill
+  rotate: false
+  xy: 1, 10
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+bucketfill2
+  rotate: false
+  xy: 453, 479
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 check-off
   rotate: false
-  xy: 29, 46
+  xy: 52, 13
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 textfield
   rotate: false
-  xy: 29, 46
+  xy: 52, 13
   size: 14, 14
   split: 3, 3, 3, 3
   orig: 14, 14
@@ -56,14 +70,14 @@ textfield
   index: -1
 check-on
   rotate: false
-  xy: 131, 90
+  xy: 182, 78
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 cursor
   rotate: false
-  xy: 401, 443
+  xy: 481, 475
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -78,7 +92,7 @@ default
   index: -1
 default-pane
   rotate: false
-  xy: 323, 357
+  xy: 323, 327
   size: 5, 3
   split: 1, 1, 1, 1
   orig: 5, 3
@@ -86,7 +100,7 @@ default-pane
   index: -1
 default-rect-pad
   rotate: false
-  xy: 323, 357
+  xy: 323, 327
   size: 5, 3
   split: 1, 1, 1, 1
   orig: 5, 3
@@ -94,15 +108,23 @@ default-rect-pad
   index: -1
 default-pane-noborder
   rotate: false
-  xy: 44, 59
+  xy: 309, 294
   size: 1, 1
   split: 0, 0, 0, 0
   orig: 1, 1
   offset: 0, 0
   index: -1
+default-pane-trans
+  rotate: false
+  xy: 131, 71
+  size: 5, 3
+  split: 1, 1, 1, 1
+  orig: 5, 3
+  offset: 0, 0
+  index: -1
 default-rect
   rotate: false
-  xy: 466, 508
+  xy: 507, 508
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -110,7 +132,7 @@ default-rect
   index: -1
 default-rect-down
   rotate: false
-  xy: 453, 487
+  xy: 486, 487
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -118,7 +140,7 @@ default-rect-down
   index: -1
 default-round
   rotate: false
-  xy: 453, 491
+  xy: 374, 361
   size: 12, 20
   split: 5, 5, 5, 4
   pad: 4, 4, 1, 1
@@ -127,15 +149,16 @@ default-round
   index: -1
 default-round-down
   rotate: false
-  xy: 388, 426
+  xy: 309, 296
   size: 12, 20
   split: 5, 5, 5, 4
+  pad: 4, 4, 1, 1
   orig: 12, 20
   offset: 0, 0
   index: -1
 default-round-large
   rotate: false
-  xy: 258, 296
+  xy: 486, 491
   size: 20, 20
   split: 5, 5, 5, 4
   orig: 20, 20
@@ -143,7 +166,7 @@ default-round-large
   index: -1
 default-scroll
   rotate: false
-  xy: 323, 361
+  xy: 85, 40
   size: 20, 20
   split: 2, 2, 2, 2
   orig: 20, 20
@@ -151,7 +174,7 @@ default-scroll
   index: -1
 default-select
   rotate: false
-  xy: 131, 105
+  xy: 453, 458
   size: 27, 20
   split: 4, 14, 4, 4
   orig: 27, 20
@@ -159,7 +182,7 @@ default-select
   index: -1
 default-select-selection
   rotate: false
-  xy: 14, 27
+  xy: 85, 36
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -175,14 +198,14 @@ default-slider
   index: -1
 default-slider-knob
   rotate: false
-  xy: 279, 298
+  xy: 286, 247
   size: 9, 18
   orig: 9, 18
   offset: 0, 0
   index: -1
 default-splitpane
   rotate: false
-  xy: 388, 422
+  xy: 453, 454
   size: 5, 3
   split: 0, 5, 0, 0
   orig: 5, 3
@@ -190,7 +213,7 @@ default-splitpane
   index: -1
 default-splitpane-vertical
   rotate: false
-  xy: 344, 376
+  xy: 388, 390
   size: 3, 5
   split: 0, 0, 0, 5
   orig: 3, 5
@@ -198,10 +221,24 @@ default-splitpane-vertical
   index: -1
 default-window
   rotate: false
-  xy: 1, 31
+  xy: 258, 236
   size: 27, 29
   split: 4, 3, 20, 3
   orig: 27, 29
+  offset: 0, 0
+  index: -1
+eraser
+  rotate: false
+  xy: 131, 75
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+eraser2
+  rotate: false
+  xy: 52, 28
+  size: 32, 32
+  orig: 32, 32
   offset: 0, 0
   index: -1
 exit
@@ -239,37 +276,65 @@ paint_brush
   orig: 64, 64
   offset: 0, 0
   index: -1
+paintbrush
+  rotate: false
+  xy: 258, 266
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+paintbrush2
+  rotate: false
+  xy: 182, 93
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 selection
   rotate: false
-  xy: 131, 88
+  xy: 374, 359
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
+spraypaint
+  rotate: false
+  xy: 323, 331
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+spraypaint2
+  rotate: false
+  xy: 388, 396
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
 tree-minus
   rotate: false
-  xy: 159, 111
+  xy: 215, 111
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 tree-plus
   rotate: false
-  xy: 258, 281
+  xy: 258, 221
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 white
   rotate: false
-  xy: 146, 103
+  xy: 439, 424
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 yellow-round-down
   rotate: false
-  xy: 1, 10
+  xy: 439, 426
   size: 12, 20
   split: 5, 5, 5, 4
   orig: 12, 20
