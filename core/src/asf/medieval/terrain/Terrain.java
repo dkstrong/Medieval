@@ -72,7 +72,23 @@ public class Terrain implements RenderableProvider, Disposable {
 		this.parameter = null;
 	}
 
+	//public void init(TerrainLoader.TerrainParameter param) {
+	//init(param, true);
+	//}
 	public void init(TerrainLoader.TerrainParameter param) {
+
+		material = null;
+		while(disposables.size >0){
+			disposables.removeIndex(0).dispose();
+		}
+
+		createTerrain(param);
+
+
+		//saveTerrain("test");
+	}
+
+	public void createTerrain(TerrainLoader.TerrainParameter param){
 		// clear out/dispose any data from the previous init() call
 		if(chunkGrid!=null){
 			for (Array<TerrainChunk> terrainChunks : chunkGrid) {
@@ -81,10 +97,6 @@ public class Terrain implements RenderableProvider, Disposable {
 				}
 			}
 			chunkGrid= null;
-		}
-		material = null;
-		while(disposables.size >0){
-			disposables.removeIndex(0).dispose();
 		}
 
 		// start initializng the new terrain
@@ -100,9 +112,8 @@ public class Terrain implements RenderableProvider, Disposable {
 		} else {
 			generateFieldData(param.seed, param.fieldWidth, param.fieldWidth);
 		}
-		createRenderables();
 
-		//saveTerrain("test");
+		createRenderables();
 	}
 
 	private void generateFieldData(final long seed, final int fieldWidth, final int fieldHeight) {

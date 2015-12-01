@@ -174,6 +174,16 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	@Override
 	public boolean keyUp(int keycode) {
 		switch (keycode) {
+			case Input.Keys.TAB:
+				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
+					if(terrainEditorView.isEnabled()){
+						setModeGame();
+					}else{
+						setModeTerrain();
+					}
+					return true;
+				}
+				return false;
 			case Input.Keys.T:
 				toggleToolbarVisible();
 				return true;
