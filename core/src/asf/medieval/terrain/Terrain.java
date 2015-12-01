@@ -83,15 +83,13 @@ public class Terrain implements RenderableProvider, Disposable {
 			disposables.removeIndex(0).dispose();
 		}
 
-		createTerrain(param, null);
+		createTerrain(param);
 
 
 		//saveTerrain("test");
 	}
 
-	// TODO:i dont like forcing in the heightmap override here.
-	// TODO: perhaps come up with a cleaner way for editor integration
-	public void createTerrain(TerrainLoader.TerrainParameter param, Pixmap heightmapPixmap){
+	public void createTerrain(TerrainLoader.TerrainParameter param){
 		// clear out/dispose any data from the previous init() call
 		if(chunkGrid!=null){
 			for (Array<TerrainChunk> terrainChunks : chunkGrid) {
@@ -110,17 +108,34 @@ public class Terrain implements RenderableProvider, Disposable {
 		chunkDataMaxWidth = param.chunkWidth;
 		chunkDataMaxHeight = param.chunkHeight;
 
-		if(heightmapPixmap!=null){
-			//System.out.println("creating heightfield from memory");
-			loadFieldData(heightmapPixmap);
+		if(param.fieldData!=null){
+			UtLog.info("creating heightfield from memory");
+			insertFieldData();
 		}else if (param.heightmapName != null) {
-			///System.out.println("creating heightfield from "+param.heightmapName);
+			UtLog.info("creating heightfield from "+param.heightmapName);
 			loadFieldData(param.heightmapName);
 		} else {
+			UtLog.info("creating heightfield from seed "+param.seed);
 			generateFieldData(param.seed, param.fieldWidth, param.fieldHeight);
 		}
 
 		createRenderables();
+	}
+
+	private void insertFieldData(){
+		this.fieldWidth = parameter.fieldWidth;
+		this.fieldHeight = parameter.fieldHeight;
+		this.fieldData = parameter.fieldData;
+		createHeightField();
+	}
+
+	private void loadFieldData(final String heightmapName) {
+		Pixmap heightPix = new Pixmap(resolve(heightmapName));
+		this.fieldWidth = heightPix.getWidth();
+		this.fieldHeight = heightPix.getHeight();
+		fieldData = TerrainChunk.heightColorsToMap(heightPix.getPixels(), heightPix.getFormat(), fieldWidth, fieldHeight);
+		createHeightField();
+		heightPix.dispose();
 	}
 
 	private void generateFieldData(final long seed, final int fieldWidth, final int fieldHeight) {
@@ -144,20 +159,7 @@ public class Terrain implements RenderableProvider, Disposable {
 		createHeightField();
 	}
 
-	private void loadFieldData(final String heightmapName) {
-		Pixmap heightPix = new Pixmap(resolve(heightmapName));
-		loadFieldData(heightPix);
-		heightPix.dispose();
-	}
 
-	private void loadFieldData(final Pixmap heightPix){
-		final int fieldWidth = heightPix.getWidth();
-		final int fieldHeight = heightPix.getHeight();
-		fieldData = TerrainChunk.heightColorsToMap(heightPix.getPixels(), heightPix.getFormat(), fieldWidth, fieldHeight);
-		this.fieldWidth = fieldWidth;
-		this.fieldHeight = fieldHeight;
-		createHeightField();
-	}
 
 	private void createHeightField() {
 		float heightRatio = fieldHeight / (float) fieldWidth;
@@ -221,7 +223,7 @@ public class Terrain implements RenderableProvider, Disposable {
 		if (material != null)
 			return material;
 
-		System.out.println("create new terrain tex");
+		UtLog.info("create new terrain material");
 
 		TerrainLoader.TerrainParameter param = this.parameter;
 

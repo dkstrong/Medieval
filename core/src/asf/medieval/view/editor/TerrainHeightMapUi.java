@@ -2,7 +2,6 @@ package asf.medieval.view.editor;
 
 import asf.medieval.painter.PixmapPainter;
 import asf.medieval.terrain.Terrain;
-import asf.medieval.terrain.TerrainTextureAttribute;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
@@ -11,9 +10,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -24,7 +20,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
 /**
@@ -432,7 +427,7 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		Terrain terrain = world.terrainView.terrain;
 		terrain.parameter.scale = scale;
 
-		terrain.createTerrain(terrain.parameter,hm_pixmapPainter.pixmap);
+		terrain.createTerrain(terrain.parameter);
 		terrainEditorView.refreshHeightMapWeightMapPainters();
 		refreshHeightMapUi();
 
@@ -448,22 +443,22 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		Terrain terrain = world.terrainView.terrain;
 		terrain.parameter.magnitude = magnitude;
 
-		terrain.createTerrain(terrain.parameter,hm_pixmapPainter.pixmap);
+		terrain.createTerrain(terrain.parameter);
 		terrainEditorView.refreshHeightMapWeightMapPainters();
 		refreshHeightMapUi();
 
 		//setUiParamMagnitude(magnitude);
 	}
 
-	private TerrainPainterModel terrainPainterModel;
+	private TerrainPainterDelegate terrainPainterDelegate;
 
 	public void refreshHeightMapPainter(){
 
 		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
 
 		if (hm_pixmapPainter != null) {
-			if(world.terrainView.terrain.fieldData == terrainPainterModel.fieldData){
-				// texture hasnt changed, exit out early.
+			if(world.terrainView.terrain.fieldData == terrainPainterDelegate.fieldData){
+				// texture hasnt changed externally, exit out early.
 				return;
 			}
 			hm_pixmapPainter.dispose();
@@ -471,7 +466,7 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		}
 
 		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
-		hm_pixmapPainter = new PixmapPainter(terrainPainterModel=new TerrainPainterModel(this));
+		hm_pixmapPainter = new PixmapPainter(terrainPainterDelegate =new TerrainPainterDelegate(this));
 		hm_pixmapPainter.setBrushColor(new Color(1,1,1,1));
 		hm_pixmapPainter.setBrushOpacity(0.1f);
 		hm_pixmapPainter.coordProvider = terrainEditorView;
@@ -482,9 +477,7 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 	}
 
 	public void savePainterToFile(FileHandle fh){
-		//ensure that previews or whatnot havent screwed nothing up and that were saving the last history state..
-		hm_pixmapPainter.history.recallHistory(hm_pixmapPainter.history.history.size - 1, hm_pixmapPainter);
-		PixmapIO.writePNG(fh, hm_pixmapPainter.pixmap);
+		hm_pixmapPainter.output(fh);
 	}
 
 }

@@ -54,11 +54,11 @@ public class TerrainLoader extends AsynchronousAssetLoader<Terrain, TerrainLoade
 
 		public String name;
 		public String displayName;
-		public String heightmapName;        // heightmap texture to load height data from (currently supports RGB888, RGBA8888, and Alpha formats)
-		// setting this value is what tells the terrain to load from a texture instead of generate from seed
 
-		public long seed; // seed to use to generate height data (if heightmapName != null then this does nothing)
-		public int fieldWidth = 128; // how wide the field data array is, only used if generating terrain.
+		public float[] fieldData;     // fielddata directly supplied (overides heigtmapName and seed)
+		public String heightmapName;  // fielddata will be set by a heightmap texture (currently supports RGB888, RGBA8888, and Alpha formats) (overides seed)
+		public long seed; 	      // fielddata generate by simplex noise using this seed  (used only if fielddata and heightmapName is null)
+		public int fieldWidth = 128;  // how wide the field data array is, only used if generating terrain.
 		public int fieldHeight = 128; // how tall the field data array is, only used if generating terrain.
 
 		public float scale = 200; // the terrains "extent" (half the width) in world units

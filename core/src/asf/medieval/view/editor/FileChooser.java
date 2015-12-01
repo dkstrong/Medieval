@@ -105,7 +105,7 @@ public class FileChooser extends Table {
 		final FileHandle[] listDir = directory.list(directoryFilter);
 		Array<ListItem> items = new Array<ListItem>(true, listDir.length, ListItem.class);
 		for (final FileHandle handle : listDir) {
-			ListItem listItem = new ListItem(handle, getSkin());
+			ListItem listItem = new ListItem(handle, false, getSkin());
 			items.add(listItem);
 			if (listItem.fileName.equals(selected)) {
 				listItemSelected = listItem;
@@ -139,10 +139,12 @@ public class FileChooser extends Table {
 	private static class ListItem {
 		private FileHandle fileHandle;
 		private String fileName;
+		private boolean internal;
 
-		public ListItem(FileHandle fileHandle, Skin skin) {
+		public ListItem(FileHandle fileHandle, boolean internal, Skin skin) {
 			this.fileHandle = fileHandle;
 			this.fileName = fileHandle.name();
+			this.internal = internal;
 
 //			if(fileName.endsWith(".ter")){
 //				Image image = new Image(skin.getDrawable("terrain"));

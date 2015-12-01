@@ -1,7 +1,7 @@
 package asf.medieval.view.editor;
 
 import asf.medieval.painter.PixmapPainter;
-import asf.medieval.painter.PixmapPainterModel;
+import asf.medieval.painter.PixmapPainterDelegate;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
 import asf.medieval.utility.UtMath;
@@ -479,7 +479,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		}
 	}
 
-	private PixmapPainterModel painterModel;
+	private PixmapPainterDelegate painterModel;
 
 	public void refreshWeightMapPainter(){
 		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
@@ -495,7 +495,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		}
 
 		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
-		painterModel = new PixmapPainterModel(currentTexture);
+		painterModel = new PixmapPainterDelegate(currentTexture);
 		wm_pixmapPainter = new PixmapPainter(painterModel);
 		wm_pixmapPainter.coordProvider = terrainEditorView;
 		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
@@ -504,9 +504,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	}
 
 	public void savePainterToFile(FileHandle fh){
-		//ensure that previews or whatnot havent screwed nothing up and that were saving the last history state..
-		wm_pixmapPainter.history.recallHistory(wm_pixmapPainter.history.history.size - 1, wm_pixmapPainter);
-		PixmapIO.writePNG(fh, wm_pixmapPainter.pixmap);
+		wm_pixmapPainter.output(fh);
 	}
 
 }

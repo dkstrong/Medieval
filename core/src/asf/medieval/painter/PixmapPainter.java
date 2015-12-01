@@ -5,17 +5,13 @@ import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.PixmapTextureData;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-
-import javax.swing.*;
-import java.util.Arrays;
 
 /**
  * Created by daniel on 11/26/15.
@@ -34,9 +30,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 	public PixmapCoordProvider coordProvider;
 
-	public Pixmap pixmap;
-	public PainterModel painterModel;
-	//public Texture texture;
+	public PainterDelegate painterDelegate;
 	public final History history=new History();
 	private boolean previewPainting = false;
 
@@ -53,11 +47,11 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	private boolean[][] drawedPixels;
 	private final Array<Point> affectedPixels = new Array<Point>(false, 64, Point.class);
 
-	public PixmapPainter(PainterModel painterModel) {
-		this.painterModel = painterModel;
-		painterModel.setPainter(this);
-		history.resetHistory(pixmap);
-		drawedPixels = new boolean[painterModel.getWidth()][painterModel.getHeight()];
+	public PixmapPainter(PainterDelegate painterDelegate) {
+		this.painterDelegate = painterDelegate;
+		painterDelegate.setPainter(this);
+		history.resetHistory(painterDelegate);
+		drawedPixels = new boolean[painterDelegate.getWidth()][painterDelegate.getHeight()];
 	}
 
 	public Tool getTool() {
@@ -116,15 +110,15 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		}
 
 		drawTool(x2, y2);
-		painterModel.output();
+		painterDelegate.output();
 
 	}
 
 	private void drawTool(int x, int y) {
 		switch (tool) {
 			case Fill:
-				for(int fx=0; fx<pixmap.getWidth(); fx++){
-					for(int fy=0; fy<pixmap.getHeight(); fy++){
+				for(int fx=0; fx<painterDelegate.getWidth(); fx++){
+					for(int fy=0; fy<painterDelegate.getHeight(); fy++){
 						drawPoint(fx,fy,brushOpacity);
 					}
 				}
@@ -143,46 +137,20 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	}
 
 	private void drawPoint(int x, int y, float opacity) {
-		if(x < 0 || x >= pixmap.getWidth() || y < 0 || y>= pixmap.getHeight())
+		if(x < 0 || x >= painterDelegate.getWidth() || y < 0 || y>= painterDelegate.getHeight())
 			return;
 		if (!hasDrawnPixel(x, y)) {
-			Color c;
-			if (opacity < 1f) {
-				c = new Color();
-				Color.rgba8888ToColor(c, pixmap.getPixel(x, y));
-
-				c.r = opacity * brushColor.r + (1 - opacity) * c.r;
-				c.g = opacity * brushColor.g + (1 - opacity) * c.g;
-				c.b = opacity * brushColor.b + (1 - opacity) * c.b;
-				c.a = opacity * brushColor.a + (1 - opacity) * c.a;
-				//UtDebugPrint.print(c);
-			} else {
-				c = brushColor;
-			}
-
-			int colorCode = Color.rgba8888(c);
-			pixmap.drawPixel(x, y, colorCode);
+			int colorCode = painterDelegate.drawPoint(brushColor,x,y,opacity);
 			drawedPixels[x][y] = true;
 			affectedPixels.add(new Point(x,y,colorCode));
 		}
 	}
 
 	private void erasePoint(int x, int y, float opacity) {
-		if(x < 0 || x >= pixmap.getWidth() || y < 0 || y>= pixmap.getHeight())
+		if(x < 0 || x >= painterDelegate.getWidth() || y < 0 || y>= painterDelegate.getHeight())
 			return;
 		if (!hasDrawnPixel(x, y)) {
-			Color c;
-			c = new Color();
-			Color.rgba8888ToColor(c, pixmap.getPixel(x, y));
-
-			c.r = UtMath.largest((1 - opacity) * c.r - opacity * brushColor.r, 0f);
-			c.g = UtMath.largest((1 - opacity) * c.g - opacity * brushColor.g, 0f);
-			c.b = UtMath.largest((1 - opacity) * c.b - opacity * brushColor.b, 0f);
-			c.a = UtMath.largest((1 - opacity) * c.a - opacity * brushColor.a, 0f);
-
-			int colorCode = Color.rgba8888(c);
-
-			pixmap.drawPixel(x, y, colorCode);
+			int colorCode = painterDelegate.erasePoint(brushColor, x, y, opacity);
 			drawedPixels[x][y] = true;
 			affectedPixels.add(new Point(x,y,colorCode));
 		}
@@ -200,12 +168,15 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		return drawedPixels[x][y];
 	}
 
-	@Override
-	public void dispose() {
-		painterModel.dispose();
+	public void output(FileHandle fh){
+		history.recallHistory(painterDelegate, history.history.size - 1); // ensure preview is not going to show up int he file..
+		painterDelegate.output(fh);
 	}
 
-
+	@Override
+	public void dispose() {
+		painterDelegate.dispose();
+	}
 
 	@Override
 	public boolean keyDown(int keycode) {
@@ -219,9 +190,9 @@ public class PixmapPainter implements InputProcessor, Disposable {
 			case Input.Keys.Z:
 				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
 					if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-						history.recallHistory(history.currentHistory + 1, this);
+						history.recallHistory(painterDelegate, history.currentHistory + 1);
 					}else{
-						history.recallHistory(history.currentHistory - 1, this);
+						history.recallHistory(painterDelegate, history.currentHistory - 1);
 					}
 					return true;
 				}
@@ -252,7 +223,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		if(button == Input.Buttons.LEFT){
 			if(leftDown){
 				//history.addHistory(pixmap);
-				history.addHistory(affectedPixels);
+				history.addHistory(painterDelegate,affectedPixels);
 				affectedPixels.clear();
 				leftDown = false;
 				lastX = -1;
@@ -277,14 +248,14 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	private void touchPaint(int screenX, int screenY)
 	{
 		if(previewDrawMode){
-			history.undoPreview(affectedPixels, this);
+			history.undoPreview(painterDelegate, affectedPixels);
 			affectedPixels.clear();
 			previewDrawMode=false;
 		}
 		if(coordProvider == null){
 			throw new IllegalStateException("coord provider is null");
 		}
-		coordProvider.getPixmapCoord(screenX, screenY, pixmap.getWidth(), pixmap.getHeight(),tempStore);
+		coordProvider.getPixmapCoord(screenX, screenY, painterDelegate.getWidth(), painterDelegate.getHeight(),tempStore);
 		int texX = Math.round(tempStore.x);
 		int texY = Math.round(tempStore.y);
 		draw(lastX, lastY, texX, texY);
@@ -296,10 +267,10 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	public void updateInput(float delta){
 		if(!leftDown && previewPainting && coordProvider != null){
 			previewDrawMode = true;
-			history.undoPreview(affectedPixels, this);
+			history.undoPreview(painterDelegate, affectedPixels);
 			affectedPixels.clear();
 
-			coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), pixmap.getWidth(), pixmap.getHeight(),tempStore);
+			coordProvider.getPixmapCoord(Gdx.input.getX(), Gdx.input.getY(), painterDelegate.getWidth(), painterDelegate.getHeight(),tempStore);
 			int texX = Math.round(tempStore.x);
 			int texY = Math.round(tempStore.y);
 			draw(-1,-1,texX, texY);
@@ -314,7 +285,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		this.previewPainting = previewPainting;
 
 		if(!previewPainting && previewDrawMode){
-			history.undoPreview(affectedPixels, this);
+			history.undoPreview(painterDelegate, affectedPixels);
 			affectedPixels.clear();
 			previewDrawMode=false;
 		}

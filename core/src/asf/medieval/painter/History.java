@@ -21,19 +21,19 @@ public class History implements Disposable{
 		}
 	}
 
-	public void resetHistory(Pixmap pixmap)
+	public void resetHistory(PainterDelegate painterDelegate)
 	{
 		while (history.size > 0) {
 			history.removeIndex(0).dispose();
 		}
 
-		history.add(new HistoryState(pixmap));
+		history.add(painterDelegate.createHistory());
 
 		currentHistory=history.size - 1;
 
 	}
 
-	public void addHistory(Pixmap pixmap) {
+	public void addHistory(PainterDelegate painterDelegate) {
 
 		// if the insertion point is in the past
 		// then we delete history that happens in the future
@@ -43,7 +43,7 @@ public class History implements Disposable{
 		}
 
 		// add new state to the history stack
-		history.add(new HistoryState(pixmap));
+		history.add(painterDelegate.createHistory());
 
 		// delete history too old to store to save memory
 		if (history.size > maxHistory) {
@@ -56,7 +56,7 @@ public class History implements Disposable{
 
 	}
 
-	public void addHistory(Array<Point> affectedPixels) {
+	public void addHistory(PainterDelegate painterDelegate, Array<Point> affectedPixels) {
 
 		// if the insertion point is in the past
 		// then we delete history that happens in the future
@@ -66,7 +66,7 @@ public class History implements Disposable{
 		}
 
 		// add new state to the history stack
-		history.add(new HistoryState(history.get(currentHistory), affectedPixels));
+		history.add(painterDelegate.createHistory(history.get(currentHistory), affectedPixels));
 
 		// delete history too old to store to save memory
 		if (history.size > maxHistory) {
@@ -79,7 +79,7 @@ public class History implements Disposable{
 
 	}
 
-	public void recallHistory(int index, PixmapPainter store)
+	public void recallHistory(PainterDelegate painterDelegate, int index)
 	{
 		if(history.size <=0){
 			System.out.println("history is empty");
@@ -95,31 +95,19 @@ public class History implements Disposable{
 		currentHistory = index;
 		HistoryState h = history.get(currentHistory);
 
-		if (Pixmap.getBlending() != Pixmap.Blending.None) {
-			Pixmap.setBlending(Pixmap.Blending.None);
-		}
-
-		for(int x=0; x<h.pixelData.length; x++){
-			for(int y=0; y<h.pixelData[0].length; y++){
-				store.pixmap.drawPixel(x, y, h.pixelData[x][y]);
-			}
-		}
-		store.painterModel.output();
+		painterDelegate.recall(h);
+		painterDelegate.output();
 	}
 
-	public void undoPreview(Array<Point> affectedPixels, PixmapPainter store)
+	public void undoPreview(PainterDelegate painterDelegate, Array<Point> affectedPixels)
 	{
+		if(affectedPixels.size <=0)  // Nothing has changed, nothing to undo
+			return;
+
 		HistoryState h = history.get(currentHistory);
 
-		if (Pixmap.getBlending() != Pixmap.Blending.None) {
-			Pixmap.setBlending(Pixmap.Blending.None);
-		}
-
-		for (Point affectedPixel : affectedPixels) {
-			store.pixmap.drawPixel(affectedPixel.x, affectedPixel.y, h.pixelData[affectedPixel.x][affectedPixel.y]);
-		}
-
-		store.painterModel.output();
+		painterDelegate.recall(h,affectedPixels);
+		painterDelegate.output();
 
 	}
 }

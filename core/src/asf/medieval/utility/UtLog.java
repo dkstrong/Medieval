@@ -80,7 +80,7 @@ public enum UtLog {
 		String shortClassName = splitClassName[splitClassName.length - 1];
 		String timeFormatted = formatter.format(date);
 
-		System.out.printf("%-5s %-5s: %s [%s] %s\n", timeFormatted,shortClassName+"."+methodName, logText,threadName,logType);
+		System.out.printf("%-5s %-5s: %s [%s] [%s]\n", timeFormatted,shortClassName+"."+methodName, logText,threadName,logType);
 
 
 		if (logException != null) {

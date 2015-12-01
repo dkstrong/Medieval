@@ -10,8 +10,6 @@ import com.badlogic.gdx.utils.Disposable;
 public class HistoryState implements Disposable {
 	public int[][] pixelData;
 
-
-
 	public HistoryState(Pixmap pixmap) {
 		pixelData = new int[pixmap.getWidth()][pixmap.getHeight()];
 		for(int x=0; x<pixelData.length; x++){
