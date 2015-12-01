@@ -100,12 +100,12 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 
-		Gdx.app.postRunnable(new Runnable() {
-			@Override
-			public void run() {
-				setModeTerrain();
-			}
-		});
+//		Gdx.app.postRunnable(new Runnable() {
+//			@Override
+//			public void run() {
+//				setModeTerrain();
+//			}
+//		});
 
 
 	}

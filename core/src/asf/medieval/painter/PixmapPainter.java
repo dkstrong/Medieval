@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
+import javax.swing.*;
 import java.util.Arrays;
 
 /**
@@ -34,7 +35,8 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	public PixmapCoordProvider coordProvider;
 
 	public Pixmap pixmap;
-	public Texture texture;
+	public PainterModel painterModel;
+	//public Texture texture;
 	public final History history=new History();
 	private boolean previewPainting = false;
 
@@ -51,53 +53,12 @@ public class PixmapPainter implements InputProcessor, Disposable {
 	private boolean[][] drawedPixels;
 	private final Array<Point> affectedPixels = new Array<Point>(false, 64, Point.class);
 
-	public PixmapPainter(int width, int height, Pixmap.Format format) {
-		pixmap = new Pixmap(width, height, format);
-		texture = new Texture(new PixmapTextureData(pixmap, pixmap.getFormat(), false, false));
+	public PixmapPainter(PainterModel painterModel) {
+		this.painterModel = painterModel;
+		painterModel.setPainter(this);
 		history.resetHistory(pixmap);
-		drawedPixels = new boolean[width][height];
+		drawedPixels = new boolean[painterModel.getWidth()][painterModel.getHeight()];
 	}
-
-	public PixmapPainter(Texture srcTexture) {
-		this(srcTexture.getWidth(), srcTexture.getHeight(), srcTexture);
-	}
-
-	public PixmapPainter(int width, int height, Texture srcTexture) {
-		srcTexture.getTextureData().prepare();
-		Pixmap srcPixmap = srcTexture.getTextureData().consumePixmap();
-		if (srcPixmap.getFormat() != Pixmap.Format.RGBA8888) {
-			UtLog.warning("pixmap was not rgba8888, weightmaps should be rgba8888");
-		}
-
-		pixmap = new Pixmap(width, height, srcPixmap.getFormat());
-		if (Pixmap.getBlending() != Pixmap.Blending.None) {
-			Pixmap.setBlending(Pixmap.Blending.None);
-		}
-		if (width == srcPixmap.getWidth() && height == srcPixmap.getHeight()) {
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
-					pixmap.drawPixel(x, y, srcPixmap.getPixel(x, y));
-				}
-			}
-		} else {
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
-					pixmap.drawPixel(x, y, UtPixmap.getColorStretchLinear(srcPixmap, pixmap, x, y));
-				}
-			}
-		}
-
-		srcPixmap.dispose();
-
-		texture = new Texture(new PixmapTextureData(pixmap, pixmap.getFormat(), false, false));
-
-		history.resetHistory(pixmap);
-		drawedPixels = new boolean[pixmap.getWidth()][pixmap.getHeight()];
-
-	}
-
-
-
 
 	public Tool getTool() {
 		return tool;
@@ -155,7 +116,8 @@ public class PixmapPainter implements InputProcessor, Disposable {
 		}
 
 		drawTool(x2, y2);
-		texture.draw(pixmap, 0, 0);
+		painterModel.output();
+
 	}
 
 	private void drawTool(int x, int y) {
@@ -240,8 +202,7 @@ public class PixmapPainter implements InputProcessor, Disposable {
 
 	@Override
 	public void dispose() {
-		texture.dispose();
-		pixmap.dispose();
+		painterModel.dispose();
 	}
 
 

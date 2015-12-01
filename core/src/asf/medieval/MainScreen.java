@@ -2,19 +2,14 @@ package asf.medieval;
 
 import asf.medieval.net.GameServerConfig;
 import asf.medieval.view.MedievalWorld;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
 import java.util.Random;
@@ -28,7 +23,7 @@ public class MainScreen extends AbstractScreen{
 		super(app);
 	}
 
-	private Button hostGameButton, joinGameButton, offlineGameButton;
+	private Button hostGameButton, joinGameButton, editorGameButton;
 	private Table table;
 	private Table buttonsTable;
 
@@ -55,7 +50,7 @@ public class MainScreen extends AbstractScreen{
 		buttonsTable = new Table(app.skin);
 		hostGameButton = new TextButton(app.i18n.get("hostGame")+"", app.skin, "default");
 		joinGameButton = new TextButton(app.i18n.get("joinGame"), app.skin, "default");
-		offlineGameButton = new TextButton(app.i18n.get("offlineGame"), app.skin, "default");
+		editorGameButton = new TextButton(app.i18n.get("editor"), app.skin, "default");
 
 		table = new Table(app.skin);
 		//table.setBackground("black");
@@ -75,11 +70,11 @@ public class MainScreen extends AbstractScreen{
 		buttonsTable.row();
 		buttonsTable.add(hostGameButton);
 		buttonsTable.add(joinGameButton);
-		buttonsTable.add(offlineGameButton);
+		buttonsTable.add(editorGameButton);
 
 		hostGameButton.addCaptureListener(internalListener);
 		joinGameButton.addCaptureListener(internalListener);
-		offlineGameButton.addCaptureListener(internalListener);
+		editorGameButton.addCaptureListener(internalListener);
 
 	}
 
@@ -157,10 +152,11 @@ public class MainScreen extends AbstractScreen{
 				settings.gameServerConfig.udpPort = settings.gameServerConfig.tcpPort;
 
 				app.loadWorld(settings);
-			} else if (actor == offlineGameButton) {
+			} else if (actor == editorGameButton) {
 				MedievalWorld.Settings settings = new MedievalWorld.Settings();
 
 				settings.random = new Random(1);
+				settings.editor = true;
 
 				app.loadWorld(settings);
 

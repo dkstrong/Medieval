@@ -310,8 +310,9 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 					setWeightPaintingEnabled(false);
 				}
 			} else if (actor == fileMenuButton) {
+				fileMenuWindow.getTitleLabel().setText(Gdx.files.local("Terrain").file().getAbsolutePath());
 				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
-				world.stage.addActor(fileMenuWindowContainer);
+				//world.stage.addActor(fileMenuWindowContainer);
 			} else if (actor == fileMenuWindowCloseButton) {
 				fileMenuWindowContainer.remove();
 			}
@@ -384,6 +385,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			// TODO: make name unique to other terrains if it is not
 		}
 
+		parameter.heightmapName = "Terrain/" + name + "_heightmap.png";
 		parameter.weightMap1 = "Terrain/" + name + "_weightmap.png";
 
 		FileHandle terrainFile = Gdx.files.local("Terrain/" + name + ".ter");
@@ -451,6 +453,9 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 			UtLog.error("failed to write terrain file", e1);
 		}
+
+		FileHandle heightmapFh = Gdx.files.local(parameter.heightmapName);
+		heightMapUi.savePainterToFile(heightmapFh);
 
 		FileHandle weightmap1Fh = Gdx.files.local(parameter.weightMap1);
 		weightMapUi.savePainterToFile(weightmap1Fh);

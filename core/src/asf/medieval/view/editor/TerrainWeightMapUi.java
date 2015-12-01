@@ -1,6 +1,7 @@
 package asf.medieval.view.editor;
 
 import asf.medieval.painter.PixmapPainter;
+import asf.medieval.painter.PixmapPainterModel;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
 import asf.medieval.utility.UtMath;
@@ -165,7 +166,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		setUiPixmapOpacity(getUiPixmapOpacity());
 	}
 
-	public static class UiTexMapping {
+	private static class UiTexMapping {
 		TerrainTextureAttribute texAttribute;
 		Texture tex;
 		String texLocation;
@@ -388,18 +389,15 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 	@Override
 	public boolean keyTyped(char character) {
-		if(!enabled)
-			return false;
+		if(!enabled) return false;
+		if (wm_pixmapPainter != null && wm_pixmapPainter.keyTyped(character)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if(!enabled)
-			return false;
-		if (wm_pixmapPainter != null && wm_pixmapPainter.touchDown(screenX, screenY, pointer, button)) {
-			return true;
-		}
+		if(!enabled) return false;
+		if (wm_pixmapPainter != null && wm_pixmapPainter.touchDown(screenX, screenY, pointer, button)) return true;
 		return false;
 	}
 
@@ -481,12 +479,14 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		}
 	}
 
+	private PixmapPainterModel painterModel;
+
 	public void refreshWeightMapPainter(){
 		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
 		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
 
 		if (wm_pixmapPainter != null) {
-			if(currentTexture == wm_pixmapPainter.texture){
+			if(currentTexture == painterModel.texture){
 				// texture hasnt changed, exit out early.
 				return;
 			}
@@ -495,9 +495,10 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		}
 
 		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
-		wm_pixmapPainter = new PixmapPainter(currentTexture);
+		painterModel = new PixmapPainterModel(currentTexture);
+		wm_pixmapPainter = new PixmapPainter(painterModel);
 		wm_pixmapPainter.coordProvider = terrainEditorView;
-		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, wm_pixmapPainter.texture, 1);
+		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
 
 		wm_pixmapPainter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
 	}

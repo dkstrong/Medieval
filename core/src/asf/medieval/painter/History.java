@@ -104,8 +104,7 @@ public class History implements Disposable{
 				store.pixmap.drawPixel(x, y, h.pixelData[x][y]);
 			}
 		}
-
-		store.texture.draw(store.pixmap, 0, 0);
+		store.painterModel.output();
 	}
 
 	public void undoPreview(Array<Point> affectedPixels, PixmapPainter store)
@@ -120,7 +119,7 @@ public class History implements Disposable{
 			store.pixmap.drawPixel(affectedPixel.x, affectedPixel.y, h.pixelData[affectedPixel.x][affectedPixel.y]);
 		}
 
-		store.texture.draw(store.pixmap, 0, 0);
+		store.painterModel.output();
 
 	}
 }
