@@ -313,7 +313,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 	public void setUiPixmapRadius(int radius) {
 		wm_pixmapPainter.getBrush().setRadius(radius);
-		wm_radiusLabel.setText(String.valueOf(radius));
+		wm_radiusLabel.setText(String.valueOf(wm_pixmapPainter.getBrush().getRadius()));
 	}
 
 	public float getUiPixmapOpacity() {
@@ -322,8 +322,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 	public void setUiPixmapOpacity(float opacity) {
 		wm_pixmapPainter.setBrushOpacity(opacity);
-
-		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(opacity, 2)));
+		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(wm_pixmapPainter.getBrushOpacity(), 2)));
 	}
 
 	////////////////////////////////////////////////

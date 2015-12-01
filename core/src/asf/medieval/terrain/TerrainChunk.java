@@ -520,7 +520,7 @@ public class TerrainChunk implements Disposable {
 
 		float[] dest = new float[width * height];
 		for (int i = 0; i < dest.length; ++i) {
-			int v = source[sourceOffset + i * bytesPerColor];
+			int v = source[(sourceOffset + i * bytesPerColor)+(bytesPerColor-1)];  // i use +(bytesPerColor-1) to get from the alpha channel instead of the red channel
 			v = v < 0 ? 256 + v : v;
 			dest[i] = (float) v / 255f;
 		}

@@ -387,7 +387,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			// TODO: make name unique to other terrains if it is not
 		}
 
-		parameter.heightmapName = "Terrain/" + name + "_heightmap.png";
+		parameter.heightmapName = "Terrain/" + name + "_heightmap.cim";
 		parameter.weightMap1 = "Terrain/" + name + "_weightmap.png";
 
 		FileHandle terrainFile = UtFileHandle.relative("Terrain/" + name + ".ter");

@@ -20,31 +20,17 @@ public class TerrainPainterDelegate implements PainterDelegate {
 
 	TerrainHeightMapUi terrainHeightMapUi;
 	private PixmapPainter painter;
-	public Pixmap pixmap;
 	public float[] fieldData;
-	public float fieldWidth;
-	public float fieldHeight;
+	public int fieldWidth;
+	public int fieldHeight;
 
 	public TerrainPainterDelegate(TerrainHeightMapUi terrainHeightMapUi) {
 		this.terrainHeightMapUi = terrainHeightMapUi;
+
 		Terrain terrain = terrainHeightMapUi.world.terrainView.terrain;
-
-		pixmap = new Pixmap(terrain.fieldWidth, terrain.fieldHeight, Pixmap.Format.RGBA8888);
-		if (Pixmap.getBlending() != Pixmap.Blending.None) {
-			Pixmap.setBlending(Pixmap.Blending.None);
-		}
-
 		this.fieldData = terrain.fieldData;
 		this.fieldWidth = terrain.fieldWidth;
 		this.fieldHeight = terrain.fieldHeight;
-
-
-		for (int x = 0; x < pixmap.getWidth(); x++) {
-			for (int y = 0; y < pixmap.getHeight(); y++) {
-				float data = fieldData[y * terrain.fieldWidth + x];
-				pixmap.drawPixel(x, y, Color.rgba8888(data,data,data,data));
-			}
-		}
 
 	}
 
@@ -56,7 +42,7 @@ public class TerrainPainterDelegate implements PainterDelegate {
 
 	@Override
 	public HistoryState createHistory() {
-		return new HistoryState(pixmap);
+		return new HistoryState(fieldData, fieldWidth, fieldHeight);
 	}
 
 	@Override
@@ -73,7 +59,7 @@ public class TerrainPainterDelegate implements PainterDelegate {
 
 		for(int x=0; x<historyState.pixelData.length; x++){
 			for(int y=0; y<historyState.pixelData[0].length; y++){
-				pixmap.drawPixel(x, y, historyState.pixelData[x][y]);
+				fieldData[y*fieldWidth+x] =historyState.pixelData[x][y] / 255.0f;
 			}
 		}
 	}
@@ -85,52 +71,41 @@ public class TerrainPainterDelegate implements PainterDelegate {
 		}
 
 		for (Point affectedPixel : affectedPixels) {
-			pixmap.drawPixel(affectedPixel.x, affectedPixel.y, historyState.pixelData[affectedPixel.x][affectedPixel.y]);
+			fieldData[affectedPixel.y*fieldWidth+affectedPixel.x] =historyState.pixelData[affectedPixel.x][affectedPixel.y] / 255.0f;
 		}
 	}
 
 	@Override
 	public int drawPoint(Color brushColor, int x, int y, float opacity) {
-		Color c;
+		float cr;
 		if (opacity < 1f) {
-			c = new Color();
-			Color.rgba8888ToColor(c, pixmap.getPixel(x, y));
-
-			c.r = opacity * brushColor.r + (1 - opacity) * c.r;
-			c.g = opacity * brushColor.g + (1 - opacity) * c.g;
-			c.b = opacity * brushColor.b + (1 - opacity) * c.b;
-			c.a = opacity * brushColor.a + (1 - opacity) * c.a;
-			//UtDebugPrint.print(c);
+			cr = fieldData[y*fieldWidth+x];
+			cr = opacity * brushColor.r + (1 - opacity) * cr;
 		} else {
-			c = brushColor;
+			cr = brushColor.r;
 		}
 
-		int colorCode = Color.rgba8888(c);
-		pixmap.drawPixel(x, y, colorCode);
+		int colorCode = Color.alpha(cr);
+		fieldData[y*fieldWidth+x] = cr;
 		return colorCode;
 	}
 
 	@Override
 	public int erasePoint(Color brushColor, int x, int y, float opacity) {
-		Color c;
-		c = new Color();
-		Color.rgba8888ToColor(c, pixmap.getPixel(x, y));
 
-		c.r = UtMath.largest((1 - opacity) * c.r - opacity * brushColor.r, 0f);
-		c.g = UtMath.largest((1 - opacity) * c.g - opacity * brushColor.g, 0f);
-		c.b = UtMath.largest((1 - opacity) * c.b - opacity * brushColor.b, 0f);
-		c.a = UtMath.largest((1 - opacity) * c.a - opacity * brushColor.a, 0f);
+		float cr;
+		cr = fieldData[y*fieldWidth+x];
+		cr = (1 - opacity) * cr - opacity * brushColor.r;
+		cr = UtMath.largest(cr,0);
 
-		int colorCode = Color.rgba8888(c);
-
-		pixmap.drawPixel(x, y, colorCode);
+		int colorCode = Color.alpha(cr);
+		fieldData[y*fieldWidth+x] = cr;
 		return colorCode;
 	}
 
 	@Override
 	public void output() {
 		Terrain terrain = terrainHeightMapUi.world.terrainView.terrain;
-		fieldData = TerrainChunk.heightColorsToMap(pixmap.getPixels(), pixmap.getFormat(), pixmap.getWidth(), pixmap.getHeight());
 		terrain.parameter.fieldData = fieldData;
 		terrain.createTerrain(terrain.parameter);
 		//terrainHeightMapUi.terrainEditorView.refreshHeightMapWeightMapPainters();
@@ -140,21 +115,36 @@ public class TerrainPainterDelegate implements PainterDelegate {
 	@Override
 	public void output(FileHandle fh)
 	{
-		PixmapIO.writePNG(fh, pixmap);
+		Pixmap pixmap = new Pixmap(fieldWidth, fieldHeight, Pixmap.Format.Alpha);
+		if (Pixmap.getBlending() != Pixmap.Blending.None) {
+			Pixmap.setBlending(Pixmap.Blending.None);
+		}
+		for(int x=0; x<fieldWidth; x++){
+			for(int y=0; y<fieldWidth; y++){
+				int colorCode = Color.alpha(fieldData[y*fieldWidth+x]);
+				pixmap.drawPixel(x,y,colorCode);
+			}
+		}
+		//PixmapIO.PNG writer = new PixmapIO.PNG();
+
+		//PixmapIO.writePNG(fh, pixmap);
+		PixmapIO.writeCIM(fh, pixmap);
+
+		pixmap.dispose();
 	}
 
 	@Override
 	public int getWidth() {
-		return pixmap.getWidth();
+		return fieldWidth;
 	}
 
 	@Override
 	public int getHeight() {
-		return pixmap.getHeight();
+		return fieldHeight;
 	}
 
 	@Override
 	public void dispose() {
-		pixmap.dispose();
+
 	}
 }

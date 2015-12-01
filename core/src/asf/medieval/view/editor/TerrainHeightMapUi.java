@@ -243,7 +243,7 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 
 	public void setUiPixmapRadius(int radius) {
 		hm_pixmapPainter.getBrush().setRadius(radius);
-		wm_radiusLabel.setText(String.valueOf(radius));
+		wm_radiusLabel.setText(String.valueOf(hm_pixmapPainter.getBrush().getRadius()));
 	}
 
 	public float getUiPixmapOpacity() {
@@ -253,7 +253,7 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 	public void setUiPixmapOpacity(float opacity) {
 		hm_pixmapPainter.setBrushOpacity(opacity);
 
-		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(opacity, 2)));
+		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(hm_pixmapPainter.getBrushOpacity(), 2)));
 	}
 
 
@@ -459,12 +459,14 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		if (hm_pixmapPainter != null) {
 			if(world.terrainView.terrain.fieldData == terrainPainterDelegate.fieldData){
 				// texture hasnt changed externally, exit out early.
+				System.out.println("not refreshing the height painter");
 				return;
 			}
 			hm_pixmapPainter.dispose();
 			hm_pixmapPainter = null;
 		}
 
+		System.out.println("refreshing the height painter");
 		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
 		hm_pixmapPainter = new PixmapPainter(terrainPainterDelegate =new TerrainPainterDelegate(this));
 		hm_pixmapPainter.setBrushColor(new Color(1,1,1,1));

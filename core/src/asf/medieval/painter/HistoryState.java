@@ -1,5 +1,6 @@
 package asf.medieval.painter;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -15,6 +16,15 @@ public class HistoryState implements Disposable {
 		for(int x=0; x<pixelData.length; x++){
 			for(int y=0; y<pixelData[0].length; y++){
 				pixelData[x][y] = pixmap.getPixel(x,y);
+			}
+		}
+	}
+
+	public HistoryState(float[] fieldData, int fieldWidth, int fieldHeight) {
+		pixelData = new int[fieldWidth][fieldHeight];
+		for(int x=0; x<pixelData.length; x++){
+			for(int y=0; y<pixelData[0].length; y++){
+				pixelData[x][y] =  Color.alpha(fieldData[y*fieldWidth+x]);
 			}
 		}
 	}

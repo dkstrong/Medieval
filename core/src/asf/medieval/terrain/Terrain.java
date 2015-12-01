@@ -109,13 +109,13 @@ public class Terrain implements RenderableProvider, Disposable {
 		chunkDataMaxHeight = param.chunkHeight;
 
 		if(param.fieldData!=null){
-			UtLog.info("creating heightfield from memory");
+			//UtLog.info("creating heightfield from memory");
 			insertFieldData();
 		}else if (param.heightmapName != null) {
-			UtLog.info("creating heightfield from "+param.heightmapName);
+			//UtLog.info("creating heightfield from "+param.heightmapName);
 			loadFieldData(param.heightmapName);
 		} else {
-			UtLog.info("creating heightfield from seed "+param.seed);
+			//UtLog.info("creating heightfield from seed "+param.seed);
 			generateFieldData(param.seed, param.fieldWidth, param.fieldHeight);
 		}
 
@@ -130,7 +130,14 @@ public class Terrain implements RenderableProvider, Disposable {
 	}
 
 	private void loadFieldData(final String heightmapName) {
-		Pixmap heightPix = new Pixmap(resolve(heightmapName));
+		System.out.println("hfm: "+heightmapName+"");
+		Pixmap heightPix;
+		if(heightmapName.endsWith(".cim")){
+			heightPix = PixmapIO.readCIM(resolve(heightmapName));
+		}else{
+			heightPix = new Pixmap(resolve(heightmapName));
+		}
+
 		this.fieldWidth = heightPix.getWidth();
 		this.fieldHeight = heightPix.getHeight();
 		fieldData = TerrainChunk.heightColorsToMap(heightPix.getPixels(), heightPix.getFormat(), fieldWidth, fieldHeight);
@@ -358,11 +365,7 @@ public class Terrain implements RenderableProvider, Disposable {
 	public void loadTerrain(String name)
 	{
 		if(name == null || name.trim().isEmpty()){
-			if(this.parameter == null){
-				loadNewTerrain("untitled-terrain");
-				return;
-			}
-			name = this.parameter.name;
+			throw new IllegalArgumentException("name can not be null or empty");
 		}
 
 		FileHandle terrainFile = UtFileHandle.moddable("Terrain/" + name + ".ter");
@@ -372,23 +375,16 @@ public class Terrain implements RenderableProvider, Disposable {
 	}
 
 	public void loadTerrain(FileHandle terrainFile){
-		if(terrainFile == null){
-			loadNewTerrain("untitled-terrain");
-			return;
-		}
-		String name = terrainFile.nameWithoutExtension();
+		if(terrainFile == null)
+			throw new IllegalArgumentException("terrainFile can not be null");
 		if(terrainFile.isDirectory())
-			throw new IllegalArgumentException("provided name ("+name+") is a directory");
+			throw new IllegalArgumentException("provided terrainFile ("+terrainFile.file().getAbsolutePath()+") is a directory");
+		if(!terrainFile.exists())
+			throw new IllegalArgumentException("provided terrainFile ("+terrainFile.file().getAbsolutePath()+") does not exist");
 
-		if(!terrainFile.exists()){
-			loadNewTerrain(name);
-			return;
-		}
-
-		if(this.parameter == null)
-			this.parameter = new TerrainLoader.TerrainParameter();
-
+		this.parameter = new TerrainLoader.TerrainParameter();
 		try {
+			String name = terrainFile.nameWithoutExtension();
 			XmlReader reader = new XmlReader();
 			XmlReader.Element root = reader.parse(terrainFile);
 			this.parameter.name = root.getAttribute("name",name);
@@ -401,8 +397,8 @@ public class Terrain implements RenderableProvider, Disposable {
 
 			XmlReader.Element heightData = root.getChildByName("heightData");
 			if(heightData != null){
+				this.parameter.fieldData = null;
 				this.parameter.heightmapName = heightData.getAttribute("heightmapName",null);
-
 				this.parameter.seed = Long.parseLong(heightData.getAttribute("seed","0"));
 				this.parameter.fieldWidth = root.getIntAttribute("fieldWidth", parameter.fieldWidth);
 				this.parameter.fieldHeight = root.getIntAttribute("fieldHeight", parameter.fieldHeight);
