@@ -1,6 +1,7 @@
 package asf.medieval.terrain;
 
 import asf.medieval.utility.OpenSimplexNoise;
+import asf.medieval.utility.UtFileHandle;
 import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
@@ -213,17 +214,8 @@ public class Terrain implements RenderableProvider, Disposable {
 	}
 
 	private FileHandle resolve(String fileName) {
-		return Gdx.files.internal(fileName); // assets directory
+		return UtFileHandle.moddable(fileName);
 	}
-
-	private FileHandle resolveLocal(String fileName) {
-		return Gdx.files.local(fileName); // jar directory
-	}
-
-	private FileHandle resolveAbsolute(String fileName) {
-		return Gdx.files.absolute(fileName); // absolute file system path
-	}
-
 
 	private Material getMaterial(TerrainChunk terrainChunk) {
 		if (material != null)
@@ -371,7 +363,7 @@ public class Terrain implements RenderableProvider, Disposable {
 			name = this.parameter.name;
 		}
 
-		FileHandle terrainFile =resolveLocal("Terrain/" + name+".ter");
+		FileHandle terrainFile = UtFileHandle.moddable("Terrain/" + name + ".ter");
 
 		loadTerrain(terrainFile);
 

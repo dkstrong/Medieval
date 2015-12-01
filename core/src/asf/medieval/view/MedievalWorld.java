@@ -121,12 +121,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
 		//assetManager.load("Models/skydome.g3db", Model.class);
-		assetManager.load("Models/Characters/knight_01.g3db", Model.class);
-		assetManager.load("Models/Loot/Sword/BasicSword.g3db", Model.class);
-		assetManager.load("Models/Loot/Sword/Shield.g3db", Model.class);
-		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
+		//assetManager.load("Models/Characters/knight_01.g3db", Model.class);
+		//assetManager.load("Models/Loot/Sword/BasicSword.g3db", Model.class);
+		//assetManager.load("Models/Loot/Sword/Shield.g3db", Model.class);
+		//assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
 		//assetManager.load("Models/Characters/rockMonster_01.g3db", Model.class);
-		assetManager.load("Models/Church/Church.g3db", Model.class);
+		//assetManager.load("Models/Church/Church.g3db", Model.class);
 		assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
 
 		//assetManager.load("Models/skydome.g3db", Model.class);

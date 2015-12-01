@@ -4,6 +4,7 @@ import asf.medieval.painter.PixmapPainter;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileWatcher;
+import asf.medieval.utility.UtFileHandle;
 import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
@@ -59,6 +60,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 	public TerrainEditorView(MedievalWorld world) {
 		this.world = world;
+
 		heightMapUi = new TerrainHeightMapUi(this);
 		weightMapUi = new TerrainWeightMapUi(this);
 
@@ -310,9 +312,9 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 					setWeightPaintingEnabled(false);
 				}
 			} else if (actor == fileMenuButton) {
-				fileMenuWindow.getTitleLabel().setText(Gdx.files.local("Terrain").file().getAbsolutePath());
+
 				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
-				//world.stage.addActor(fileMenuWindowContainer);
+				world.stage.addActor(fileMenuWindowContainer);
 			} else if (actor == fileMenuWindowCloseButton) {
 				fileMenuWindowContainer.remove();
 			}
@@ -388,7 +390,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		parameter.heightmapName = "Terrain/" + name + "_heightmap.png";
 		parameter.weightMap1 = "Terrain/" + name + "_weightmap.png";
 
-		FileHandle terrainFile = Gdx.files.local("Terrain/" + name + ".ter");
+		FileHandle terrainFile = UtFileHandle.relative("Terrain/" + name + ".ter");
 
 		StringWriter stringWriter = new StringWriter();
 		XmlWriter xmlWriter = new XmlWriter(stringWriter);
@@ -454,13 +456,13 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			UtLog.error("failed to write terrain file", e1);
 		}
 
-		FileHandle heightmapFh = Gdx.files.local(parameter.heightmapName);
+		FileHandle heightmapFh = UtFileHandle.relative(parameter.heightmapName);
 		heightMapUi.savePainterToFile(heightmapFh);
 
-		FileHandle weightmap1Fh = Gdx.files.local(parameter.weightMap1);
+		FileHandle weightmap1Fh = UtFileHandle.relative(parameter.weightMap1);
 		weightMapUi.savePainterToFile(weightmap1Fh);
 
-		System.out.println("Saved file: " + terrainFile.name());
+		System.out.println("Saved file: " + terrainFile.file().getAbsolutePath());
 
 	}
 

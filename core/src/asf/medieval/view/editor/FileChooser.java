@@ -1,5 +1,6 @@
 package asf.medieval.view.editor;
 
+import asf.medieval.utility.UtFileHandle;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -90,10 +91,11 @@ public class FileChooser extends Table {
 	public void changeDirectory(final String directoryName, final String[] fileTypes, String selected) {
 		this.directoryName = directoryName;
 		this.allowedFileTypes = fileTypes;
-		FileHandle directory = Gdx.files.local(directoryName);
+
+		FileHandle directory = UtFileHandle.relative(directoryName);
 
 		if (selected != null) {
-			FileHandle selectedFile = Gdx.files.local(directoryName + "/" + selected);
+			FileHandle selectedFile = UtFileHandle.relative(directoryName + "/" + selected);
 			selected = selectedFile.name();
 
 		}
@@ -249,12 +251,16 @@ public class FileChooser extends Table {
 
 					if (!allowed) {
 						// show the user what the file extension will be instead of just saving...
-						fname = fname.substring(0, pos) + allowedFileTypes[0];
+						if(pos>0){
+							fname = fname.substring(0, pos) + allowedFileTypes[0];
+						}else{
+							fname = fname + allowedFileTypes[0];
+						}
 						textField.setText(fname);
 						internalTextFieldListener.keyTyped(textField,' ');
 					} else {
 						fname = directoryName + "/" + fname;
-						FileHandle selectedFh = Gdx.files.local(fname);
+						FileHandle selectedFh = UtFileHandle.relative(fname);
 						if (listener != null)
 							listener.onFileSave(selectedFh);
 					}

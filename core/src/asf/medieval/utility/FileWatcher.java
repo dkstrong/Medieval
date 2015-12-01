@@ -51,7 +51,7 @@ public class FileWatcher implements Runnable, Disposable{
 			Path fhPath = Paths.get(fh.file().getAbsolutePath());
 			fhPath.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
 		} catch (IOException e) {
-			UtLog.warning("error adding watch", e);
+			UtLog.warning("error adding watch:"+fh.file().getAbsolutePath());
 		}
 
 		if(future == null)

@@ -1,5 +1,6 @@
 package asf.medieval.net;
 
+import asf.medieval.utility.UtFileHandle;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.XmlReader;
@@ -70,11 +71,12 @@ public class GameServerConfig {
 	{
 		final String configLoc = "GameServerConfig.xml";
 		System.out.println("Creating an example GameServerConfig file: " + configLoc);
-
+		// TODO: may need to handle this degradation better- what if the relative file
+		// doesnt exist or is malformed etc?
 		FileHandle configFileHandle = Gdx.files.absolute(configLoc);
 		boolean local = false;
 		if (!configFileHandle.exists() || configFileHandle.isDirectory()) {
-			configFileHandle = Gdx.files.local(configLoc);
+			configFileHandle = UtFileHandle.relative(configLoc);
 			local = true;
 			if (configFileHandle.isDirectory()) {
 				throw new IllegalArgumentException("invalid config file: " + configLoc);

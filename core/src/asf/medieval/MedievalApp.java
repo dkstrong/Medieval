@@ -51,8 +51,8 @@ public class MedievalApp extends ApplicationAdapter {
 		initPrefs();
 		initTextures();
 		initI18n();
-		setScreen(ScreenId.Main);
-		//loadStraightInToGame();
+		//setScreen(ScreenId.Main);
+		loadStraightInToGame();
 	}
 	private void initPrefs()
 	{
