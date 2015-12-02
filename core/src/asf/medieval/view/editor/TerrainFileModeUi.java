@@ -147,7 +147,6 @@ public class TerrainFileModeUi implements View, Disposable, FileChooser.Listener
 
 		if (parameter.name == null || parameter.name.trim().isEmpty()) {
 			parameter.name = "untitled-terrain";
-			// TODO: make name unique to other terrains if it is not
 		}
 
 		parameter.heightmapName = "Terrain/" + name + "_heightmap.cim";

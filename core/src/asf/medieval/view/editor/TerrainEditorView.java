@@ -2,37 +2,25 @@ package asf.medieval.view.editor;
 
 import asf.medieval.painter.Painter;
 import asf.medieval.terrain.Terrain;
-import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileWatcher;
-import asf.medieval.utility.FileManager;
-import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.XmlWriter;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 
@@ -48,8 +36,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	private Table toolTable;
 	private SelectBox<ModeSelectItem> modeSelectBox;
 	private ModeSelectItem fileModeSelectItem, heightModeSelectItem, weightModeSelectItem;
-
-	private Cell<?> table3Cell;
+	private Cell<?> modeContextCell; // the actor in this cell should be changed based on what mode is selected
 
 	private final TerrainFileModeUi fileModeUi;
 	protected final TerrainHeightMapUi heightMapUi;
@@ -110,7 +97,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 		// mode context cell
 		{
-			table3Cell = toolTable.add(new Label("no mode",world.app.skin)).fill().align(Align.topLeft);
+			modeContextCell = toolTable.add(new Label("no mode",world.app.skin)).fill().align(Align.topLeft);
 
 		}
 
@@ -135,6 +122,11 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			setFileModeEnabled(true);
 		}
 
+	}
+
+	protected void refreshHeightMapWeightMapPainters() {
+		heightMapUi.refreshHeightMapPainter();
+		weightMapUi.refreshWeightMapPainter();
 	}
 
 	public void resize(int width, int height) {
@@ -189,7 +181,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		fileModeUi.setEnabled(fileModeEnabled);
 		if(fileModeEnabled){
 			modeSelectBox.setSelected(fileModeSelectItem);
-			table3Cell.setActor(fileModeUi.fileModeTable);
+			modeContextCell.setActor(fileModeUi.fileModeTable);
 			setHeigtPaintingEnabled(false);
 			setWeightPaintingEnabled(false);
 		}
@@ -199,7 +191,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		heightMapUi.setEnabled(heightPaintingEnabled);
 		if (heightPaintingEnabled) {
 			modeSelectBox.setSelected(heightModeSelectItem);
-			table3Cell.setActor(heightMapUi.heightTable);
+			modeContextCell.setActor(heightMapUi.heightTable);
 			setFileModeEnabled(false);
 			setWeightPaintingEnabled(false);
 		}
@@ -209,7 +201,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		weightMapUi.setEnabled(weightPaintingEnabled);
 		if (weightPaintingEnabled) {
 			modeSelectBox.setSelected(weightModeSelectItem);
-			table3Cell.setActor(weightMapUi.weightTable);
+			modeContextCell.setActor(weightMapUi.weightTable);
 			setFileModeEnabled(false);
 			setHeigtPaintingEnabled(false);
 		}
@@ -344,10 +336,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		}
 	}
 
-	protected void refreshHeightMapWeightMapPainters() {
-		heightMapUi.refreshHeightMapPainter();
-		weightMapUi.refreshWeightMapPainter();
-	}
+
 
 
 
