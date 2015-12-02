@@ -1,6 +1,6 @@
 package asf.medieval.view.editor;
 
-import asf.medieval.painter.PixmapPainter;
+import asf.medieval.painter.Painter;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileWatcher;
@@ -37,7 +37,7 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, PixmapPainter.PixmapCoordProvider, FileChooser.Listener {
+public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, Painter.CoordProvider, FileChooser.Listener {
 	public final MedievalWorld world;
 	private boolean enabled;
 

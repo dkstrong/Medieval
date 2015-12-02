@@ -15,7 +15,7 @@ import com.badlogic.gdx.utils.Array;
  */
 public class PixmapPainterDelegate implements PainterDelegate {
 
-	private PixmapPainter painter;
+	private Painter painter;
 	public Pixmap pixmap;
 	public Texture texture;
 
@@ -56,7 +56,7 @@ public class PixmapPainterDelegate implements PainterDelegate {
 	}
 
 	@Override
-	public void setPainter(PixmapPainter painter) {
+	public void setPainter(Painter painter) {
 		this.painter = painter;
 		texture = new Texture(new PixmapTextureData(pixmap, pixmap.getFormat(), false, false));
 	}
@@ -97,11 +97,12 @@ public class PixmapPainterDelegate implements PainterDelegate {
 	}
 
 	@Override
-	public int drawPoint(Color brushColor, int x, int y, float opacity) {
+	public int drawPoint(int currentColor, Color brushColor, int x, int y, float opacity) {
 		Color c;
 		if (opacity < 1f) {
 			c = new Color();
-			Color.rgba8888ToColor(c, pixmap.getPixel(x, y));
+			//int currentColor = pixmap.getPixel(x, y);
+			Color.rgba8888ToColor(c, currentColor );
 
 			c.r = opacity * brushColor.r + (1 - opacity) * c.r;
 			c.g = opacity * brushColor.g + (1 - opacity) * c.g;
@@ -118,10 +119,10 @@ public class PixmapPainterDelegate implements PainterDelegate {
 	}
 
 	@Override
-	public int erasePoint(Color brushColor, int x, int y, float opacity) {
+	public int erasePoint(int currentColor,Color brushColor, int x, int y, float opacity) {
 		Color c;
 		c = new Color();
-		Color.rgba8888ToColor(c, pixmap.getPixel(x, y));
+		Color.rgba8888ToColor(c, currentColor);
 
 		c.r = UtMath.largest((1 - opacity) * c.r - opacity * brushColor.r, 0f);
 		c.g = UtMath.largest((1 - opacity) * c.g - opacity * brushColor.g, 0f);

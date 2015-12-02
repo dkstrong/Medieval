@@ -2,7 +2,6 @@ package asf.medieval.painter;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -11,7 +10,7 @@ import com.badlogic.gdx.utils.Disposable;
  */
 public interface PainterDelegate extends Disposable{
 
-	public void setPainter(PixmapPainter painter);
+	public void setPainter(Painter painter);
 
 	public HistoryState createHistory();
 
@@ -21,9 +20,9 @@ public interface PainterDelegate extends Disposable{
 
 	public void recall(HistoryState historyState, Array<Point> affectedPixels);
 
-	public int drawPoint(Color brushColor, int x, int y, float opacity);
+	public int drawPoint(int currentColor, Color brushColor, int x, int y, float opacity);
 
-	public int erasePoint(Color brushColor, int x, int y, float opacity);
+	public int erasePoint(int currentColor, Color brushColor, int x, int y, float opacity);
 
 	public void output();
 

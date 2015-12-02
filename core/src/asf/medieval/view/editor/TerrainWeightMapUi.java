@@ -1,6 +1,6 @@
 package asf.medieval.view.editor;
 
-import asf.medieval.painter.PixmapPainter;
+import asf.medieval.painter.Painter;
 import asf.medieval.painter.PixmapPainterDelegate;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
@@ -12,7 +12,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -45,13 +44,13 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	public Label wm_texLocValueLabel, wm_scaleValueLabel;
 	public ButtonGroup<Button> wm_toolSelectionButtonGroup;
 	public ImageButton wm_bucketFillButton, wm_brushButton, wm_sprayButton, wm_eraserButton;
-	public Label wm_radiusLabel, wm_opacityValueLabel;
+	public Label wm_radiusLabel, hardEdgeLabel, wm_opacityValueLabel;
 
 
 	// weightmap splat 3d interface
 	public boolean wm_paintingPreview = true;
 	public UiTexMapping wm_selectedTexChannel = null;
-	public PixmapPainter wm_pixmapPainter;
+	public Painter wm_Painter;
 
 	public TerrainWeightMapUi(TerrainEditorView terrainEditorView) {
 		this.world = terrainEditorView.world;
@@ -113,10 +112,10 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 				wm_sprayButton = UtEditor.createImageButtonToggle("spraypaint", world.app.skin, null);
 				wm_eraserButton = UtEditor.createImageButtonToggle("eraser", world.app.skin, internalCl);
 
-				wm_bucketFillButton.setUserObject(PixmapPainter.Tool.Fill);
-				wm_brushButton.setUserObject(PixmapPainter.Tool.Brush);
+				wm_bucketFillButton.setUserObject(Painter.Tool.Fill);
+				wm_brushButton.setUserObject(Painter.Tool.Brush);
 				wm_sprayButton.setUserObject(null);
-				wm_eraserButton.setUserObject(PixmapPainter.Tool.Eraser);
+				wm_eraserButton.setUserObject(Painter.Tool.Eraser);
 				Table toolSubtable = new Table(world.app.skin);
 				toolSubtable.row().pad(5);
 				toolSubtable.add(wm_bucketFillButton);
@@ -142,6 +141,8 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 				Label toolRadiusCaptionLabel = UtEditor.createLabel("Radius:", world.app.skin);
 				wm_radiusLabel = UtEditor.createLabel("", world.app.skin);
+				Label hardEdgeCaptionLabel = UtEditor.createLabel("Hard Edge:", world.app.skin);
+				hardEdgeLabel = UtEditor.createLabel("", world.app.skin);
 				Label toolOpacityCaptionLabel = UtEditor.createLabel("Opacity:", world.app.skin);
 				wm_opacityValueLabel = UtEditor.createLabel("", world.app.skin);
 
@@ -149,6 +150,11 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 				pixmapSettingsSubtable.row();
 				pixmapSettingsSubtable.add(toolRadiusCaptionLabel);
 				pixmapSettingsSubtable.add(wm_radiusLabel);
+
+
+				pixmapSettingsSubtable.row();
+				pixmapSettingsSubtable.add(hardEdgeCaptionLabel);
+				pixmapSettingsSubtable.add(hardEdgeLabel);
 
 				pixmapSettingsSubtable.row();
 				pixmapSettingsSubtable.add(toolOpacityCaptionLabel);
@@ -160,10 +166,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 		}
 
-		setUiPixmapTexChannel(wm_uiTexMappings.get(0));
-		setUiPixmapTool(getUiPixmapTool());
-		setUiPixmapRadius(getUiPixmapRadius());
-		setUiPixmapOpacity(getUiPixmapOpacity());
+		refreshWeightMapUi();
 	}
 
 	private static class UiTexMapping {
@@ -224,9 +227,13 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		refreshUiTexMapping(wm_uiTexMappings.get(2), TerrainTextureAttribute.Tex3);
 		refreshUiTexMapping(wm_uiTexMappings.get(3), TerrainTextureAttribute.Tex4);
 
+		if(wm_selectedTexChannel == null){
+			wm_selectedTexChannel = wm_uiTexMappings.get(0);
+		}
 		setUiPixmapTexChannel(wm_selectedTexChannel);
 		setUiPixmapTool(getUiPixmapTool());
 		setUiPixmapRadius(getUiPixmapRadius());
+		setUiPixmapHardEdge(getUiPixmapHardEdge());
 		setUiPixmapOpacity(getUiPixmapOpacity());
 	}
 	////////////
@@ -236,15 +243,15 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	public void setEnabled(boolean enabled){
 		this.enabled = enabled;
 
-		wm_pixmapPainter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
+		wm_Painter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
 	}
 
 	public void update(float delta){
 		if(!enabled)
 			return;
 
-		if (wm_pixmapPainter != null)
-			wm_pixmapPainter.updateInput(delta);
+		if (wm_Painter != null)
+			wm_Painter.updateInput(delta);
 	}
 
 	public void render(float delta){
@@ -253,11 +260,12 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 		if (!world.editorView.isToolbarVisible()) {
 			String text = "";
-			if(wm_pixmapPainter != null)
+			if(wm_Painter != null)
 			{
 				text += "Tex: " + getUiPixmapTexChannel().texLocationFileName + "  ";
 				text += "Tool: " + getUiPixmapTool() + "   ";
 				text += "Radius: " + getUiPixmapRadius() + "   ";
+				text += "Hard Edge: " + getUiPixmapHardEdge() + "   ";
 				text += "Opacity: " + getUiPixmapOpacity();
 			}
 			world.editorView.minTextLabel.setText(text);
@@ -267,9 +275,9 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 	public void dispose()
 	{
-		if (wm_pixmapPainter != null) {
-			wm_pixmapPainter.dispose();
-			wm_pixmapPainter = null;
+		if (wm_Painter != null) {
+			wm_Painter.dispose();
+			wm_Painter = null;
 		}
 	}
 
@@ -284,20 +292,20 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 	public void setUiPixmapTexChannel(UiTexMapping selectedTexChannel) {
 		this.wm_selectedTexChannel = selectedTexChannel;
-		if (wm_pixmapPainter != null)
-			wm_pixmapPainter.setBrushColor(selectedTexChannel.weightmapColor);
+		if (wm_Painter != null)
+			wm_Painter.setBrushColor(selectedTexChannel.weightmapColor);
 		selectedTexChannel.toolbarButton.setChecked(true);
 
 		wm_texLocValueLabel.setText(selectedTexChannel.texLocationFileName);
 		wm_scaleValueLabel.setText(selectedTexChannel.texScale + "x");
 	}
 
-	public PixmapPainter.Tool getUiPixmapTool() {
-		return wm_pixmapPainter.getTool();
+	public Painter.Tool getUiPixmapTool() {
+		return wm_Painter.getTool();
 	}
 
-	public void setUiPixmapTool(PixmapPainter.Tool tool) {
-		wm_pixmapPainter.setTool(tool);
+	public void setUiPixmapTool(Painter.Tool tool) {
+		wm_Painter.setTool(tool);
 		if (wm_bucketFillButton.getUserObject() == tool) {
 			wm_bucketFillButton.setChecked(true);
 		} else if (wm_brushButton.getUserObject() == tool) {
@@ -308,21 +316,30 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	}
 
 	public int getUiPixmapRadius() {
-		return wm_pixmapPainter.getBrush().getRadius();
+		return wm_Painter.getBrush().getRadius();
 	}
 
 	public void setUiPixmapRadius(int radius) {
-		wm_pixmapPainter.getBrush().setRadius(radius);
-		wm_radiusLabel.setText(String.valueOf(wm_pixmapPainter.getBrush().getRadius()));
+		wm_Painter.getBrush().setRadius(radius);
+		wm_radiusLabel.setText(String.valueOf(wm_Painter.getBrush().getRadius()));
+	}
+
+	public float getUiPixmapHardEdge() {
+		return wm_Painter.getBrush().getHardEdge();
+	}
+
+	public void setUiPixmapHardEdge(float hardEdge) {
+		wm_Painter.getBrush().setHardEdge(hardEdge);
+		hardEdgeLabel.setText(String.valueOf(UtMath.round(wm_Painter.getBrush().getHardEdge(), 2)));
 	}
 
 	public float getUiPixmapOpacity() {
-		return wm_pixmapPainter.getBrushOpacity();
+		return wm_Painter.getBrushOpacity();
 	}
 
 	public void setUiPixmapOpacity(float opacity) {
-		wm_pixmapPainter.setBrushOpacity(opacity);
-		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(wm_pixmapPainter.getBrushOpacity(), 2)));
+		wm_Painter.setBrushOpacity(opacity);
+		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(wm_Painter.getBrushOpacity(), 2)));
 	}
 
 	////////////////////////////////////////////////
@@ -361,6 +378,8 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 					setUiPixmapRadius(getUiPixmapRadius() - 1);
 				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() - 0.1f);
+				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
+					setUiPixmapHardEdge(getUiPixmapHardEdge() + 0.1f);
 				}
 				return true;
 			case Input.Keys.RIGHT_BRACKET:
@@ -368,19 +387,21 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 					setUiPixmapRadius(getUiPixmapRadius() + 1);
 				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() + 0.1f);
+				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
+					setUiPixmapHardEdge(getUiPixmapHardEdge() - 0.1f);
 				}
 				return true;
 			case Input.Keys.B:
-				setUiPixmapTool(PixmapPainter.Tool.Brush);
+				setUiPixmapTool(Painter.Tool.Brush);
 				return true;
 			case Input.Keys.E:
-				setUiPixmapTool(PixmapPainter.Tool.Eraser);
+				setUiPixmapTool(Painter.Tool.Eraser);
 				return true;
 			case Input.Keys.F:
-				setUiPixmapTool(PixmapPainter.Tool.Fill);
+				setUiPixmapTool(Painter.Tool.Fill);
 				return true;
 		}
-		if (wm_pixmapPainter != null && wm_pixmapPainter.keyUp(keycode)) {
+		if (wm_Painter != null && wm_Painter.keyUp(keycode)) {
 			return true;
 		}
 		return false;
@@ -389,14 +410,14 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	@Override
 	public boolean keyTyped(char character) {
 		if(!enabled) return false;
-		if (wm_pixmapPainter != null && wm_pixmapPainter.keyTyped(character)) return true;
+		if (wm_Painter != null && wm_Painter.keyTyped(character)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if(!enabled) return false;
-		if (wm_pixmapPainter != null && wm_pixmapPainter.touchDown(screenX, screenY, pointer, button)) return true;
+		if (wm_Painter != null && wm_Painter.touchDown(screenX, screenY, pointer, button)) return true;
 		return false;
 	}
 
@@ -404,7 +425,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if(!enabled)
 			return false;
-		if (wm_pixmapPainter != null && wm_pixmapPainter.touchUp(screenX, screenY, pointer, button)) {
+		if (wm_Painter != null && wm_Painter.touchUp(screenX, screenY, pointer, button)) {
 			return true;
 		}
 		return false;
@@ -414,7 +435,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		if(!enabled)
 			return false;
-		if (wm_pixmapPainter != null && wm_pixmapPainter.touchDragged(screenX, screenY, pointer)) {
+		if (wm_Painter != null && wm_Painter.touchDragged(screenX, screenY, pointer)) {
 			return true;
 		}
 		return false;
@@ -424,7 +445,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	public boolean mouseMoved(int screenX, int screenY) {
 		if(!enabled)
 			return false;
-		if (wm_pixmapPainter != null && wm_pixmapPainter.mouseMoved(screenX, screenY)) {
+		if (wm_Painter != null && wm_Painter.mouseMoved(screenX, screenY)) {
 			return true;
 		}
 		return false;
@@ -441,9 +462,12 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 			setUiPixmapOpacity(getUiPixmapOpacity() - amount * 0.05f);
 			return true;
+		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
+			setUiPixmapHardEdge(getUiPixmapHardEdge() + amount * 0.05f);
+			return true;
 		}
 
-		if (wm_pixmapPainter != null && wm_pixmapPainter.scrolled(amount)) {
+		if (wm_Painter != null && wm_Painter.scrolled(amount)) {
 			return true;
 		}
 
@@ -458,9 +482,9 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 				Button checked = wm_texSelectionButtonGroup.getChecked();
 				UiTexMapping checkedUiTexMapping = (UiTexMapping) checked.getUserObject();
 				setUiPixmapTexChannel(checkedUiTexMapping);
-			} else if (actor.getUserObject() instanceof PixmapPainter.Tool) {
+			} else if (actor.getUserObject() instanceof Painter.Tool) {
 				Button checked = wm_toolSelectionButtonGroup.getChecked();
-				PixmapPainter.Tool checkedTool = (PixmapPainter.Tool) checked.getUserObject();
+				Painter.Tool checkedTool = (Painter.Tool) checked.getUserObject();
 				setUiPixmapTool(checkedTool);
 			}
 
@@ -484,26 +508,26 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
 		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
 
-		if (wm_pixmapPainter != null) {
+		if (wm_Painter != null) {
 			if(currentTexture == painterModel.texture){
 				// texture hasnt changed, exit out early.
 				return;
 			}
-			wm_pixmapPainter.dispose();
-			wm_pixmapPainter = null;
+			wm_Painter.dispose();
+			wm_Painter = null;
 		}
 
 		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
 		painterModel = new PixmapPainterDelegate(currentTexture);
-		wm_pixmapPainter = new PixmapPainter(painterModel);
-		wm_pixmapPainter.coordProvider = terrainEditorView;
+		wm_Painter = new Painter(painterModel);
+		wm_Painter.coordProvider = terrainEditorView;
 		world.terrainView.terrain.setOverrideMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
 
-		wm_pixmapPainter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
+		wm_Painter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
 	}
 
 	public void savePainterToFile(FileHandle fh){
-		wm_pixmapPainter.output(fh);
+		wm_Painter.output(fh);
 	}
 
 }

@@ -2,10 +2,9 @@ package asf.medieval.view.editor;
 
 import asf.medieval.painter.HistoryState;
 import asf.medieval.painter.PainterDelegate;
-import asf.medieval.painter.PixmapPainter;
+import asf.medieval.painter.Painter;
 import asf.medieval.painter.Point;
 import asf.medieval.terrain.Terrain;
-import asf.medieval.terrain.TerrainChunk;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -19,7 +18,7 @@ import com.badlogic.gdx.utils.Array;
 public class TerrainPainterDelegate implements PainterDelegate {
 
 	TerrainHeightMapUi terrainHeightMapUi;
-	private PixmapPainter painter;
+	private Painter painter;
 	public float[] fieldData;
 	public int fieldWidth;
 	public int fieldHeight;
@@ -35,7 +34,7 @@ public class TerrainPainterDelegate implements PainterDelegate {
 	}
 
 	@Override
-	public void setPainter(PixmapPainter painter) {
+	public void setPainter(Painter painter) {
 		this.painter = painter;
 
 	}
@@ -76,30 +75,34 @@ public class TerrainPainterDelegate implements PainterDelegate {
 	}
 
 	@Override
-	public int drawPoint(Color brushColor, int x, int y, float opacity) {
+	public int drawPoint(int currentColor,Color brushColor, int x, int y, float opacity) {
 		float cr;
 		if (opacity < 1f) {
-			cr = fieldData[y*fieldWidth+x];
-			cr = opacity * brushColor.r + (1 - opacity) * cr;
+			//cr = fieldData[y*fieldWidth+x];
+			cr = currentColor / 255.0f;
+			cr = opacity * brushColor.a + (1 - opacity) * cr;
 		} else {
-			cr = brushColor.r;
+			cr = brushColor.a;
 		}
 
-		int colorCode = Color.alpha(cr);
+
 		fieldData[y*fieldWidth+x] = cr;
+		int colorCode = Color.alpha(cr);
 		return colorCode;
 	}
 
 	@Override
-	public int erasePoint(Color brushColor, int x, int y, float opacity) {
+	public int erasePoint(int currentColor,Color brushColor, int x, int y, float opacity) {
 
 		float cr;
-		cr = fieldData[y*fieldWidth+x];
-		cr = (1 - opacity) * cr - opacity * brushColor.r;
+		//cr = fieldData[y*fieldWidth+x];
+		cr = currentColor / 255.0f;
+		cr = (1 - opacity) * cr - opacity * brushColor.a;
 		cr = UtMath.largest(cr,0);
 
-		int colorCode = Color.alpha(cr);
 		fieldData[y*fieldWidth+x] = cr;
+		int colorCode = Color.alpha(cr);
+
 		return colorCode;
 	}
 
