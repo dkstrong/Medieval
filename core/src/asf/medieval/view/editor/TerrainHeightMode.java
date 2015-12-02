@@ -4,10 +4,8 @@ import asf.medieval.painter.Painter;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
-import asf.medieval.view.View;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -20,14 +18,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Disposable;
 
 /**
  * Created by daniel on 11/30/15.
  */
-public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
+public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode {
 	public final MedievalWorld world;
-	public final TerrainEditorView terrainEditorView;
+	public final TerrainEditorMode terrainEditorMode;
 	public boolean enabled;
 
 	// weightmap splat ui
@@ -49,12 +46,13 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 	public boolean hm_paintingPreview = true;
 	public Painter hm_Painter;
 
-	public TerrainHeightMapUi(TerrainEditorView terrainEditorView) {
-		this.world = terrainEditorView.world;
-		this.terrainEditorView = terrainEditorView;
+	public TerrainHeightMode(TerrainEditorMode terrainEditorMode) {
+		this.world = terrainEditorMode.world;
+		this.terrainEditorMode = terrainEditorMode;
 	}
 
-	protected void initUi()
+	@Override
+	public void initUi()
 	{
 		Terrain terrain = world.terrainView.terrain;
 		heightTable = new Table(world.app.skin);
@@ -125,13 +123,13 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 
 			scaleMagTable.row();
 			scaleMagTable.add(UtEditor.createLabel("Scale", world.app.skin));
-			scaleMagTable.add(hm_scaleTextField =UtEditor.createTextField(terrain.parameter.scale+"", world.app.skin,internalCl,internalCl));
+			scaleMagTable.add(hm_scaleTextField = UtEditor.createTextField(terrain.parameter.scale + "", world.app.skin, internalCl, internalCl));
 			scaleMagTable.add(hm_scaleUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
 			scaleMagTable.add(hm_scaleDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
 
 			scaleMagTable.row();
 			scaleMagTable.add(UtEditor.createLabel("Magnitude", world.app.skin));
-			scaleMagTable.add(hm_magnitudeTextField =UtEditor.createTextField(terrain.parameter.magnitude+"", world.app.skin, internalCl,internalCl));
+			scaleMagTable.add(hm_magnitudeTextField = UtEditor.createTextField(terrain.parameter.magnitude + "", world.app.skin, internalCl, internalCl));
 			scaleMagTable.add(hm_magnitudeUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
 			scaleMagTable.add(hm_magnitudeDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
 
@@ -140,12 +138,18 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 			heightTable.add(scaleMagTable).fill().maxWidth(10);
 		}
 
-
-
-		refreshHeightMapUi();
 	}
 
-	public void refreshHeightMapUi() {
+	@Override
+	public Actor getToolbarActor() {
+		return heightTable;
+	}
+
+	@Override
+	public void refreshUi() {
+		if(hm_Painter !=null)
+			hm_Painter.setPreviewPainting(enabled && hm_paintingPreview);
+
 		setUiParamScale(getParamScale());
 		setUiParamMagnitude(getParamMagnitude());
 
@@ -153,6 +157,7 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		setUiPixmapRadius(getUiPixmapRadius());
 		setUiPixmapHardEdge(getUiPixmapHardEdge());
 		setUiPixmapOpacity(getUiPixmapOpacity());
+
 	}
 	////////////
 	/// View methods
@@ -160,9 +165,6 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 
 	public void setEnabled(boolean enabled){
 		this.enabled = enabled;
-
-		if(hm_Painter !=null)
-			hm_Painter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && hm_paintingPreview);
 	}
 
 	private float buttonHoldTimer;
@@ -206,12 +208,6 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 	public void render(float delta){
 		if(!enabled)
 			return;
-
-		if (!world.editorView.isToolbarVisible()) {
-			String text = "Height map edit mode";
-
-			world.editorView.minTextLabel.setText(text);
-		}
 
 	}
 
@@ -297,24 +293,21 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 	public boolean keyUp(int keycode) {
 		if(!enabled) return false;
 		switch(keycode){
-			case Input.Keys.TAB:
-				terrainEditorView.setWeightPaintingEnabled(true);
-				return true;
 			case Input.Keys.LEFT_BRACKET:
 				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
 					setUiPixmapRadius(getUiPixmapRadius() - 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() - 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
+				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
 					setUiPixmapHardEdge(getUiPixmapHardEdge() - 0.1f);
 				}
 				return true;
 			case Input.Keys.RIGHT_BRACKET:
 				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
 					setUiPixmapRadius(getUiPixmapRadius() + 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() + 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
+				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
 					setUiPixmapHardEdge(getUiPixmapHardEdge() + 0.1f);
 				}
 				return true;
@@ -373,10 +366,10 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
 			setUiPixmapRadius(getUiPixmapRadius() - amount);
 			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 			setUiPixmapOpacity(getUiPixmapOpacity() - amount * 0.05f);
 			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
+		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 			setUiPixmapHardEdge(getUiPixmapHardEdge() - amount * 0.05f);
 			return true;
 		}
@@ -460,8 +453,8 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		terrain.parameter.scale = scale;
 
 		terrain.createTerrain(terrain.parameter);
-		terrainEditorView.refreshHeightMapWeightMapPainters();
-		refreshHeightMapUi();
+		terrainEditorMode.refreshHeightMapWeightMapPainters();
+		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 
 		//setUiParamScale(scale);
 	}
@@ -476,15 +469,16 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		terrain.parameter.magnitude = magnitude;
 
 		terrain.createTerrain(terrain.parameter);
-		terrainEditorView.refreshHeightMapWeightMapPainters();
-		refreshHeightMapUi();
+		terrainEditorMode.refreshHeightMapWeightMapPainters();
+		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 
 		//setUiParamMagnitude(magnitude);
 	}
 
 	private TerrainPainterDelegate terrainPainterDelegate;
 
-	public void refreshHeightMapPainter(){
+	@Override
+	public void refreshPainter(){
 
 		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
 
@@ -503,9 +497,9 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 		hm_Painter = new Painter(terrainPainterDelegate =new TerrainPainterDelegate(this));
 		hm_Painter.setBrushColor(new Color(1,1,1,1));
 		hm_Painter.setBrushOpacity(0.1f);
-		hm_Painter.coordProvider = terrainEditorView;
+		hm_Painter.coordProvider = terrainEditorMode;
 
-		hm_Painter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && hm_paintingPreview);
+		hm_Painter.setPreviewPainting(terrainEditorMode.isEnabled() && this.enabled && hm_paintingPreview);
 
 
 	}

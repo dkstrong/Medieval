@@ -17,16 +17,16 @@ import com.badlogic.gdx.utils.Array;
  */
 public class TerrainPainterDelegate implements PainterDelegate {
 
-	TerrainHeightMapUi terrainHeightMapUi;
+	TerrainHeightMode terrainHeightMode;
 	private Painter painter;
 	public float[] fieldData;
 	public int fieldWidth;
 	public int fieldHeight;
 
-	public TerrainPainterDelegate(TerrainHeightMapUi terrainHeightMapUi) {
-		this.terrainHeightMapUi = terrainHeightMapUi;
+	public TerrainPainterDelegate(TerrainHeightMode terrainHeightMode) {
+		this.terrainHeightMode = terrainHeightMode;
 
-		Terrain terrain = terrainHeightMapUi.world.terrainView.terrain;
+		Terrain terrain = terrainHeightMode.world.terrainView.terrain;
 		this.fieldData = terrain.fieldData;
 		this.fieldWidth = terrain.fieldWidth;
 		this.fieldHeight = terrain.fieldHeight;
@@ -108,7 +108,7 @@ public class TerrainPainterDelegate implements PainterDelegate {
 
 	@Override
 	public void output() {
-		Terrain terrain = terrainHeightMapUi.world.terrainView.terrain;
+		Terrain terrain = terrainHeightMode.world.terrainView.terrain;
 		terrain.parameter.fieldData = fieldData;
 		terrain.createTerrain(terrain.parameter);
 		//terrainHeightMapUi.terrainEditorView.refreshHeightMapWeightMapPainters();

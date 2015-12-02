@@ -5,19 +5,21 @@ import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.FileWatcher;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
@@ -25,40 +27,33 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeListener, InputProcessor, Painter.CoordProvider {
+public class TerrainEditorMode implements EditorMode, FileWatcher.FileChangeListener, Painter.CoordProvider {
 	public final MedievalWorld world;
 	private boolean enabled;
 
 
 	private InternalChangeListener internalChangeListener = new InternalChangeListener();
 	private Table toolTable;
-	private SelectBox<ModeSelectItem> modeSelectBox;
-	private ModeSelectItem fileModeSelectItem, heightModeSelectItem, weightModeSelectItem;
+	private SelectBox<EditorView.ModeSelectItem> modeSelectBox;
 	private Cell<?> modeContextCell; // the actor in this cell should be changed based on what mode is selected
 
-	public final TerrainFileModeUi fileModeUi;
-	public final TerrainHeightMapUi heightMapUi;
-	public final TerrainWeightMapUi weightMapUi;
+	public final EditorMode fileMode;
+	public final PaintableEditorMode heightMode;
+	public final PaintableEditorMode weightMode;
 
-	private static class ModeSelectItem{
-		String text;
+	public static interface PaintableEditorMode extends EditorMode {
 
-		public ModeSelectItem(String text) {
-			this.text = text;
-		}
+		public void refreshPainter();
 
-		@Override
-		public String toString() {
-			return text;
-		}
+		public void savePainterToFile(FileHandle fh);
 	}
 
-	public TerrainEditorView(MedievalWorld world) {
+	public TerrainEditorMode(MedievalWorld world) {
 		this.world = world;
 
-		fileModeUi = new TerrainFileModeUi(this);
-		heightMapUi = new TerrainHeightMapUi(this);
-		weightMapUi = new TerrainWeightMapUi(this);
+		fileMode = new TerrainFileMode(this);
+		heightMode = new TerrainHeightMode(this);
+		weightMode = new TerrainWeightMode(this);
 	}
 
 	//////////////////////////////////////////////////////
@@ -66,38 +61,30 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 	//////////////////////////////////////////////////////
 	@Override
 	public void initUi() {
+		fileMode.initUi();
+		heightMode.initUi();
+		weightMode.initUi();
+
 		refreshHeightMapWeightMapPainters();
 
-		Terrain terrain = world.terrainView.terrain;
-
-		toolTable = new Table(world.app.skin);
-		toolTable.align(Align.topLeft);
-
-		// heightmap or weightmap selector
+		// Tool Table
 		{
-
-			modeSelectBox = new SelectBox<ModeSelectItem>(world.app.skin);
+			modeSelectBox = new SelectBox<EditorView.ModeSelectItem>(world.app.skin);
 			modeSelectBox.getSelection().setProgrammaticChangeEvents(false);
 			modeSelectBox.addListener(internalChangeListener);
-			fileModeSelectItem = new ModeSelectItem("File");
-			heightModeSelectItem = new ModeSelectItem("Elevation");
-			weightModeSelectItem = new ModeSelectItem("Texture");
-			modeSelectBox.setItems(fileModeSelectItem,heightModeSelectItem,weightModeSelectItem);
+			EditorView.ModeSelectItem fileModeSelectItem = new EditorView.ModeSelectItem("File", fileMode);
+			EditorView.ModeSelectItem heightModeSelectItem = new EditorView.ModeSelectItem("Elevation", heightMode);
+			EditorView.ModeSelectItem weightModeSelectItem = new EditorView.ModeSelectItem("Texture", weightMode);
+			modeSelectBox.setItems(fileModeSelectItem, heightModeSelectItem, weightModeSelectItem);
 
-
-			//toolTable.row();
+			toolTable = new Table(world.app.skin);
+			toolTable.align(Align.topLeft);
+			toolTable.row();
 			toolTable.add(modeSelectBox);
+			modeContextCell = toolTable.add(new Label("no mode", world.app.skin)).fill().align(Align.topLeft);
 		}
 
-		// mode context cell
-		{
-			modeContextCell = toolTable.add(new Label("no mode",world.app.skin)).fill().align(Align.topLeft);
 
-		}
-
-		fileModeUi.initUi();
-		heightMapUi.initUi();
-		weightMapUi.initUi();
 	}
 
 
@@ -109,24 +96,22 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 
 	@Override
 	public void refreshUi() {
+		EditorMode currentMode = getMode();
 
-		fileModeUi.refreshFileUi();
-		heightMapUi.refreshHeightMapUi();
-		weightMapUi.refreshWeightMapUi();
+		setMode(currentMode);
 
-		if(weightMapUi.enabled){
-			setWeightPaintingEnabled(true);
-		}else if(heightMapUi.enabled){
-			setHeigtPaintingEnabled(true);
-		}else{
-			setFileModeEnabled(true);
+		if(currentMode!=null){
+			currentMode.refreshUi();
 		}
 
 	}
 
 	protected void refreshHeightMapWeightMapPainters() {
-		heightMapUi.refreshHeightMapPainter();
-		weightMapUi.refreshWeightMapPainter();
+		// TODO; instead of trying to refresh both all the itme, perhaps
+		// have these sub modes refresh their own painters as needed
+		// when refreshUI() is called?
+		heightMode.refreshPainter();
+		weightMode.refreshPainter();
 	}
 
 	public void resize(int width, int height) {
@@ -136,25 +121,25 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 	@Override
 	public void update(float delta) {
 		if (!enabled) return;
-		fileModeUi.update(delta);
-		heightMapUi.update(delta);
-		weightMapUi.update(delta);
+		fileMode.update(delta);
+		heightMode.update(delta);
+		weightMode.update(delta);
 	}
 
 	@Override
 	public void render(float delta) {
 		if (!enabled) return;
-		fileModeUi.render(delta);
-		heightMapUi.render(delta);
-		weightMapUi.render(delta);
+		fileMode.render(delta);
+		heightMode.render(delta);
+		weightMode.render(delta);
 	}
 
 	@Override
 	public void dispose() {
 		setEnabled(false);
-		fileModeUi.dispose();
-		heightMapUi.dispose();
-		weightMapUi.dispose();
+		fileMode.dispose();
+		heightMode.dispose();
+		weightMode.dispose();
 	}
 	////////////////////////////////////////
 	/// Begin methods that mutate the UI (ie button actions)
@@ -169,37 +154,33 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 			this.enabled = true;
 		} else if (!enabled && this.enabled) {
 			this.enabled = false;
+
 		}
 	}
 
-	public void setFileModeEnabled(boolean fileModeEnabled){
-		fileModeUi.setEnabled(fileModeEnabled);
-		if(fileModeEnabled){
-			modeSelectBox.setSelected(fileModeSelectItem);
-			modeContextCell.setActor(fileModeUi.fileModeTable);
-			setHeigtPaintingEnabled(false);
-			setWeightPaintingEnabled(false);
-		}
+	public EditorMode getMode() {
+		if(!enabled) return null;
+		return modeSelectBox.getSelected().mode;
 	}
 
-	public void setHeigtPaintingEnabled(boolean heightPaintingEnabled) {
-		heightMapUi.setEnabled(heightPaintingEnabled);
-		if (heightPaintingEnabled) {
-			modeSelectBox.setSelected(heightModeSelectItem);
-			modeContextCell.setActor(heightMapUi.heightTable);
-			setFileModeEnabled(false);
-			setWeightPaintingEnabled(false);
-		}
-	}
+	public void setMode(EditorMode editorMode) {
+		Array<EditorView.ModeSelectItem> items = modeSelectBox.getItems();
+		boolean valid =false;
+		for (EditorView.ModeSelectItem item : items) {
+			boolean enabled = editorMode == item.mode;
+			item.mode.setEnabled(enabled);
+			item.mode.refreshUi();
+			if (enabled) {
+				valid = true;
+				modeSelectBox.setSelected(item);
+				modeContextCell.setActor(item.mode.getToolbarActor());
+			}
 
-	public void setWeightPaintingEnabled(boolean weightPaintingEnabled) {
-		weightMapUi.setEnabled(weightPaintingEnabled);
-		if (weightPaintingEnabled) {
-			modeSelectBox.setSelected(weightModeSelectItem);
-			modeContextCell.setActor(weightMapUi.weightTable);
-			setFileModeEnabled(false);
-			setHeigtPaintingEnabled(false);
 		}
+
+		if(!valid)
+			modeContextCell.setActor(null);
+
 	}
 
 	private final Vector3 tempTranslation = new Vector3();
@@ -219,67 +200,50 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 	@Override
 	public boolean keyDown(int keycode) {
 		if (!enabled) return false;
-		if(heightMapUi.keyDown(keycode)) return true;
-		if(weightMapUi.keyDown(keycode)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
 		if (!enabled) return false;
-		if(heightMapUi.keyUp(keycode)) return true;
-		if(weightMapUi.keyUp(keycode)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean keyTyped(char character) {
 		if (!enabled) return false;
-		if(heightMapUi.keyTyped(character)) return true;
-		if(weightMapUi.keyTyped(character)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if (!enabled) return false;
-		if(heightMapUi.touchDown(screenX, screenY, pointer, button)) return true;
-		if(weightMapUi.touchDown(screenX, screenY, pointer, button)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if (!enabled) return false;
-		if(heightMapUi.touchUp(screenX, screenY, pointer, button)) return true;
-		if(weightMapUi.touchUp(screenX, screenY, pointer, button)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		if (!enabled) return false;
-		if(heightMapUi.touchDragged(screenX, screenY, pointer)) return true;
-		if(weightMapUi.touchDragged(screenX, screenY, pointer)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
 		if (!enabled) return false;
-		if(heightMapUi.mouseMoved(screenX, screenY)) return true;
-		if(weightMapUi.mouseMoved(screenX, screenY)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean scrolled(int amount) {
 		if (!enabled) return false;
-		if(heightMapUi.scrolled(amount)) return true;
-		if(weightMapUi.scrolled(amount)) return true;
 		return false;
 	}
-
 
 
 	private class InternalChangeListener implements EventListener {
@@ -288,17 +252,10 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 		public boolean handle(Event event) {
 			Actor actor = event.getListenerActor();
 
-			if(actor == modeSelectBox){
-				if(event instanceof ChangeListener.ChangeEvent){
-					ModeSelectItem selectItem = modeSelectBox.getSelected();
-
-					if(selectItem == fileModeSelectItem){
-						setFileModeEnabled(true);
-					}else if(selectItem == heightModeSelectItem){
-						setHeigtPaintingEnabled(true);
-					}else if(selectItem == weightModeSelectItem){
-						setWeightPaintingEnabled(true);
-					}
+			if (actor == modeSelectBox) {
+				if (event instanceof ChangeListener.ChangeEvent) {
+					EditorView.ModeSelectItem selectItem = modeSelectBox.getSelected();
+					setMode(selectItem.mode);
 				}
 			}
 
@@ -310,7 +267,6 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 	////////////////////////////////////////////////////////////
 	/// Begin methods that edit the terrain or edit files
 	////////////////////////////////////////////////////////////
-
 
 
 	@Override
@@ -330,11 +286,6 @@ public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeList
 			world.modelShaderProvider.terrainShaderProvider.clearShaderCache();
 		}
 	}
-
-
-
-
-
 
 
 }

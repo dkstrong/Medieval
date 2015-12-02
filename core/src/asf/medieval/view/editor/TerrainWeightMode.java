@@ -6,10 +6,8 @@ import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
-import asf.medieval.view.View;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -24,16 +22,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
 
 import java.nio.file.Paths;
 
 /**
  * Created by daniel on 11/30/15.
  */
-public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
+public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode {
 	public final MedievalWorld world;
-	public final TerrainEditorView terrainEditorView;
+	public final TerrainEditorMode terrainEditorMode;
 	public boolean enabled;
 
 	// weightmap splat ui
@@ -52,12 +49,13 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	public UiTexMapping wm_selectedTexChannel = null;
 	public Painter wm_Painter;
 
-	public TerrainWeightMapUi(TerrainEditorView terrainEditorView) {
-		this.world = terrainEditorView.world;
-		this.terrainEditorView = terrainEditorView;
+	public TerrainWeightMode(TerrainEditorMode terrainEditorMode) {
+		this.world = terrainEditorMode.world;
+		this.terrainEditorMode = terrainEditorMode;
 	}
 
-	protected void initUi()
+	@Override
+	public void initUi()
 	{
 		// Weightmap Tools
 		{
@@ -168,7 +166,11 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 		}
 
-		refreshWeightMapUi();
+	}
+
+	@Override
+	public Actor getToolbarActor() {
+		return weightTable;
 	}
 
 	private static class UiTexMapping {
@@ -222,7 +224,10 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	}
 
 
-	public void refreshWeightMapUi() {
+	public void refreshUi() {
+		if(wm_Painter!=null)
+			wm_Painter.setPreviewPainting(enabled && wm_paintingPreview);
+
 		// TODO: handle if the number of textures changes...
 		refreshUiTexMapping(wm_uiTexMappings.get(0), TerrainTextureAttribute.Tex1);
 		refreshUiTexMapping(wm_uiTexMappings.get(1), TerrainTextureAttribute.Tex2);
@@ -244,8 +249,6 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 	public void setEnabled(boolean enabled){
 		this.enabled = enabled;
-
-		wm_Painter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
 	}
 
 	public void update(float delta){
@@ -259,19 +262,6 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 	public void render(float delta){
 		if(!enabled)
 			return;
-
-		if (!world.editorView.isToolbarVisible()) {
-			String text = "";
-			if(wm_Painter != null)
-			{
-				text += "Tex: " + getUiPixmapTexChannel().texLocationFileName + "  ";
-				text += "Tool: " + getUiPixmapTool() + "   ";
-				text += "Radius: " + getUiPixmapRadius() + "   ";
-				text += "Hard Edge: " + getUiPixmapHardEdge() + "   ";
-				text += "Opacity: " + getUiPixmapOpacity();
-			}
-			world.editorView.minTextLabel.setText(text);
-		}
 
 	}
 
@@ -360,9 +350,6 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		if(!enabled)
 			return false;
 		switch (keycode) {
-			case Input.Keys.TAB:
-				terrainEditorView.setHeigtPaintingEnabled(true);
-				return true;
 			case Input.Keys.NUM_1:
 				setUiPixmapTexChannel(wm_uiTexMappings.get(0));
 				return true;
@@ -378,18 +365,18 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 			case Input.Keys.LEFT_BRACKET:
 				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
 					setUiPixmapRadius(getUiPixmapRadius() - 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() - 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
+				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
 					setUiPixmapHardEdge(getUiPixmapHardEdge() - 0.1f);
 				}
 				return true;
 			case Input.Keys.RIGHT_BRACKET:
 				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
 					setUiPixmapRadius(getUiPixmapRadius() + 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() + 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
+				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
 					setUiPixmapHardEdge(getUiPixmapHardEdge() + 0.1f);
 				}
 				return true;
@@ -461,10 +448,10 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
 			setUiPixmapRadius(getUiPixmapRadius() - amount);
 			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 			setUiPixmapOpacity(getUiPixmapOpacity() - amount * 0.05f);
 			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
+		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 			setUiPixmapHardEdge(getUiPixmapHardEdge() - amount * 0.05f);
 			return true;
 		}
@@ -506,7 +493,8 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 
 	private PixmapPainterDelegate painterModel;
 
-	public void refreshWeightMapPainter(){
+	@Override
+	public void refreshPainter(){
 		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
 		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
 
@@ -522,10 +510,10 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
 		painterModel = new PixmapPainterDelegate(currentTexture);
 		wm_Painter = new Painter(painterModel);
-		wm_Painter.coordProvider = terrainEditorView;
+		wm_Painter.coordProvider = terrainEditorMode;
 		world.terrainView.terrain.setOverrideMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
 
-		wm_Painter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
+		wm_Painter.setPreviewPainting(terrainEditorMode.isEnabled() && this.enabled && wm_paintingPreview);
 	}
 
 	public void savePainterToFile(FileHandle fh){

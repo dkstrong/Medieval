@@ -5,7 +5,6 @@ import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileManager;
 import asf.medieval.utility.UtLog;
 import asf.medieval.view.MedievalWorld;
-import asf.medieval.view.View;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -16,7 +15,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.XmlWriter;
 
 import java.io.IOException;
@@ -25,9 +23,9 @@ import java.io.StringWriter;
 /**
  * Created by daniel on 12/2/15.
  */
-public class TerrainFileModeUi implements View, Disposable, FileChooser.Listener {
+public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 	public final MedievalWorld world;
-	public final TerrainEditorView terrainEditorView;
+	public final TerrainEditorMode terrainEditorMode;
 	public boolean enabled;
 
 	private InternalClickListener internalCl = new InternalClickListener();
@@ -39,9 +37,9 @@ public class TerrainFileModeUi implements View, Disposable, FileChooser.Listener
 	private Button fileMenuWindowCloseButton;
 	private FileChooser fileChooser;
 
-	public TerrainFileModeUi(TerrainEditorView terrainEditorView) {
-		this.world = terrainEditorView.world;
-		this.terrainEditorView = terrainEditorView;
+	public TerrainFileMode(TerrainEditorMode terrainEditorMode) {
+		this.world = terrainEditorMode.world;
+		this.terrainEditorMode = terrainEditorMode;
 	}
 
 	public void initUi()
@@ -71,25 +69,31 @@ public class TerrainFileModeUi implements View, Disposable, FileChooser.Listener
 		}
 	}
 
+	@Override
+	public Actor getToolbarActor() {
+		return fileModeTable;
+	}
 
-	public void refreshFileUi()
+	@Override
+	public void refreshUi()
 	{
 		Terrain terrain = world.terrainView.terrain;
 		terrainNameLabel.setText(terrain.parameter.name + ".ter");
 	}
 
+	@Override
 	public void setEnabled(boolean enabled){
 		this.enabled = enabled;
 	}
 
 	@Override
 	public void update(float delta) {
-
+		if (!enabled) return;
 	}
 
 	@Override
 	public void render(float delta) {
-
+		if (!enabled) return;
 	}
 
 	@Override
@@ -101,7 +105,7 @@ public class TerrainFileModeUi implements View, Disposable, FileChooser.Listener
 	public void onFileSave(FileHandle fh) {
 		String name = fh.nameWithoutExtension();
 		saveTerrain(name);
-		terrainEditorView.refreshUi();
+		terrainEditorMode.refreshUi();
 		fileMenuWindowContainer.remove();
 	}
 
@@ -109,9 +113,49 @@ public class TerrainFileModeUi implements View, Disposable, FileChooser.Listener
 	public void onFileOpen(FileHandle fh) {
 		//String name = fh.nameWithoutExtension();
 		world.terrainView.terrain.loadTerrain(fh);
-		terrainEditorView.refreshHeightMapWeightMapPainters();
-		terrainEditorView.refreshUi();
+		terrainEditorMode.refreshHeightMapWeightMapPainters();
+		terrainEditorMode.refreshUi();
 		fileMenuWindowContainer.remove();
+	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		return false;
 	}
 
 	private class InternalClickListener extends ClickListener implements TextField.TextFieldFilter, TextField.TextFieldListener{
@@ -219,10 +263,10 @@ public class TerrainFileModeUi implements View, Disposable, FileChooser.Listener
 		}
 
 		FileHandle heightmapFh = FileManager.relative(parameter.heightmapName);
-		terrainEditorView.heightMapUi.savePainterToFile(heightmapFh);
+		terrainEditorMode.heightMode.savePainterToFile(heightmapFh);
 
 		FileHandle weightmap1Fh = FileManager.relative(parameter.weightMap1);
-		terrainEditorView.weightMapUi.savePainterToFile(weightmap1Fh);
+		terrainEditorMode.weightMode.savePainterToFile(weightmap1Fh);
 
 		System.out.println("Saved file: " + terrainFile.file().getAbsolutePath());
 

@@ -19,7 +19,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.GL20;
@@ -233,7 +232,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 			if(editorView!=null){
 				inputMultiplexer.addProcessor(editorView);
-				inputMultiplexer.addProcessor(editorView.terrainEditorView);
+				inputMultiplexer.addProcessor(editorView.gameEditorMode);
+				inputMultiplexer.addProcessor(editorView.terrainEditorMode);
+				inputMultiplexer.addProcessor(editorView.terrainEditorMode.fileMode);
+				inputMultiplexer.addProcessor(editorView.terrainEditorMode.heightMode);
+				inputMultiplexer.addProcessor(editorView.terrainEditorMode.weightMode);
 			}
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
 			inputMultiplexer.addProcessor(hudView);
@@ -375,8 +378,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		if (hudView != null)
 			hudView.resize(width, height);
 
-		if(editorView!= null)
-			editorView.resize(width,height);
+//		if(editorView!= null)
+//			editorView.resize(width,height);
 
 		cameraManager.resize(width, height);
 
