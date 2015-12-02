@@ -37,13 +37,13 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 
 	private Container<Table> baseTableContainer;
 	private Table baseTable;
-	protected Cell containerCell;
+	protected Cell modeContextCell;
 	private SelectBox<ModeSelectItem> modeSelectBox;
 	private ModeSelectItem gameSelectItem, terrainSelectItem;
 	private Container<?> gameToolbar;
 
 	private FileWatcher fileWatcher;
-	public final TerrainEditorView terrainEditorView;
+	public final EditorMode terrainEditorView;
 
 	private static class ModeSelectItem{
 		String text;
@@ -94,11 +94,11 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		modeSelectBox.setItems(gameSelectItem,terrainSelectItem);
 
 		gameToolbar = new Container<Label>(new Label("label", world.app.skin));
-		containerCell = baseTable.add(gameToolbar).fill().expand().align(Align.topLeft);
+		modeContextCell = baseTable.add(gameToolbar).fill().expand().align(Align.topLeft);
 
 
 		terrainEditorView = new TerrainEditorView(world);
-		//terrainEditorView.setEnabled(true);
+		terrainEditorView.initUi();
 
 
 		// TODO: muuuuhhhh, might need to do relative and local watches for each directory
@@ -121,7 +121,7 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	}
 
 	public void resize(int width, int height) {
-		terrainEditorView.resize(width, height);
+
 	}
 
 	@Override
@@ -145,15 +145,18 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 
 	public void setModeGame() {
 		modeSelectBox.setSelected(gameSelectItem);
-		terrainEditorView.setEnabled(false);
-		containerCell.setActor(gameToolbar);
+		modeContextCell.setActor(gameToolbar);
 
+		terrainEditorView.setEnabled(false);
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 
 	public void setModeTerrain() {
 		modeSelectBox.setSelected(terrainSelectItem);
+		modeContextCell.setActor(terrainEditorView.getToolbarActor());
+
 		terrainEditorView.setEnabled(true);
+		terrainEditorView.refreshUi();
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
@@ -186,11 +189,7 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		switch (keycode) {
 			case Input.Keys.TAB:
 				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
-					if(terrainEditorView.isEnabled()){
-						setModeGame();
-					}else{
-						setModeTerrain();
-					}
+					// TODO: switch between modes
 					return true;
 				}
 				return false;

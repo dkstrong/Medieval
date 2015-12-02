@@ -5,7 +5,6 @@ import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.FileWatcher;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
-import asf.medieval.view.View;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -19,7 +18,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Disposable;
 
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
@@ -27,7 +25,7 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, Painter.CoordProvider {
+public class TerrainEditorView implements EditorMode, FileWatcher.FileChangeListener, InputProcessor, Painter.CoordProvider {
 	public final MedievalWorld world;
 	private boolean enabled;
 
@@ -38,9 +36,9 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	private ModeSelectItem fileModeSelectItem, heightModeSelectItem, weightModeSelectItem;
 	private Cell<?> modeContextCell; // the actor in this cell should be changed based on what mode is selected
 
-	private final TerrainFileModeUi fileModeUi;
-	protected final TerrainHeightMapUi heightMapUi;
-	protected final TerrainWeightMapUi weightMapUi;
+	public final TerrainFileModeUi fileModeUi;
+	public final TerrainHeightMapUi heightMapUi;
+	public final TerrainWeightMapUi weightMapUi;
 
 	private static class ModeSelectItem{
 		String text;
@@ -61,19 +59,15 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		fileModeUi = new TerrainFileModeUi(this);
 		heightMapUi = new TerrainHeightMapUi(this);
 		weightMapUi = new TerrainWeightMapUi(this);
-
-		refreshHeightMapWeightMapPainters();
-		initUi();
-
-		//setHeigtPaintingEnabled(true);
-		//setWeightPaintingEnabled(true);
-
 	}
 
 	//////////////////////////////////////////////////////
 	/// Begin methods that set up and refresh the ui
 	//////////////////////////////////////////////////////
-	private void initUi() {
+	@Override
+	public void initUi() {
+		refreshHeightMapWeightMapPainters();
+
 		Terrain terrain = world.terrainView.terrain;
 
 		toolTable = new Table(world.app.skin);
@@ -107,8 +101,14 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	}
 
 
+	@Override
+	public Actor getToolbarActor() {
+		return toolTable;
+	}
 
-	protected void refreshUi() {
+
+	@Override
+	public void refreshUi() {
 
 		fileModeUi.refreshFileUi();
 		heightMapUi.refreshHeightMapUi();
@@ -165,15 +165,10 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	}
 
 	public void setEnabled(boolean enabled) {
-
 		if (enabled && !this.enabled) {
 			this.enabled = true;
-			world.editorView.containerCell.setActor(toolTable);
-			refreshUi();
 		} else if (!enabled && this.enabled) {
 			this.enabled = false;
-			world.editorView.containerCell.setActor(new Container());
-			//refreshHeightMapUi();
 		}
 	}
 
