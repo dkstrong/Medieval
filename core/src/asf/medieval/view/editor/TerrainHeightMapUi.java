@@ -57,23 +57,8 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 	protected void initUi()
 	{
 		Terrain terrain = world.terrainView.terrain;
-		// Heightmap tools
-		{
-			heightTable = new Table(world.app.skin);
-
-			heightTable.row();
-			heightTable.add(UtEditor.createLabel("Scale", world.app.skin));
-			heightTable.add(hm_scaleTextField =UtEditor.createTextField(terrain.parameter.scale+"", world.app.skin,internalCl,internalCl));
-			heightTable.add(hm_scaleUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
-			heightTable.add(hm_scaleDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
-
-			heightTable.row();
-			heightTable.add(UtEditor.createLabel("Magnitude", world.app.skin));
-			heightTable.add(hm_magnitudeTextField =UtEditor.createTextField(terrain.parameter.magnitude+"", world.app.skin, internalCl,internalCl));
-			heightTable.add(hm_magnitudeUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
-			heightTable.add(hm_magnitudeDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
-		}
-
+		heightTable = new Table(world.app.skin);
+		heightTable.row();
 		// PixmapPainter Tool selector
 		{
 
@@ -103,8 +88,8 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 			wm_toolSelectionButtonGroup.add(wm_sprayButton);
 			wm_toolSelectionButtonGroup.add(wm_eraserButton);
 
-			heightTable.row();
-			heightTable.add(toolSubtable).colspan(4);
+			//heightTable.row();
+			heightTable.add(toolSubtable);
 		}
 		// PixmapPainter addiitonal settings
 		{
@@ -131,9 +116,31 @@ public class TerrainHeightMapUi implements View, Disposable, InputProcessor {
 			pixmapSettingsSubtable.add(toolOpacityCaptionLabel);
 			pixmapSettingsSubtable.add(wm_opacityValueLabel);
 
-			heightTable.row();
-			heightTable.add(pixmapSettingsSubtable).padBottom(10).colspan(4);
+			//heightTable.row();
+			heightTable.add(pixmapSettingsSubtable);
 		}
+		// Heightmap tools
+		{
+			Table scaleMagTable = new Table(world.app.skin);
+
+			scaleMagTable.row();
+			scaleMagTable.add(UtEditor.createLabel("Scale", world.app.skin));
+			scaleMagTable.add(hm_scaleTextField =UtEditor.createTextField(terrain.parameter.scale+"", world.app.skin,internalCl,internalCl));
+			scaleMagTable.add(hm_scaleUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
+			scaleMagTable.add(hm_scaleDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
+
+			scaleMagTable.row();
+			scaleMagTable.add(UtEditor.createLabel("Magnitude", world.app.skin));
+			scaleMagTable.add(hm_magnitudeTextField =UtEditor.createTextField(terrain.parameter.magnitude+"", world.app.skin, internalCl,internalCl));
+			scaleMagTable.add(hm_magnitudeUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
+			scaleMagTable.add(hm_magnitudeDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
+
+
+			//heightTable.row();
+			heightTable.add(scaleMagTable).fill().maxWidth(10);
+		}
+
+
 
 		refreshHeightMapUi();
 	}

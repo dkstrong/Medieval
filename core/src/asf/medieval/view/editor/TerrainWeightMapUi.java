@@ -62,48 +62,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		// Weightmap Tools
 		{
 			weightTable = new Table(world.app.skin);
-			// Texture Channel Selector
-			{
-
-				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex1));
-				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex2));
-				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex3));
-				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex4));
-
-				wm_texSelectionButtonGroup = new ButtonGroup<Button>();
-				wm_texSelectionButtonGroup.setMaxCheckCount(1);
-				wm_texSelectionButtonGroup.setMinCheckCount(1);
-				wm_texSelectionButtonGroup.setUncheckLast(true);
-
-				Table texSubtable = new Table(world.app.skin);
-				texSubtable.row().pad(5);
-				for (UiTexMapping uiTexMapping : wm_uiTexMappings) {
-					texSubtable.add(uiTexMapping.toolbarButton).fill();
-					wm_texSelectionButtonGroup.add(uiTexMapping.toolbarButton);
-				}
-				weightTable.row();
-				weightTable.add(texSubtable);
-
-			}
-			// Current Texture Channel Details
-			{
-
-				Label texLocCaptionLabel = UtEditor.createLabel("Texture:", world.app.skin);
-				wm_texLocValueLabel = UtEditor.createLabel("", world.app.skin);
-				Label scaleCaptionLabel = UtEditor.createLabel("Scale:", world.app.skin);
-				wm_scaleValueLabel = UtEditor.createLabel("", world.app.skin);
-
-				Table texSettingsSubtable = new Table(world.app.skin);
-				texSettingsSubtable.row();
-				texSettingsSubtable.add(texLocCaptionLabel);
-				texSettingsSubtable.add(wm_texLocValueLabel);
-
-				texSettingsSubtable.row();
-				texSettingsSubtable.add(scaleCaptionLabel);
-				texSettingsSubtable.add(wm_scaleValueLabel);
-				weightTable.row();
-				weightTable.add(texSettingsSubtable).padBottom(10);
-			}
+			weightTable.row();
 			// PixmapPainter Tool selector
 			{
 
@@ -133,7 +92,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 				wm_toolSelectionButtonGroup.add(wm_sprayButton);
 				wm_toolSelectionButtonGroup.add(wm_eraserButton);
 
-				weightTable.row();
+				//weightTable.row();
 				weightTable.add(toolSubtable);
 			}
 			// PixmapPainter addiitonal settings
@@ -160,9 +119,52 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 				pixmapSettingsSubtable.add(toolOpacityCaptionLabel);
 				pixmapSettingsSubtable.add(wm_opacityValueLabel);
 
-				weightTable.row();
-				weightTable.add(pixmapSettingsSubtable).padBottom(10);
+				//weightTable.row();
+				weightTable.add(pixmapSettingsSubtable);
 			}
+			// Texture Channel Selector
+			{
+
+				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex1));
+				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex2));
+				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex3));
+				wm_uiTexMappings.add(createUiTexMapping(TerrainTextureAttribute.Tex4));
+
+				wm_texSelectionButtonGroup = new ButtonGroup<Button>();
+				wm_texSelectionButtonGroup.setMaxCheckCount(1);
+				wm_texSelectionButtonGroup.setMinCheckCount(1);
+				wm_texSelectionButtonGroup.setUncheckLast(true);
+
+				Table texSubtable = new Table(world.app.skin);
+				texSubtable.row().pad(5);
+				for (UiTexMapping uiTexMapping : wm_uiTexMappings) {
+					texSubtable.add(uiTexMapping.toolbarButton).fill();
+					wm_texSelectionButtonGroup.add(uiTexMapping.toolbarButton);
+				}
+				//weightTable.row();
+				weightTable.add(texSubtable);
+
+			}
+			// Current Texture Channel Details
+			{
+
+				Label texLocCaptionLabel = UtEditor.createLabel("Texture:", world.app.skin);
+				wm_texLocValueLabel = UtEditor.createLabel("", world.app.skin);
+				Label scaleCaptionLabel = UtEditor.createLabel("Scale:", world.app.skin);
+				wm_scaleValueLabel = UtEditor.createLabel("", world.app.skin);
+
+				Table texSettingsSubtable = new Table(world.app.skin);
+				texSettingsSubtable.row();
+				texSettingsSubtable.add(texLocCaptionLabel);
+				texSettingsSubtable.add(wm_texLocValueLabel);
+
+				texSettingsSubtable.row();
+				texSettingsSubtable.add(scaleCaptionLabel);
+				texSettingsSubtable.add(wm_scaleValueLabel);
+				//weightTable.row();
+				weightTable.add(texSettingsSubtable);
+			}
+
 
 		}
 
@@ -379,7 +381,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() - 0.1f);
 				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
-					setUiPixmapHardEdge(getUiPixmapHardEdge() + 0.1f);
+					setUiPixmapHardEdge(getUiPixmapHardEdge() - 0.1f);
 				}
 				return true;
 			case Input.Keys.RIGHT_BRACKET:
@@ -388,7 +390,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 				} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					setUiPixmapOpacity(getUiPixmapOpacity() + 0.1f);
 				}else if(Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)){
-					setUiPixmapHardEdge(getUiPixmapHardEdge() - 0.1f);
+					setUiPixmapHardEdge(getUiPixmapHardEdge() + 0.1f);
 				}
 				return true;
 			case Input.Keys.B:
@@ -463,7 +465,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 			setUiPixmapOpacity(getUiPixmapOpacity() - amount * 0.05f);
 			return true;
 		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-			setUiPixmapHardEdge(getUiPixmapHardEdge() + amount * 0.05f);
+			setUiPixmapHardEdge(getUiPixmapHardEdge() - amount * 0.05f);
 			return true;
 		}
 

@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -38,6 +39,13 @@ public class UtEditor {
 		return fileChooser;
 	}
 
+	public static SelectBox createSelectBox(Skin skin, EventListener listener)
+	{
+		SelectBox selectBox = new SelectBox(skin);
+		if(listener!=null)
+			selectBox.addListener(listener);
+		return selectBox;
+	}
 
 	public static Label createLabel(String labelText, Skin skin) {
 		Label label = new Label(labelText, skin);
@@ -47,7 +55,6 @@ public class UtEditor {
 
 	public static TextField createTextField(String defaultText, Skin skin, TextField.TextFieldFilter filter, TextField.TextFieldListener listener){
 		TextField textField = new TextField(defaultText, skin);
-
 		textField.setOnlyFontChars(true);
 
 		if(filter != null)
@@ -107,6 +114,7 @@ public class UtEditor {
 
 	public static Tree createTree(Skin skin){
 		Tree tree = new Tree(skin);
+
 		return tree;
 	}
 

@@ -14,16 +14,18 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
@@ -37,29 +39,39 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, Painter.CoordProvider, FileChooser.Listener {
+public class TerrainEditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, Painter.CoordProvider {
 	public final MedievalWorld world;
 	private boolean enabled;
 
-	private InternalClickListener internalCl = new InternalClickListener();
-	private Table toolTable;
-	private Label terrainNameLabel;
-	private Button fileMenuButton;
-	private Container<Window> fileMenuWindowContainer;
-	private Window fileMenuWindow;
-	private Button fileMenuWindowCloseButton;
-	private FileChooser fileChooser;
-	private ButtonGroup<TextButton> heightOrWeightButtonGroup;
-	private TextButton heightMapButton, weightMapButton;
-	private Cell<?> table3Cell;
-	private Table table3;
 
-	private final TerrainHeightMapUi heightMapUi;
-	private final TerrainWeightMapUi weightMapUi;
+	private InternalChangeListener internalChangeListener = new InternalChangeListener();
+	private Table toolTable;
+	private SelectBox<ModeSelectItem> modeSelectBox;
+	private ModeSelectItem fileModeSelectItem, heightModeSelectItem, weightModeSelectItem;
+
+	private Cell<?> table3Cell;
+
+	private final TerrainFileModeUi fileModeUi;
+	protected final TerrainHeightMapUi heightMapUi;
+	protected final TerrainWeightMapUi weightMapUi;
+
+	private static class ModeSelectItem{
+		String text;
+
+		public ModeSelectItem(String text) {
+			this.text = text;
+		}
+
+		@Override
+		public String toString() {
+			return text;
+		}
+	}
 
 	public TerrainEditorView(MedievalWorld world) {
 		this.world = world;
 
+		fileModeUi = new TerrainFileModeUi(this);
 		heightMapUi = new TerrainHeightMapUi(this);
 		weightMapUi = new TerrainWeightMapUi(this);
 
@@ -67,7 +79,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		initUi();
 
 		//setHeigtPaintingEnabled(true);
-		setWeightPaintingEnabled(true);
+		//setWeightPaintingEnabled(true);
 
 	}
 
@@ -80,80 +92,49 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		toolTable = new Table(world.app.skin);
 		toolTable.align(Align.topLeft);
 
-
-		// file settings / file operations
-		{
-			Table table1 = new Table(world.app.skin);
-			table1.row();
-			table1.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
-			table1.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
-			toolTable.row();
-			toolTable.add(table1).fill().align(Align.topLeft);
-
-
-			fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
-			fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton = UtEditor.createTextButton("[X]", world.app.skin, internalCl));
-
-			fileChooser = UtEditor.createFileChooser(this, world.app.skin);
-			fileMenuWindow.row();
-			fileMenuWindow.add(fileChooser).fill().expand();
-
-			fileMenuWindowContainer = new Container<Window>(fileMenuWindow);
-			fileMenuWindowContainer.setFillParent(true);
-			fileMenuWindowContainer.center();
-			fileMenuWindowContainer.minSize(400, 300);
-
-
-		}
 		// heightmap or weightmap selector
 		{
-			Table table2 = new Table(world.app.skin);
-			table2.row();
-			table2.add(heightMapButton = UtEditor.createTextButtonToggle("Elevation", world.app.skin, internalCl)).fill();
-			table2.add(weightMapButton = UtEditor.createTextButtonToggle("Texture", world.app.skin, internalCl)).fill();
 
-			heightOrWeightButtonGroup = new ButtonGroup<TextButton>(heightMapButton, weightMapButton);
-			heightOrWeightButtonGroup.setMaxCheckCount(1);
-			heightOrWeightButtonGroup.setMinCheckCount(1);
-			heightOrWeightButtonGroup.setUncheckLast(true);
+			modeSelectBox = new SelectBox<ModeSelectItem>(world.app.skin);
+			modeSelectBox.getSelection().setProgrammaticChangeEvents(false);
+			modeSelectBox.addListener(internalChangeListener);
+			fileModeSelectItem = new ModeSelectItem("File");
+			heightModeSelectItem = new ModeSelectItem("Elevation");
+			weightModeSelectItem = new ModeSelectItem("Texture");
+			modeSelectBox.setItems(fileModeSelectItem,heightModeSelectItem,weightModeSelectItem);
 
-			toolTable.row();
-			toolTable.add(table2).fill().align(Align.topLeft);
+
+			//toolTable.row();
+			toolTable.add(modeSelectBox);
 		}
 
-		// No tools selected
+		// mode context cell
 		{
-			table3 = new Table(world.app.skin);
-			toolTable.row().align(Align.topLeft);
-			table3Cell = toolTable.add(table3).fill().align(Align.topLeft);
+			table3Cell = toolTable.add(new Label("no mode",world.app.skin)).fill().align(Align.topLeft);
 
-
-			table3.row();
-			table3.add(UtEditor.createLabel("label",world.app.skin));
 		}
 
-
+		fileModeUi.initUi();
 		heightMapUi.initUi();
 		weightMapUi.initUi();
-
-
-
 	}
 
 
 
-	private void refreshUi() {
-		Terrain terrain = world.terrainView.terrain;
-		terrainNameLabel.setText(terrain.parameter.name + ".ter");
+	protected void refreshUi() {
 
+		fileModeUi.refreshFileUi();
 		heightMapUi.refreshHeightMapUi();
 		weightMapUi.refreshWeightMapUi();
 
 		if(weightMapUi.enabled){
 			setWeightPaintingEnabled(true);
-		}else{
+		}else if(heightMapUi.enabled){
 			setHeigtPaintingEnabled(true);
+		}else{
+			setFileModeEnabled(true);
 		}
+
 	}
 
 	public void resize(int width, int height) {
@@ -163,6 +144,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	@Override
 	public void update(float delta) {
 		if (!enabled) return;
+		fileModeUi.update(delta);
 		heightMapUi.update(delta);
 		weightMapUi.update(delta);
 	}
@@ -170,6 +152,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	@Override
 	public void render(float delta) {
 		if (!enabled) return;
+		fileModeUi.render(delta);
 		heightMapUi.render(delta);
 		weightMapUi.render(delta);
 	}
@@ -177,6 +160,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	@Override
 	public void dispose() {
 		setEnabled(false);
+		fileModeUi.dispose();
 		heightMapUi.dispose();
 		weightMapUi.dispose();
 	}
@@ -201,11 +185,22 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		}
 	}
 
+	public void setFileModeEnabled(boolean fileModeEnabled){
+		fileModeUi.setEnabled(fileModeEnabled);
+		if(fileModeEnabled){
+			modeSelectBox.setSelected(fileModeSelectItem);
+			table3Cell.setActor(fileModeUi.fileModeTable);
+			setHeigtPaintingEnabled(false);
+			setWeightPaintingEnabled(false);
+		}
+	}
+
 	public void setHeigtPaintingEnabled(boolean heightPaintingEnabled) {
 		heightMapUi.setEnabled(heightPaintingEnabled);
 		if (heightPaintingEnabled) {
-			heightMapButton.setChecked(true);
+			modeSelectBox.setSelected(heightModeSelectItem);
 			table3Cell.setActor(heightMapUi.heightTable);
+			setFileModeEnabled(false);
 			setWeightPaintingEnabled(false);
 		}
 	}
@@ -213,8 +208,9 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	public void setWeightPaintingEnabled(boolean weightPaintingEnabled) {
 		weightMapUi.setEnabled(weightPaintingEnabled);
 		if (weightPaintingEnabled) {
-			weightMapButton.setChecked(true);
+			modeSelectBox.setSelected(weightModeSelectItem);
 			table3Cell.setActor(weightMapUi.weightTable);
+			setFileModeEnabled(false);
 			setHeigtPaintingEnabled(false);
 		}
 	}
@@ -297,40 +293,30 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		return false;
 	}
 
-	private class InternalClickListener extends ClickListener implements TextField.TextFieldFilter, TextField.TextFieldListener{
 
-		public void clicked(InputEvent event, float x, float y) {
+
+	private class InternalChangeListener implements EventListener {
+
+		@Override
+		public boolean handle(Event event) {
 			Actor actor = event.getListenerActor();
 
-			if (actor == heightMapButton || actor == weightMapButton) {
-				TextButton checked = heightOrWeightButtonGroup.getChecked();
+			if(actor == modeSelectBox){
+				if(event instanceof ChangeListener.ChangeEvent){
+					ModeSelectItem selectItem = modeSelectBox.getSelected();
 
-				if (checked == heightMapButton) {
-					setHeigtPaintingEnabled(true);
-				} else if (checked == weightMapButton) {
-					setWeightPaintingEnabled(true);
-				} else {
-					table3Cell.setActor(table3);
-					setHeigtPaintingEnabled(false);
-					setWeightPaintingEnabled(false);
+					if(selectItem == fileModeSelectItem){
+						setFileModeEnabled(true);
+					}else if(selectItem == heightModeSelectItem){
+						setHeigtPaintingEnabled(true);
+					}else if(selectItem == weightModeSelectItem){
+						setWeightPaintingEnabled(true);
+					}
 				}
-			} else if (actor == fileMenuButton) {
-
-				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
-				world.stage.addActor(fileMenuWindowContainer);
-			} else if (actor == fileMenuWindowCloseButton) {
-				fileMenuWindowContainer.remove();
 			}
-		}
 
-		@Override
-		public boolean acceptChar(TextField textField, char c) {
-			return true;
-		}
 
-		@Override
-		public void keyTyped(TextField textField, char c) {
-
+			return false;
 		}
 	}
 
@@ -338,22 +324,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	/// Begin methods that edit the terrain or edit files
 	////////////////////////////////////////////////////////////
 
-	@Override
-	public void onFileSave(FileHandle fh) {
-		String name = fh.nameWithoutExtension();
-		saveTerrain(name);
-		refreshUi();
-		fileMenuWindowContainer.remove();
-	}
 
-	@Override
-	public void onFileOpen(FileHandle fh) {
-		//String name = fh.nameWithoutExtension();
-		world.terrainView.terrain.loadTerrain(fh);
-		refreshHeightMapWeightMapPainters();
-		refreshUi();
-		fileMenuWindowContainer.remove();
-	}
 
 	@Override
 	public void onFileChanged(WatchEvent<Path> event) {
@@ -379,95 +350,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 	}
 
 
-	private void saveTerrain(String name) {
-		TerrainLoader.TerrainParameter parameter = world.terrainView.terrain.parameter;
 
-		if (name != null)
-			parameter.name = name;
-
-		if (parameter.name == null || parameter.name.trim().isEmpty()) {
-			parameter.name = "untitled-terrain";
-			// TODO: make name unique to other terrains if it is not
-		}
-
-		parameter.heightmapName = "Terrain/" + name + "_heightmap.cim";
-		parameter.weightMap1 = "Terrain/" + name + "_weightmap.png";
-
-		FileHandle terrainFile = FileManager.relative("Terrain/" + name + ".ter");
-
-		StringWriter stringWriter = new StringWriter();
-		XmlWriter xmlWriter = new XmlWriter(stringWriter);
-		try {
-			xmlWriter
-				.element("Terrain")
-				.attribute("name", name)
-				.attribute("scale", parameter.scale)
-				.attribute("magnitude", parameter.magnitude)
-				.attribute("chunkWidth", parameter.chunkWidth)
-				.attribute("chunkHeight", parameter.chunkHeight);
-			if (parameter.heightmapName != null && !parameter.heightmapName.trim().isEmpty()) {
-				xmlWriter.element("heightData")
-					.attribute("heightmapName", parameter.heightmapName)
-					.pop();
-			} else {
-				xmlWriter.
-					element("heightData")
-					.attribute("seed", parameter.seed)
-					.attribute("fieldWidth", parameter.fieldWidth)
-					.attribute("fieldHeight", parameter.fieldHeight)
-					.pop();
-			}
-
-			if (parameter.weightMap1 != null) {
-				xmlWriter.element("weightMap1")
-					.attribute("tex", parameter.weightMap1)
-					.pop();
-			}
-
-			if (parameter.tex1 != null) {
-				xmlWriter.element("tex1")
-					.attribute("tex", parameter.tex1)
-					.attribute("scale", parameter.tex1Scale)
-					.pop();
-			}
-
-			if (parameter.tex2 != null) {
-				xmlWriter.element("tex2")
-					.attribute("tex", parameter.tex2)
-					.attribute("scale", parameter.tex2Scale)
-					.pop();
-			}
-
-			if (parameter.tex3 != null) {
-				xmlWriter.element("tex3")
-					.attribute("tex", parameter.tex3)
-					.attribute("scale", parameter.tex3Scale)
-					.pop();
-			}
-
-			if (parameter.tex4 != null) {
-				xmlWriter.element("tex4")
-					.attribute("tex", parameter.tex4)
-					.attribute("scale", parameter.tex4Scale)
-					.pop();
-			}
-
-			xmlWriter.pop();
-			terrainFile.writeString(stringWriter.toString(), false);
-		} catch (IOException e1) {
-
-			UtLog.error("failed to write terrain file", e1);
-		}
-
-		FileHandle heightmapFh = FileManager.relative(parameter.heightmapName);
-		heightMapUi.savePainterToFile(heightmapFh);
-
-		FileHandle weightmap1Fh = FileManager.relative(parameter.weightMap1);
-		weightMapUi.savePainterToFile(weightmap1Fh);
-
-		System.out.println("Saved file: " + terrainFile.file().getAbsolutePath());
-
-	}
 
 
 }

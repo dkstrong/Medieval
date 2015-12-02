@@ -56,6 +56,7 @@ public class FileChooser extends Table {
 		list.addListener(new InternalListChangeListener());
 
 
+
 		scrollPane = new ScrollPane(list);
 		scrollPane.setOverscroll(false, false);
 

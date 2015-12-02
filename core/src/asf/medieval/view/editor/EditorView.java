@@ -8,16 +8,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -31,7 +29,7 @@ import java.nio.file.WatchEvent;
 public class EditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor {
 
 	public final MedievalWorld world;
-	private final InternalClickListener internalCl = new InternalClickListener();
+	private final InternalChangeListener internalCl = new InternalChangeListener();
 
 	private Container<Table> minTableContainer;
 	private Table minTable;
@@ -40,14 +38,25 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	private Container<Table> baseTableContainer;
 	private Table baseTable;
 	protected Cell containerCell;
-	private ButtonGroup<TextButton> buttonGroup;
-	private TextButton gameButton, terrainButton;
-
+	private SelectBox<ModeSelectItem> modeSelectBox;
+	private ModeSelectItem gameSelectItem, terrainSelectItem;
 	private Container<?> gameToolbar;
 
 	private FileWatcher fileWatcher;
 	public final TerrainEditorView terrainEditorView;
 
+	private static class ModeSelectItem{
+		String text;
+
+		public ModeSelectItem(String text) {
+			this.text = text;
+		}
+
+		@Override
+		public String toString() {
+			return text;
+		}
+	}
 
 	public EditorView(MedievalWorld world) {
 		this.world = world;
@@ -56,12 +65,12 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		minTable.setBackground("default-pane-trans");
 		minTable.row();
 		minTextLabel = new Label("", world.app.skin);
-		minTextLabel.setAlignment(Align.bottomLeft, Align.bottomLeft);
+		minTextLabel.setAlignment(Align.topLeft, Align.topLeft);
 		minTable.add(minTextLabel);
 
 		minTableContainer = new Container<Table>(minTable);
 		minTableContainer.setFillParent(true);
-		minTableContainer.align(Align.bottomLeft);
+		minTableContainer.align(Align.topLeft);
 
 
 		baseTable = new Table(world.app.skin);
@@ -69,24 +78,23 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		//baseTable.align(Align.topLeft);
 		baseTableContainer = new Container<Table>(baseTable);
 		baseTableContainer.setFillParent(true);
-		baseTableContainer.align(Align.left);
-		baseTableContainer.fillY();
-		baseTableContainer.minWidth(250);
+		baseTableContainer.align(Align.topLeft);
+		baseTableContainer.fillX();
+		//baseTableContainer.minHeight(250);
 		world.stage.addActor(baseTableContainer);
 
 		//baseTable.row();
 		//baseTable.add(createLabel("Mode", world.app.skin)).fill().align(Align.topLeft).colspan(2);
-		baseTable.row().padBottom(Value.percentWidth(0.1f));
-		baseTable.add(gameButton = UtEditor.createTextButtonToggle("Game", world.app.skin, internalCl)).fill();
-		baseTable.add(terrainButton = UtEditor.createTextButtonToggle("Terrain", world.app.skin, internalCl)).fill();
-		baseTable.row();
+		baseTable.row();//.padBottom(Value.percentWidth(0.05f));
+		baseTable.add(modeSelectBox = new SelectBox<ModeSelectItem>(world.app.skin));
+		modeSelectBox.getSelection().setProgrammaticChangeEvents(false);
+		modeSelectBox.addListener(internalCl);
+		gameSelectItem = new ModeSelectItem("Game");
+		terrainSelectItem = new ModeSelectItem("Terrain");
+		modeSelectBox.setItems(gameSelectItem,terrainSelectItem);
+
 		gameToolbar = new Container<Label>(new Label("label", world.app.skin));
-		containerCell = baseTable.add(gameToolbar).fill().expand().align(Align.topLeft).colspan(2);
-
-
-		buttonGroup = new ButtonGroup<TextButton>(gameButton, terrainButton);
-		buttonGroup.setMaxCheckCount(1);
-		buttonGroup.setMinCheckCount(1);
+		containerCell = baseTable.add(gameToolbar).fill().expand().align(Align.topLeft);
 
 
 		terrainEditorView = new TerrainEditorView(world);
@@ -136,17 +144,17 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	}
 
 	public void setModeGame() {
-		gameButton.setChecked(true);
+		modeSelectBox.setSelected(gameSelectItem);
 		terrainEditorView.setEnabled(false);
-
 		containerCell.setActor(gameToolbar);
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 
 	public void setModeTerrain() {
-		terrainButton.setChecked(true);
+		modeSelectBox.setSelected(terrainSelectItem);
 		terrainEditorView.setEnabled(true);
+
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 
@@ -228,26 +236,29 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 
 	}
 
-	private class InternalClickListener extends ClickListener {
-		public void clicked(InputEvent event, float x, float y) {
-			Actor actor = event.getListenerActor();
-
-			TextButton checked = buttonGroup.getChecked();
-			if (checked == gameButton) {
-				setModeGame();
-			} else if (checked == terrainButton) {
-				setModeTerrain();
-			}
-		}
-	}
-
-	private class InternalChangeListener extends ChangeListener {
+	private class InternalChangeListener implements EventListener {
 
 		@Override
-		public void changed(ChangeEvent event, Actor actor) {
+		public boolean handle(Event event) {
+			Actor actor = event.getListenerActor();
 
+			if(actor == modeSelectBox){
+				if(event instanceof ChangeListener.ChangeEvent){
+					ModeSelectItem selectItem = modeSelectBox.getSelected();
+
+					if(selectItem == gameSelectItem){
+						System.out.println("set to game mode");
+						setModeGame();
+					}else if(selectItem == terrainSelectItem){
+						System.out.println("set to terrain mode");
+						setModeTerrain();
+					}
+				}
+			}
+
+
+			return false;
 		}
 	}
-
 
 }
