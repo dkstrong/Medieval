@@ -1,7 +1,6 @@
 package asf.medieval.view.editor;
 
-import asf.medieval.utility.UtFileHandle;
-import com.badlogic.gdx.Gdx;
+import asf.medieval.utility.FileManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
@@ -92,10 +91,10 @@ public class FileChooser extends Table {
 		this.directoryName = directoryName;
 		this.allowedFileTypes = fileTypes;
 
-		FileHandle directory = UtFileHandle.relative(directoryName);
+		FileHandle directory = FileManager.relative(directoryName);
 
 		if (selected != null) {
-			FileHandle selectedFile = UtFileHandle.relative(directoryName + "/" + selected);
+			FileHandle selectedFile = FileManager.relative(directoryName + "/" + selected);
 			selected = selectedFile.name();
 
 		}
@@ -262,7 +261,7 @@ public class FileChooser extends Table {
 						internalTextFieldListener.keyTyped(textField,' ');
 					} else {
 						fname = directoryName + "/" + fname;
-						FileHandle selectedFh = UtFileHandle.relative(fname);
+						FileHandle selectedFh = FileManager.relative(fname);
 						if (listener != null)
 							listener.onFileSave(selectedFh);
 					}

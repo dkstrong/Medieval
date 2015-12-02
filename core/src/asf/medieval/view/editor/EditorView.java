@@ -1,7 +1,7 @@
 package asf.medieval.view.editor;
 
 import asf.medieval.utility.FileWatcher;
-import asf.medieval.utility.UtFileHandle;
+import asf.medieval.utility.FileManager;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
 import com.badlogic.gdx.Gdx;
@@ -95,19 +95,19 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 
 		// TODO: muuuuhhhh, might need to do relative and local watches for each directory
 		fileWatcher = new FileWatcher(this);
-		fileWatcher.addWatch(UtFileHandle.relative("Terrain"));
+		fileWatcher.addWatch(FileManager.relative("Terrain"));
 		fileWatcher.addWatch(Gdx.files.local("Shaders"));
 
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 
-//		Gdx.app.postRunnable(new Runnable() {
-//			@Override
-//			public void run() {
-//				setModeTerrain();
-//			}
-//		});
+		Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				setModeTerrain();
+			}
+		});
 
 
 	}

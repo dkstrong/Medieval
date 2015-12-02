@@ -1,14 +1,12 @@
 package asf.medieval.terrain;
 
 import asf.medieval.utility.OpenSimplexNoise;
-import asf.medieval.utility.UtFileHandle;
+import asf.medieval.utility.FileManager;
 import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
@@ -26,10 +24,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.XmlReader;
-import com.badlogic.gdx.utils.XmlWriter;
 
-import java.io.IOException;
-import java.io.StringWriter;
+import java.security.interfaces.DSAKey;
 
 /**
  * Created by daniel on 11/18/15.
@@ -223,7 +219,7 @@ public class Terrain implements RenderableProvider, Disposable {
 	}
 
 	private FileHandle resolve(String fileName) {
-		return UtFileHandle.moddable(fileName);
+		return FileManager.moddable(fileName);
 	}
 
 	private Material getMaterial(TerrainChunk terrainChunk) {
@@ -261,6 +257,8 @@ public class Terrain implements RenderableProvider, Disposable {
 		disposables.add(tex4);
 		disposables.add(texMask1);
 
+
+
 		this.material = mat;
 		return mat;
 	}
@@ -280,7 +278,7 @@ public class Terrain implements RenderableProvider, Disposable {
 	}
 
 
-	public void setMaterialAttribute(long attributeId, Texture texture, float textureScale){
+	public void setOverrideMaterialAttribute(long attributeId, Texture texture, float textureScale){
 		Attribute attribute = material.get(attributeId);
 
 		if (attribute instanceof TerrainTextureAttribute) {
@@ -352,26 +350,12 @@ public class Terrain implements RenderableProvider, Disposable {
 		}
 	}
 
-
-
 	public void loadNewTerrain(String name)
 	{
 		this.parameter = new TerrainLoader.TerrainParameter();
 		parameter.name=name;
 		parameter.displayName=name;
 		init(parameter);
-	}
-
-	public void loadTerrain(String name)
-	{
-		if(name == null || name.trim().isEmpty()){
-			throw new IllegalArgumentException("name can not be null or empty");
-		}
-
-		FileHandle terrainFile = UtFileHandle.moddable("Terrain/" + name + ".ter");
-
-		loadTerrain(terrainFile);
-
 	}
 
 	public void loadTerrain(FileHandle terrainFile){

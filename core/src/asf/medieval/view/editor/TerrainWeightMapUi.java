@@ -497,7 +497,7 @@ public class TerrainWeightMapUi implements View, Disposable, InputProcessor {
 		painterModel = new PixmapPainterDelegate(currentTexture);
 		wm_pixmapPainter = new PixmapPainter(painterModel);
 		wm_pixmapPainter.coordProvider = terrainEditorView;
-		world.terrainView.terrain.setMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
+		world.terrainView.terrain.setOverrideMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
 
 		wm_pixmapPainter.setPreviewPainting(terrainEditorView.isEnabled() && this.enabled && wm_paintingPreview);
 	}

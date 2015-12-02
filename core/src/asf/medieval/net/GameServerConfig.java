@@ -1,6 +1,6 @@
 package asf.medieval.net;
 
-import asf.medieval.utility.UtFileHandle;
+import asf.medieval.utility.FileManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.XmlReader;
@@ -34,7 +34,7 @@ public class GameServerConfig {
 		if (configLoc == null || configLoc.isEmpty()) {
 			configLoc = "GameServerConfig.xml";
 		}
-		FileHandle configFileHandle = Gdx.files.internal(configLoc);
+		FileHandle configFileHandle = FileManager.relative(configLoc);
 
 		try {
 			XmlReader reader = new XmlReader();
@@ -76,7 +76,7 @@ public class GameServerConfig {
 		FileHandle configFileHandle = Gdx.files.absolute(configLoc);
 		boolean local = false;
 		if (!configFileHandle.exists() || configFileHandle.isDirectory()) {
-			configFileHandle = UtFileHandle.relative(configLoc);
+			configFileHandle = FileManager.relative(configLoc);
 			local = true;
 			if (configFileHandle.isDirectory()) {
 				throw new IllegalArgumentException("invalid config file: " + configLoc);

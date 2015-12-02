@@ -4,12 +4,11 @@ import asf.medieval.painter.PixmapPainter;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileWatcher;
-import asf.medieval.utility.UtFileHandle;
+import asf.medieval.utility.FileManager;
 import asf.medieval.utility.UtLog;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
@@ -66,6 +65,10 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 
 		refreshHeightMapWeightMapPainters();
 		initUi();
+
+		//setHeigtPaintingEnabled(true);
+		setWeightPaintingEnabled(true);
+
 	}
 
 	//////////////////////////////////////////////////////
@@ -133,7 +136,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		heightMapUi.initUi();
 		weightMapUi.initUi();
 
-		setHeigtPaintingEnabled(true);
+
 
 	}
 
@@ -390,7 +393,7 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 		parameter.heightmapName = "Terrain/" + name + "_heightmap.cim";
 		parameter.weightMap1 = "Terrain/" + name + "_weightmap.png";
 
-		FileHandle terrainFile = UtFileHandle.relative("Terrain/" + name + ".ter");
+		FileHandle terrainFile = FileManager.relative("Terrain/" + name + ".ter");
 
 		StringWriter stringWriter = new StringWriter();
 		XmlWriter xmlWriter = new XmlWriter(stringWriter);
@@ -456,10 +459,10 @@ public class TerrainEditorView implements View, FileWatcher.FileChangeListener, 
 			UtLog.error("failed to write terrain file", e1);
 		}
 
-		FileHandle heightmapFh = UtFileHandle.relative(parameter.heightmapName);
+		FileHandle heightmapFh = FileManager.relative(parameter.heightmapName);
 		heightMapUi.savePainterToFile(heightmapFh);
 
-		FileHandle weightmap1Fh = UtFileHandle.relative(parameter.weightMap1);
+		FileHandle weightmap1Fh = FileManager.relative(parameter.weightMap1);
 		weightMapUi.savePainterToFile(weightmap1Fh);
 
 		System.out.println("Saved file: " + terrainFile.file().getAbsolutePath());

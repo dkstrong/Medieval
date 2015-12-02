@@ -1,6 +1,7 @@
 package asf.medieval;
 
 import asf.medieval.net.GameServerConfig;
+import asf.medieval.utility.FileManager;
 import asf.medieval.utility.UtLog;
 import asf.medieval.view.MedievalWorld;
 import com.badlogic.gdx.ApplicationAdapter;
@@ -27,21 +28,21 @@ import java.util.Locale;
 import java.util.Random;
 
 public class MedievalApp extends ApplicationAdapter {
-	public Preferences prefs;
-	private AbstractScreen screen;
-	protected Group stageScreen, stageDialog;
-
 
 	public MedievalWorld.Settings worldSettings;
 	public MedievalWorld world;
 
-	public Stage stage;
+	public Preferences prefs;
+	public I18NBundle i18n;
+
 	public Skin skin;
 	public TextureAtlas pack;
 	private Texture backgroundTexture;
 	public Image backgroundImage;
-	public I18NBundle i18n;
 
+	private AbstractScreen screen;
+	public Stage stage;
+	protected Group stageScreen, stageDialog;
 
 	@Override
 	public void create () {
@@ -49,8 +50,9 @@ public class MedievalApp extends ApplicationAdapter {
 		Gdx.input.setCatchBackKey(true);
 		Gdx.graphics.setContinuousRendering(true);
 		initPrefs();
-		initTextures();
+		initFileManager();
 		initI18n();
+		initTextures();
 		//setScreen(ScreenId.Main);
 		loadStraightInToGame();
 	}
@@ -63,6 +65,18 @@ public class MedievalApp extends ApplicationAdapter {
 		prefs.putInteger(Globals.settingsVersion, Globals.version);
 	}
 
+	private void initFileManager()
+	{
+		FileManager.detectRelativePath();
+	}
+
+	private void initI18n()
+	{
+		FileHandle baseFileHandle = Gdx.files.internal("i18n/Menu");
+		Locale locale = new Locale("en");
+		i18n = I18NBundle.createBundle(baseFileHandle, locale);
+	}
+
 	private void initTextures()
 	{
 		skin = new Skin(Gdx.files.internal("Packs/GameSkin.json"));
@@ -72,13 +86,6 @@ public class MedievalApp extends ApplicationAdapter {
 		backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 		backgroundImage = new Image(new TiledDrawable(new TextureRegion(backgroundTexture)), Scaling.fill);
 
-	}
-
-	private void initI18n()
-	{
-		FileHandle baseFileHandle = Gdx.files.internal("i18n/Menu");
-		Locale locale = new Locale("en");
-		i18n = I18NBundle.createBundle(baseFileHandle, locale);
 	}
 
 	@Override
