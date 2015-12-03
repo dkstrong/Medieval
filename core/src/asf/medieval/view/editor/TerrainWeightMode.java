@@ -4,9 +4,7 @@ import asf.medieval.painter.Painter;
 import asf.medieval.painter.PixmapPainterDelegate;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
-import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -28,98 +26,43 @@ import java.nio.file.Paths;
 /**
  * Created by daniel on 11/30/15.
  */
-public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode {
+public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvider {
 	public final MedievalWorld world;
 	public final TerrainEditorMode terrainEditorMode;
 	public boolean enabled;
 
-	// weightmap splat ui
 	private InternalClickListener internalCl = new InternalClickListener();
-	public Table weightTable;
+	public Table toolTable;
+
+
+	// weightmap ui
 	public ButtonGroup<Button> wm_texSelectionButtonGroup;
 	public final Array<UiTexMapping> wm_uiTexMappings = new Array<UiTexMapping>(true, 4, UiTexMapping.class);
 	public Label wm_texLocValueLabel, wm_scaleValueLabel;
-	public ButtonGroup<Button> wm_toolSelectionButtonGroup;
-	public ImageButton wm_bucketFillButton, wm_brushButton, wm_sprayButton, wm_eraserButton;
-	public Label wm_radiusLabel, hardEdgeLabel, wm_opacityValueLabel;
-
-
-	// weightmap splat 3d interface
-	public boolean wm_paintingPreview = true;
 	public UiTexMapping wm_selectedTexChannel = null;
-	public Painter wm_Painter;
+	public PainterPane painterPane;
 
 	public TerrainWeightMode(TerrainEditorMode terrainEditorMode) {
 		this.world = terrainEditorMode.world;
 		this.terrainEditorMode = terrainEditorMode;
+		painterPane = new PainterPane(world, this);
 	}
 
 	@Override
-	public void initUi()
-	{
+	public void initUi() {
 		// Weightmap Tools
 		{
-			weightTable = new Table(world.app.skin);
-			weightTable.row();
+			toolTable = new Table(world.app.skin);
+			toolTable.row();
+
 			// PixmapPainter Tool selector
 			{
 
-				wm_bucketFillButton = UtEditor.createImageButtonToggle("bucketfill", world.app.skin, internalCl);
-				wm_brushButton = UtEditor.createImageButtonToggle("paintbrush", world.app.skin, internalCl);
-				wm_sprayButton = UtEditor.createImageButtonToggle("spraypaint", world.app.skin, null);
-				wm_eraserButton = UtEditor.createImageButtonToggle("eraser", world.app.skin, internalCl);
+				painterPane.initUi();
 
-				wm_bucketFillButton.setUserObject(Painter.Tool.Fill);
-				wm_brushButton.setUserObject(Painter.Tool.Brush);
-				wm_sprayButton.setUserObject(null);
-				wm_eraserButton.setUserObject(Painter.Tool.Eraser);
-				Table toolSubtable = new Table(world.app.skin);
-				toolSubtable.row().pad(5);
-				toolSubtable.add(wm_bucketFillButton);
-				toolSubtable.add(wm_brushButton);
-				toolSubtable.add(wm_sprayButton);
-				toolSubtable.add(wm_eraserButton);
-
-				wm_toolSelectionButtonGroup = new ButtonGroup<Button>();
-				wm_toolSelectionButtonGroup.setMaxCheckCount(1);
-				wm_toolSelectionButtonGroup.setMinCheckCount(1);
-				wm_toolSelectionButtonGroup.setUncheckLast(true);
-
-				wm_toolSelectionButtonGroup.add(wm_bucketFillButton);
-				wm_toolSelectionButtonGroup.add(wm_brushButton);
-				wm_toolSelectionButtonGroup.add(wm_sprayButton);
-				wm_toolSelectionButtonGroup.add(wm_eraserButton);
-
-				//weightTable.row();
-				weightTable.add(toolSubtable);
+				toolTable.add(painterPane.getToolbarActor());
 			}
-			// PixmapPainter addiitonal settings
-			{
 
-				Label toolRadiusCaptionLabel = UtEditor.createLabel("Radius:", world.app.skin);
-				wm_radiusLabel = UtEditor.createLabel("", world.app.skin);
-				Label hardEdgeCaptionLabel = UtEditor.createLabel("Hard Edge:", world.app.skin);
-				hardEdgeLabel = UtEditor.createLabel("", world.app.skin);
-				Label toolOpacityCaptionLabel = UtEditor.createLabel("Opacity:", world.app.skin);
-				wm_opacityValueLabel = UtEditor.createLabel("", world.app.skin);
-
-				Table pixmapSettingsSubtable = new Table(world.app.skin);
-				pixmapSettingsSubtable.row();
-				pixmapSettingsSubtable.add(toolRadiusCaptionLabel);
-				pixmapSettingsSubtable.add(wm_radiusLabel);
-
-
-				pixmapSettingsSubtable.row();
-				pixmapSettingsSubtable.add(hardEdgeCaptionLabel);
-				pixmapSettingsSubtable.add(hardEdgeLabel);
-
-				pixmapSettingsSubtable.row();
-				pixmapSettingsSubtable.add(toolOpacityCaptionLabel);
-				pixmapSettingsSubtable.add(wm_opacityValueLabel);
-
-				//weightTable.row();
-				weightTable.add(pixmapSettingsSubtable);
-			}
 			// Texture Channel Selector
 			{
 
@@ -139,8 +82,8 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 					texSubtable.add(uiTexMapping.toolbarButton).fill();
 					wm_texSelectionButtonGroup.add(uiTexMapping.toolbarButton);
 				}
-				//weightTable.row();
-				weightTable.add(texSubtable);
+				//toolTable.row();
+				toolTable.add(texSubtable);
 
 			}
 			// Current Texture Channel Details
@@ -159,8 +102,8 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 				texSettingsSubtable.row();
 				texSettingsSubtable.add(scaleCaptionLabel);
 				texSettingsSubtable.add(wm_scaleValueLabel);
-				//weightTable.row();
-				weightTable.add(texSettingsSubtable);
+				//toolTable.row();
+				toolTable.add(texSettingsSubtable);
 			}
 
 
@@ -170,7 +113,7 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 
 	@Override
 	public Actor getToolbarActor() {
-		return weightTable;
+		return toolTable;
 	}
 
 	private static class UiTexMapping {
@@ -223,10 +166,33 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 		}
 	}
 
+	private PixmapPainterDelegate painterModel;
+
+
+	public Painter providePainter(Painter currentPainter) {
+		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
+
+		if (currentPainter != null) {
+			if (currentTexture == painterModel.texture) {
+				// texture hasnt changed, exit out early.
+				return currentPainter;
+			}
+			currentPainter.dispose();
+		}
+
+		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
+		painterModel = new PixmapPainterDelegate(currentTexture);
+		currentPainter = new Painter(painterModel);
+		currentPainter.coordProvider = terrainEditorMode;
+		world.terrainView.terrain.setOverrideMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
+
+		return currentPainter;
+	}
+
 
 	public void refreshUi() {
-		if(wm_Painter!=null)
-			wm_Painter.setPreviewPainting(enabled && wm_paintingPreview);
+
+		painterPane.refreshUi();
 
 		// TODO: handle if the number of textures changes...
 		refreshUiTexMapping(wm_uiTexMappings.get(0), TerrainTextureAttribute.Tex1);
@@ -234,43 +200,39 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 		refreshUiTexMapping(wm_uiTexMappings.get(2), TerrainTextureAttribute.Tex3);
 		refreshUiTexMapping(wm_uiTexMappings.get(3), TerrainTextureAttribute.Tex4);
 
-		if(wm_selectedTexChannel == null){
+		if (wm_selectedTexChannel == null) {
 			wm_selectedTexChannel = wm_uiTexMappings.get(0);
 		}
 		setUiPixmapTexChannel(wm_selectedTexChannel);
-		setUiPixmapTool(getUiPixmapTool());
-		setUiPixmapRadius(getUiPixmapRadius());
-		setUiPixmapHardEdge(getUiPixmapHardEdge());
-		setUiPixmapOpacity(getUiPixmapOpacity());
+
+
 	}
+
+	public void savePainterToFile(FileHandle fh) {
+		painterPane.painter.output(fh);
+	}
+
 	////////////
 	/// View methods
 	////////////
 
-	public void setEnabled(boolean enabled){
+	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+		painterPane.setEnabled(enabled);
 	}
 
-	public void update(float delta){
-		if(!enabled)
-			return;
-
-		if (wm_Painter != null)
-			wm_Painter.updateInput(delta);
+	public void update(float delta) {
+		if (!enabled) return;
+		painterPane.update(delta);
 	}
 
-	public void render(float delta){
-		if(!enabled)
-			return;
-
+	public void render(float delta) {
+		if (!enabled) return;
+		painterPane.render(delta);
 	}
 
-	public void dispose()
-	{
-		if (wm_Painter != null) {
-			wm_Painter.dispose();
-			wm_Painter = null;
-		}
+	public void dispose() {
+		painterPane.dispose();
 	}
 
 
@@ -278,61 +240,20 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 	/// Begin methods that mutate the UI (ie button actions)
 	////////////////////////////////////////
 
-	public UiTexMapping getUiPixmapTexChannel(){
+	public UiTexMapping getUiPixmapTexChannel() {
 		return wm_selectedTexChannel;
 	}
 
 	public void setUiPixmapTexChannel(UiTexMapping selectedTexChannel) {
 		this.wm_selectedTexChannel = selectedTexChannel;
-		if (wm_Painter != null)
-			wm_Painter.setBrushColor(selectedTexChannel.weightmapColor);
+		if (painterPane.painter != null)
+			painterPane.painter.setBrushColor(selectedTexChannel.weightmapColor);
 		selectedTexChannel.toolbarButton.setChecked(true);
 
 		wm_texLocValueLabel.setText(selectedTexChannel.texLocationFileName);
 		wm_scaleValueLabel.setText(selectedTexChannel.texScale + "x");
 	}
 
-	public Painter.Tool getUiPixmapTool() {
-		return wm_Painter.getTool();
-	}
-
-	public void setUiPixmapTool(Painter.Tool tool) {
-		wm_Painter.setTool(tool);
-		if (wm_bucketFillButton.getUserObject() == tool) {
-			wm_bucketFillButton.setChecked(true);
-		} else if (wm_brushButton.getUserObject() == tool) {
-			wm_brushButton.setChecked(true);
-		} else if (wm_eraserButton.getUserObject() == tool) {
-			wm_eraserButton.setChecked(true);
-		}
-	}
-
-	public int getUiPixmapRadius() {
-		return wm_Painter.getBrush().getRadius();
-	}
-
-	public void setUiPixmapRadius(int radius) {
-		wm_Painter.getBrush().setRadius(radius);
-		wm_radiusLabel.setText(String.valueOf(wm_Painter.getBrush().getRadius()));
-	}
-
-	public float getUiPixmapHardEdge() {
-		return wm_Painter.getBrush().getHardEdge();
-	}
-
-	public void setUiPixmapHardEdge(float hardEdge) {
-		wm_Painter.getBrush().setHardEdge(hardEdge);
-		hardEdgeLabel.setText(String.valueOf(UtMath.round(wm_Painter.getBrush().getHardEdge(), 2)));
-	}
-
-	public float getUiPixmapOpacity() {
-		return wm_Painter.getBrushOpacity();
-	}
-
-	public void setUiPixmapOpacity(float opacity) {
-		wm_Painter.setBrushOpacity(opacity);
-		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(wm_Painter.getBrushOpacity(), 2)));
-	}
 
 	////////////////////////////////////////////////
 	/// Begin methods that listen for user input
@@ -340,15 +261,13 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 
 	@Override
 	public boolean keyDown(int keycode) {
-		if(!enabled)
-			return false;
+		if (!enabled) return false;
 		return false;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
-		if(!enabled)
-			return false;
+		if (!enabled) return false;
 		switch (keycode) {
 			case Input.Keys.NUM_1:
 				setUiPixmapTexChannel(wm_uiTexMappings.get(0));
@@ -362,108 +281,47 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 			case Input.Keys.NUM_4:
 				setUiPixmapTexChannel(wm_uiTexMappings.get(3));
 				return true;
-			case Input.Keys.LEFT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					setUiPixmapRadius(getUiPixmapRadius() - 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-					setUiPixmapOpacity(getUiPixmapOpacity() - 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-					setUiPixmapHardEdge(getUiPixmapHardEdge() - 0.1f);
-				}
-				return true;
-			case Input.Keys.RIGHT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					setUiPixmapRadius(getUiPixmapRadius() + 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-					setUiPixmapOpacity(getUiPixmapOpacity() + 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-					setUiPixmapHardEdge(getUiPixmapHardEdge() + 0.1f);
-				}
-				return true;
-			case Input.Keys.B:
-				setUiPixmapTool(Painter.Tool.Brush);
-				return true;
-			case Input.Keys.E:
-				setUiPixmapTool(Painter.Tool.Eraser);
-				return true;
-			case Input.Keys.F:
-				setUiPixmapTool(Painter.Tool.Fill);
-				return true;
-		}
-		if (wm_Painter != null && wm_Painter.keyUp(keycode)) {
-			return true;
 		}
 		return false;
 	}
 
 	@Override
 	public boolean keyTyped(char character) {
-		if(!enabled) return false;
-		if (wm_Painter != null && wm_Painter.keyTyped(character)) return true;
+		if (!enabled) return false;
 		return false;
 	}
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if(!enabled) return false;
-		if (wm_Painter != null && wm_Painter.touchDown(screenX, screenY, pointer, button)) return true;
+		if (!enabled) return false;
 		return false;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if(!enabled)
-			return false;
-		if (wm_Painter != null && wm_Painter.touchUp(screenX, screenY, pointer, button)) {
-			return true;
-		}
+		if (!enabled) return false;
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		if(!enabled)
-			return false;
-		if (wm_Painter != null && wm_Painter.touchDragged(screenX, screenY, pointer)) {
-			return true;
-		}
+		if (!enabled) return false;
 		return false;
 	}
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
-		if(!enabled)
-			return false;
-		if (wm_Painter != null && wm_Painter.mouseMoved(screenX, screenY)) {
-			return true;
-		}
+		if (!enabled) return false;
 		return false;
 	}
 
 	@Override
 	public boolean scrolled(int amount) {
-		if(!enabled)
-			return false;
-
-		if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-			setUiPixmapRadius(getUiPixmapRadius() - amount);
-			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-			setUiPixmapOpacity(getUiPixmapOpacity() - amount * 0.05f);
-			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-			setUiPixmapHardEdge(getUiPixmapHardEdge() - amount * 0.05f);
-			return true;
-		}
-
-		if (wm_Painter != null && wm_Painter.scrolled(amount)) {
-			return true;
-		}
-
+		if (!enabled) return false;
 		return false;
 	}
 
-	private class InternalClickListener extends ClickListener implements TextField.TextFieldFilter, TextField.TextFieldListener{
+	private class InternalClickListener extends ClickListener implements TextField.TextFieldFilter, TextField.TextFieldListener {
 		public void clicked(InputEvent event, float x, float y) {
 			Actor actor = event.getListenerActor();
 
@@ -471,10 +329,6 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 				Button checked = wm_texSelectionButtonGroup.getChecked();
 				UiTexMapping checkedUiTexMapping = (UiTexMapping) checked.getUserObject();
 				setUiPixmapTexChannel(checkedUiTexMapping);
-			} else if (actor.getUserObject() instanceof Painter.Tool) {
-				Button checked = wm_toolSelectionButtonGroup.getChecked();
-				Painter.Tool checkedTool = (Painter.Tool) checked.getUserObject();
-				setUiPixmapTool(checkedTool);
 			}
 
 
@@ -491,33 +345,5 @@ public class TerrainWeightMode implements TerrainEditorMode.PaintableEditorMode 
 		}
 	}
 
-	private PixmapPainterDelegate painterModel;
-
-	@Override
-	public void refreshPainter(){
-		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
-		Texture currentTexture = world.terrainView.terrain.getMaterialAttribute(TerrainTextureAttribute.WeightMap1);
-
-		if (wm_Painter != null) {
-			if(currentTexture == painterModel.texture){
-				// texture hasnt changed, exit out early.
-				return;
-			}
-			wm_Painter.dispose();
-			wm_Painter = null;
-		}
-
-		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
-		painterModel = new PixmapPainterDelegate(currentTexture);
-		wm_Painter = new Painter(painterModel);
-		wm_Painter.coordProvider = terrainEditorMode;
-		world.terrainView.terrain.setOverrideMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
-
-		wm_Painter.setPreviewPainting(terrainEditorMode.isEnabled() && this.enabled && wm_paintingPreview);
-	}
-
-	public void savePainterToFile(FileHandle fh){
-		wm_Painter.output(fh);
-	}
 
 }

@@ -33,7 +33,6 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 	private Label terrainNameLabel;
 	private Button fileMenuButton;
 	private Container<Window> fileMenuWindowContainer;
-	private Window fileMenuWindow;
 	private Button fileMenuWindowCloseButton;
 	private FileChooser fileChooser;
 
@@ -49,7 +48,7 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 		// file mode
 		{
 
-			fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
+			Window fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
 			fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton = UtEditor.createTextButton("[X]", world.app.skin, internalCl));
 
 			fileChooser = UtEditor.createFileChooser(this, world.app.skin);
@@ -111,9 +110,7 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 
 	@Override
 	public void onFileOpen(FileHandle fh) {
-		//String name = fh.nameWithoutExtension();
 		world.terrainView.terrain.loadTerrain(fh);
-		terrainEditorMode.refreshHeightMapWeightMapPainters();
 		terrainEditorMode.refreshUi();
 		fileMenuWindowContainer.remove();
 	}

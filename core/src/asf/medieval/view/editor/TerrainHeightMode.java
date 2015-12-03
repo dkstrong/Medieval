@@ -2,18 +2,11 @@ package asf.medieval.view.editor;
 
 import asf.medieval.painter.Painter;
 import asf.medieval.terrain.Terrain;
-import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -22,101 +15,44 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 /**
  * Created by daniel on 11/30/15.
  */
-public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode {
+public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvider {
 	public final MedievalWorld world;
 	public final TerrainEditorMode terrainEditorMode;
 	public boolean enabled;
 
-	// weightmap splat ui
+
 	private InternalClickListener internalCl = new InternalClickListener();
-	public Table heightTable;
+	public Table toolTable;
+
 	// heightmap ui
 	private TextField hm_scaleTextField;
 	private TextButton hm_scaleUpButton, hm_scaleDownButton;
 	private TextField hm_magnitudeTextField;
 	private TextButton hm_magnitudeUpButton, hm_magnitudeDownButton;
 
-	public ButtonGroup<Button> wm_toolSelectionButtonGroup;
-	public ImageButton wm_bucketFillButton, wm_brushButton, wm_sprayButton, wm_eraserButton;
-	public Label wm_radiusLabel, hardEdgeLabel, wm_opacityValueLabel;
-
-
-
-	// weightmap splat 3d interface
-	public boolean hm_paintingPreview = true;
-	public Painter hm_Painter;
+	public PainterPane painterPane;
 
 	public TerrainHeightMode(TerrainEditorMode terrainEditorMode) {
 		this.world = terrainEditorMode.world;
 		this.terrainEditorMode = terrainEditorMode;
+		painterPane = new PainterPane(world, this);
 	}
 
 	@Override
 	public void initUi()
 	{
 		Terrain terrain = world.terrainView.terrain;
-		heightTable = new Table(world.app.skin);
-		heightTable.row();
-		// PixmapPainter Tool selector
+		toolTable = new Table(world.app.skin);
+		toolTable.row();
+
+		// Painter
 		{
+			painterPane.initUi();
 
-			wm_bucketFillButton = UtEditor.createImageButtonToggle("bucketfill", world.app.skin, internalCl);
-			wm_brushButton = UtEditor.createImageButtonToggle("paintbrush", world.app.skin, internalCl);
-			wm_sprayButton = UtEditor.createImageButtonToggle("spraypaint", world.app.skin, null);
-			wm_eraserButton = UtEditor.createImageButtonToggle("eraser", world.app.skin, internalCl);
-
-			wm_bucketFillButton.setUserObject(Painter.Tool.Fill);
-			wm_brushButton.setUserObject(Painter.Tool.Brush);
-			wm_sprayButton.setUserObject(null);
-			wm_eraserButton.setUserObject(Painter.Tool.Eraser);
-			Table toolSubtable = new Table(world.app.skin);
-			toolSubtable.row().pad(5);
-			toolSubtable.add(wm_bucketFillButton);
-			toolSubtable.add(wm_brushButton);
-			toolSubtable.add(wm_sprayButton);
-			toolSubtable.add(wm_eraserButton);
-
-			wm_toolSelectionButtonGroup = new ButtonGroup<Button>();
-			wm_toolSelectionButtonGroup.setMaxCheckCount(1);
-			wm_toolSelectionButtonGroup.setMinCheckCount(1);
-			wm_toolSelectionButtonGroup.setUncheckLast(true);
-
-			wm_toolSelectionButtonGroup.add(wm_bucketFillButton);
-			wm_toolSelectionButtonGroup.add(wm_brushButton);
-			wm_toolSelectionButtonGroup.add(wm_sprayButton);
-			wm_toolSelectionButtonGroup.add(wm_eraserButton);
-
-			//heightTable.row();
-			heightTable.add(toolSubtable);
+			toolTable.add(painterPane.getToolbarActor());
 		}
-		// PixmapPainter addiitonal settings
-		{
 
-			Label toolRadiusCaptionLabel = UtEditor.createLabel("Radius:", world.app.skin);
-			wm_radiusLabel = UtEditor.createLabel("", world.app.skin);
 
-			Label hardEdgeCaptionLabel = UtEditor.createLabel("Hard Edge:", world.app.skin);
-			hardEdgeLabel = UtEditor.createLabel("", world.app.skin);
-
-			Label toolOpacityCaptionLabel = UtEditor.createLabel("Opacity:", world.app.skin);
-			wm_opacityValueLabel = UtEditor.createLabel("", world.app.skin);
-
-			Table pixmapSettingsSubtable = new Table(world.app.skin);
-			pixmapSettingsSubtable.row();
-			pixmapSettingsSubtable.add(toolRadiusCaptionLabel);
-			pixmapSettingsSubtable.add(wm_radiusLabel);
-
-			pixmapSettingsSubtable.row();
-			pixmapSettingsSubtable.add(hardEdgeCaptionLabel);
-			pixmapSettingsSubtable.add(hardEdgeLabel);
-
-			pixmapSettingsSubtable.row();
-			pixmapSettingsSubtable.add(toolOpacityCaptionLabel);
-			pixmapSettingsSubtable.add(wm_opacityValueLabel);
-
-			//heightTable.row();
-			heightTable.add(pixmapSettingsSubtable);
-		}
 		// Heightmap tools
 		{
 			Table scaleMagTable = new Table(world.app.skin);
@@ -134,37 +70,63 @@ public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode 
 			scaleMagTable.add(hm_magnitudeDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
 
 
-			//heightTable.row();
-			heightTable.add(scaleMagTable).fill().maxWidth(10);
+			//toolTable.row();
+			toolTable.add(scaleMagTable).fill().maxWidth(10);
 		}
 
 	}
 
 	@Override
 	public Actor getToolbarActor() {
-		return heightTable;
+		return toolTable;
+	}
+
+	private TerrainPainterDelegate terrainPainterDelegate;
+
+	@Override
+	public Painter providePainter(Painter currentPainter) {
+		if (currentPainter != null) {
+			if(world.terrainView.terrain.fieldData == terrainPainterDelegate.fieldData){
+
+				return currentPainter; // // texture hasnt changed externally, exit out early.
+			}
+			currentPainter.dispose();
+		}
+
+		//System.out.println("refreshing the height painter");
+		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
+		terrainPainterDelegate =new TerrainPainterDelegate(this);
+		currentPainter = new Painter(terrainPainterDelegate);
+		currentPainter.setBrushColor(new Color(1,1,1,1));
+		currentPainter.setBrushOpacity(0.1f);
+		currentPainter.coordProvider = terrainEditorMode;
+		return currentPainter;
+
 	}
 
 	@Override
 	public void refreshUi() {
-		if(hm_Painter !=null)
-			hm_Painter.setPreviewPainting(enabled && hm_paintingPreview);
+
+		painterPane.refreshUi();
+
 
 		setUiParamScale(getParamScale());
 		setUiParamMagnitude(getParamMagnitude());
 
-		setUiPixmapTool(getUiPixmapTool());
-		setUiPixmapRadius(getUiPixmapRadius());
-		setUiPixmapHardEdge(getUiPixmapHardEdge());
-		setUiPixmapOpacity(getUiPixmapOpacity());
 
 	}
+
+	public void savePainterToFile(FileHandle fh){
+		painterPane.painter.output(fh);
+	}
+
 	////////////
 	/// View methods
 	////////////
 
 	public void setEnabled(boolean enabled){
 		this.enabled = enabled;
+		painterPane.setEnabled(enabled);
 	}
 
 	private float buttonHoldTimer;
@@ -201,22 +163,19 @@ public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode 
 			}
 		}
 
-		if (hm_Painter != null)
-			hm_Painter.updateInput(delta);
+		painterPane.update(delta);
 	}
 
 	public void render(float delta){
 		if(!enabled)
 			return;
+		painterPane.render(delta);
 
 	}
 
 	public void dispose()
 	{
-		if (hm_Painter != null) {
-			hm_Painter.dispose();
-			hm_Painter = null;
-		}
+		painterPane.dispose();
 	}
 
 
@@ -228,55 +187,9 @@ public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode 
 		hm_scaleTextField.setText(String.valueOf(scale));
 	}
 
-
-
 	public void setUiParamMagnitude(float magnitude){
 		hm_magnitudeTextField.setText(String.valueOf(magnitude));
 	}
-
-	public Painter.Tool getUiPixmapTool() {
-		return hm_Painter.getTool();
-	}
-
-	public void setUiPixmapTool(Painter.Tool tool) {
-		hm_Painter.setTool(tool);
-		if (wm_bucketFillButton.getUserObject() == tool) {
-			wm_bucketFillButton.setChecked(true);
-		} else if (wm_brushButton.getUserObject() == tool) {
-			wm_brushButton.setChecked(true);
-		} else if (wm_eraserButton.getUserObject() == tool) {
-			wm_eraserButton.setChecked(true);
-		}
-	}
-
-	public int getUiPixmapRadius() {
-		return hm_Painter.getBrush().getRadius();
-	}
-
-	public void setUiPixmapRadius(int radius) {
-		hm_Painter.getBrush().setRadius(radius);
-		wm_radiusLabel.setText(String.valueOf(hm_Painter.getBrush().getRadius()));
-	}
-
-	public float getUiPixmapHardEdge() {
-		return hm_Painter.getBrush().getHardEdge();
-	}
-
-	public void setUiPixmapHardEdge(float hardEdge) {
-		hm_Painter.getBrush().setHardEdge(hardEdge);
-		hardEdgeLabel.setText(String.valueOf(UtMath.round(hm_Painter.getBrush().getHardEdge(), 2)));
-	}
-
-	public float getUiPixmapOpacity() {
-		return hm_Painter.getBrushOpacity();
-	}
-
-	public void setUiPixmapOpacity(float opacity) {
-		hm_Painter.setBrushOpacity(opacity);
-
-		wm_opacityValueLabel.setText(String.valueOf(UtMath.round(hm_Painter.getBrushOpacity(), 2)));
-	}
-
 
 	////////////////////////////////////////////////
 	/// Begin methods that listen for user input
@@ -285,97 +198,52 @@ public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode 
 	@Override
 	public boolean keyDown(int keycode) {
 		if(!enabled) return false;
-		if (hm_Painter != null && hm_Painter.keyDown(keycode)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
 		if(!enabled) return false;
-		switch(keycode){
-			case Input.Keys.LEFT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					setUiPixmapRadius(getUiPixmapRadius() - 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-					setUiPixmapOpacity(getUiPixmapOpacity() - 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-					setUiPixmapHardEdge(getUiPixmapHardEdge() - 0.1f);
-				}
-				return true;
-			case Input.Keys.RIGHT_BRACKET:
-				if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-					setUiPixmapRadius(getUiPixmapRadius() + 1);
-				} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-					setUiPixmapOpacity(getUiPixmapOpacity() + 0.1f);
-				}else if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-					setUiPixmapHardEdge(getUiPixmapHardEdge() + 0.1f);
-				}
-				return true;
-			case Input.Keys.B:
-				setUiPixmapTool(Painter.Tool.Brush);
-				return true;
-			case Input.Keys.E:
-				setUiPixmapTool(Painter.Tool.Eraser);
-				return true;
-			case Input.Keys.F:
-				setUiPixmapTool(Painter.Tool.Fill);
-				return true;
-		}
-		if (hm_Painter != null && hm_Painter.keyUp(keycode)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean keyTyped(char character) {
 		if(!enabled) return false;
-		if (hm_Painter != null && hm_Painter.keyTyped(character)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if(!enabled) return false;
-		if (hm_Painter != null && hm_Painter.touchDown(screenX, screenY, pointer, button)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if(!enabled) return false;
-		if (hm_Painter != null && hm_Painter.touchUp(screenX, screenY, pointer, button)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		if(!enabled) return false;
-		if (hm_Painter != null && hm_Painter.touchDragged(screenX, screenY, pointer)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
 		if(!enabled) return false;
-		if (hm_Painter != null && hm_Painter.mouseMoved(screenX, screenY)) return true;
 		return false;
 	}
 
 	@Override
 	public boolean scrolled(int amount) {
 		if(!enabled) return false;
-		if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-			setUiPixmapRadius(getUiPixmapRadius() - amount);
-			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-			setUiPixmapOpacity(getUiPixmapOpacity() - amount * 0.05f);
-			return true;
-		} else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-			setUiPixmapHardEdge(getUiPixmapHardEdge() - amount * 0.05f);
-			return true;
-		}
-		if (hm_Painter != null && hm_Painter.scrolled(amount)) return true;
 		return false;
 	}
+
+
 
 	private class InternalClickListener extends ClickListener implements TextField.TextFieldFilter, TextField.TextFieldListener{
 		public void clicked(InputEvent event, float x, float y) {
@@ -401,10 +269,6 @@ public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode 
 					setParamMagnitude(getParamMagnitude() - 1f);
 				}
 				buttonHoldTimer = 0;
-			} else if (actor.getUserObject() instanceof Painter.Tool) {
-				Button checked = wm_toolSelectionButtonGroup.getChecked();
-				Painter.Tool checkedTool = (Painter.Tool) checked.getUserObject();
-				setUiPixmapTool(checkedTool);
 			}
 
 
@@ -453,7 +317,7 @@ public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode 
 		terrain.parameter.scale = scale;
 
 		terrain.createTerrain(terrain.parameter);
-		terrainEditorMode.refreshHeightMapWeightMapPainters();
+		//terrainEditorMode.refreshPainters();
 		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 
 		//setUiParamScale(scale);
@@ -469,43 +333,11 @@ public class TerrainHeightMode implements TerrainEditorMode.PaintableEditorMode 
 		terrain.parameter.magnitude = magnitude;
 
 		terrain.createTerrain(terrain.parameter);
-		terrainEditorMode.refreshHeightMapWeightMapPainters();
+		//terrainEditorMode.refreshPainters();
 		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 
 		//setUiParamMagnitude(magnitude);
 	}
 
-	private TerrainPainterDelegate terrainPainterDelegate;
-
-	@Override
-	public void refreshPainter(){
-
-		// Be sure to call initUi() / refreshHeightMapUi() after refreshing the painters..
-
-		if (hm_Painter != null) {
-			if(world.terrainView.terrain.fieldData == terrainPainterDelegate.fieldData){
-				// texture hasnt changed externally, exit out early.
-				System.out.println("not refreshing the height painter");
-				return;
-			}
-			hm_Painter.dispose();
-			hm_Painter = null;
-		}
-
-		System.out.println("refreshing the height painter");
-		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
-		hm_Painter = new Painter(terrainPainterDelegate =new TerrainPainterDelegate(this));
-		hm_Painter.setBrushColor(new Color(1,1,1,1));
-		hm_Painter.setBrushOpacity(0.1f);
-		hm_Painter.coordProvider = terrainEditorMode;
-
-		hm_Painter.setPreviewPainting(terrainEditorMode.isEnabled() && this.enabled && hm_paintingPreview);
-
-
-	}
-
-	public void savePainterToFile(FileHandle fh){
-		hm_Painter.output(fh);
-	}
 
 }

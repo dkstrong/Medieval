@@ -34,8 +34,8 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 
 
 	private Container<Table> baseTableContainer;
-	protected Cell modeContextCell;
 	private SelectBox<ModeSelectItem> modeSelectBox;
+	protected Cell modeContextCell;
 
 	private FileWatcher fileWatcher;
 	public final GameEditorMode gameEditorMode;
@@ -110,14 +110,7 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	}
 
 	private void refreshUi(){
-		// not really ever used because this is the highest most "Editor"
-		// I'm thinking about refactoring things so that an editor contains a list of subeditors and whatnot
-		// and standardize the whole thing..
-		EditorMode currentMode = getMode();
-		setMode(currentMode);
-		if(currentMode!=null){
-			currentMode.refreshUi();
-		}
+		setMode(getMode());
 	}
 
 	@Override

@@ -5,8 +5,6 @@ import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.FileWatcher;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -38,15 +36,8 @@ public class TerrainEditorMode implements EditorMode, FileWatcher.FileChangeList
 	private Cell<?> modeContextCell; // the actor in this cell should be changed based on what mode is selected
 
 	public final EditorMode fileMode;
-	public final PaintableEditorMode heightMode;
-	public final PaintableEditorMode weightMode;
-
-	public static interface PaintableEditorMode extends EditorMode {
-
-		public void refreshPainter();
-
-		public void savePainterToFile(FileHandle fh);
-	}
+	public final TerrainHeightMode heightMode;
+	public final TerrainWeightMode weightMode;
 
 	public TerrainEditorMode(MedievalWorld world) {
 		this.world = world;
@@ -65,7 +56,7 @@ public class TerrainEditorMode implements EditorMode, FileWatcher.FileChangeList
 		heightMode.initUi();
 		weightMode.initUi();
 
-		refreshHeightMapWeightMapPainters();
+		//refreshPainters();
 
 		// Tool Table
 		{
@@ -96,22 +87,10 @@ public class TerrainEditorMode implements EditorMode, FileWatcher.FileChangeList
 
 	@Override
 	public void refreshUi() {
-		EditorMode currentMode = getMode();
+		//heightMode.refreshPainter();
+		//weightMode.refreshPainter();
+		setMode(getMode());
 
-		setMode(currentMode);
-
-		if(currentMode!=null){
-			currentMode.refreshUi();
-		}
-
-	}
-
-	protected void refreshHeightMapWeightMapPainters() {
-		// TODO; instead of trying to refresh both all the itme, perhaps
-		// have these sub modes refresh their own painters as needed
-		// when refreshUI() is called?
-		heightMode.refreshPainter();
-		weightMode.refreshPainter();
 	}
 
 	public void resize(int width, int height) {
