@@ -34,10 +34,13 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 	private InternalClickListener internalCl = new InternalClickListener();
 	public Table toolTable;
 	private Label terrainNameLabel;
-	private Button fileMenuButton;
+	private Button newTerrainButton, loadTerrainButton, saveTerrainButton, deleteTerrainButton;
 	private Container<Window> fileMenuWindowContainer;
+	private Window fileMenuWindow;
 	private Button fileMenuWindowCloseButton;
 	private FileChooser fileChooser;
+
+	private boolean newBeforeSave = false;
 
 	public TerrainFilePane(EditorView editorView, PainterPane heightPainerPane, PainterPane weightPainterPane) {
 		this.world = editorView.world;
@@ -50,7 +53,7 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 	{
 		Terrain terrain = world.terrainView.terrain;
 
-		Window fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
+		fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
 		fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton = UtEditor.createTextButton("[X]", world.app.skin, internalCl));
 
 		fileChooser = UtEditor.createFileChooser(this, world.app.skin);
@@ -65,8 +68,12 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 		toolTable = new Table(world.app.skin);
 		toolTable.align(Align.left);
 		toolTable.row();
+		toolTable.add(newTerrainButton = UtEditor.createTextButton("New..", world.app.skin, internalCl));
+		toolTable.add(loadTerrainButton = UtEditor.createTextButton("Load..", world.app.skin, internalCl));
+		toolTable.add(saveTerrainButton = UtEditor.createTextButton("Save..", world.app.skin, internalCl));
+		toolTable.add(deleteTerrainButton = UtEditor.createTextButton("Delete..", world.app.skin, internalCl));
+
 		toolTable.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
-		toolTable.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
 	}
 
 	@Override
@@ -103,7 +110,13 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 
 	@Override
 	public void onFileSave(FileHandle fh) {
+
 		String name = fh.nameWithoutExtension();
+		if(newBeforeSave){
+			world.terrainView.terrain.initNewTerrain(name);
+			// refresh before calling saveTerrain(), because we need to update the painters, or they wont have the most up to date info to save
+			editorView.refreshUi();
+		}
 		saveTerrain(name);
 		editorView.refreshUi();
 		fileMenuWindowContainer.remove();
@@ -111,9 +124,14 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 
 	@Override
 	public void onFileOpen(FileHandle fh) {
-		world.terrainView.terrain.loadTerrain(fh);
+		world.terrainView.terrain.init(fh);
 		editorView.refreshUi();
 		fileMenuWindowContainer.remove();
+	}
+
+	@Override
+	public void onFileDelete(FileHandle fh) {
+			System.out.println("delete file: "+fh.file().getAbsolutePath());
 	}
 
 	@Override
@@ -161,8 +179,26 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 		public void clicked(InputEvent event, float x, float y) {
 			Actor actor = event.getListenerActor();
 
-			if (actor == fileMenuButton) {
-
+			if (actor == newTerrainButton) {
+				newBeforeSave = true;
+				fileMenuWindow.getTitleLabel().setText("New Terrain");
+				fileChooser.setButtons(true, false, false);
+				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
+				world.stage.addActor(fileMenuWindowContainer);
+			} else if (actor == loadTerrainButton) {
+				fileMenuWindow.getTitleLabel().setText("Load Terrain");
+				fileChooser.setButtons(false, true, false);
+				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
+				world.stage.addActor(fileMenuWindowContainer);
+			} else if (actor == saveTerrainButton) {
+				newBeforeSave = false;
+				fileMenuWindow.getTitleLabel().setText("Save Terrain");
+				fileChooser.setButtons(true, false, false);
+				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
+				world.stage.addActor(fileMenuWindowContainer);
+			} else if(actor == deleteTerrainButton) {
+				fileMenuWindow.getTitleLabel().setText("Delete Terrain");
+				fileChooser.setButtons(false, false, true);
 				fileChooser.changeDirectory("Terrain", new String[]{".ter"}, world.terrainView.terrain.parameter.name + ".ter");
 				world.stage.addActor(fileMenuWindowContainer);
 			} else if (actor == fileMenuWindowCloseButton) {
@@ -179,6 +215,10 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 		public void keyTyped(TextField textField, char c) {
 
 		}
+	}
+
+	private void deleteTerrain(FileHandle fh){
+
 	}
 
 	private void saveTerrain(String name) {

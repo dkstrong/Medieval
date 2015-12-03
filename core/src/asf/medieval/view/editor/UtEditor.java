@@ -28,6 +28,7 @@ public class UtEditor {
 
 	public static Window createModalWindow(String title, Skin skin){
 		Window window = new Window(title, skin, "dialog");
+		window.getTitleLabel().setAlignment(Align.center,Align.center);
 		window.setModal(true);
 
 		return window;

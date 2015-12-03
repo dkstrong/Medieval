@@ -19,6 +19,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.GL20;
@@ -130,29 +131,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
-		/*
-		TerrainLoader.TerrainParameter terrainParameter = new TerrainLoader.TerrainParameter();
-		terrainParameter.heightmapName = "Models/Terrain/mountains128.png"; // heightmap.png // map8.jpg // mountains128.png // map4.jpg // map7.png
-		terrainParameter.seed = settings.random.nextLong();
-		terrainParameter.fieldWidth = 180;
-		terrainParameter.fieldHeight = 180;
-		terrainParameter.scale = 200;
-		terrainParameter.magnitude = 30;
-		terrainParameter.chunkWidth = 180;
-		terrainParameter.chunkHeight = 180;
-		terrainParameter.weightMap1 = "Textures/Terrain/sand512.jpg"; // sand512.jpg
-		terrainParameter.tex1="Textures/Terrain/dirt.png"; // grass_2.png
-		terrainParameter.tex1Scale = 14;
-		terrainParameter.tex2="Textures/Terrain/GrassRock.jpg";
-		terrainParameter.tex2Scale = 4;
-		terrainParameter.tex3="Textures/Terrain/water.jpg";
-		terrainParameter.tex3Scale = 10;
-		terrainParameter.tex4="Textures/Terrain/stone_diffuse_02.png";  // brickRound_diffuse
-		terrainParameter.tex4Scale = 70;
-		AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Models/Terrain/terrain.txt", Terrain.class,terrainParameter);
-		assetManager.load(terrainAssetDescriptor);
-		*/
-
+		//AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Terrain/new-terrain.ter", Terrain.class,TerrainLoader.getNewTerrainParamter("new-terrain"));
+		//assetManager.load(terrainAssetDescriptor);
 		assetManager.load("Terrain/test.ter",Terrain.class);
 
 

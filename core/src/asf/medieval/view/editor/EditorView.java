@@ -67,7 +67,7 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 
 
 		setEnabled(true);
-		//setMode(terrainEditorMode);
+		setMode(terrainEditorMode);
 		//terrainEditorMode.setMode(weightHorizontalNode);
 		refreshUi();   // refreshUi() always needs to be called after setEnabled()
 
@@ -130,7 +130,7 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 		if (fileChanged.endsWith(".ter")) {
 			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
 			//final Terrain terrain = world.terrainView.terrain;
-			//terrain.loadTerrain(terrain.parameter.name);
+			//terrain.init(terrain.parameter.name);
 		} else if (fileChanged.endsWith(".glsl")) {
 			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
 			final Terrain terrain = world.terrainView.terrain;

@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.Array;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Comparator;
 
 /**
  * A file chooser made for working with internal and local assets
@@ -72,8 +73,15 @@ public class FileChooser extends Table {
 		deleteButton.setDisabled(true);
 
 
-		final int numCols = (canSave ? 1 : 0) + (canOpen ? 1 : 0) + (canDelete ? 1 : 0);
 
+		setButtons(canSave,canOpen,canDelete);
+
+
+	}
+
+	public void setButtons(boolean canSave, boolean canOpen, boolean canDelete){
+		final int numCols = (canSave ? 1 : 0) + (canOpen ? 1 : 0) + (canDelete ? 1 : 0);
+		clearChildren();
 		row().fill();
 		add(scrollPane).colspan(numCols).expand();
 		row().fill();
@@ -85,7 +93,6 @@ public class FileChooser extends Table {
 			add(openButton);
 		if (canDelete)
 			add(deleteButton);
-
 	}
 
 	public void changeDirectory(final String directoryName, final String[] fileTypes, String selected) {
@@ -112,6 +119,7 @@ public class FileChooser extends Table {
 			}
 		}
 
+		items.sort();
 		//items.sort(dirListComparator);
 		list.setItems(items);
 
@@ -136,7 +144,7 @@ public class FileChooser extends Table {
 		}
 	};
 
-	private static class ListItem {
+	private static class ListItem implements Comparable<ListItem>{
 		private FileHandle fileHandle;
 		private String fileName;
 		private boolean internal;
@@ -165,6 +173,11 @@ public class FileChooser extends Table {
 		@Override
 		public String toString() {
 			return fileName;
+		}
+
+		@Override
+		public int compareTo(ListItem o) {
+			return fileName.compareTo(o.fileName);
 		}
 	}
 
@@ -280,7 +293,11 @@ public class FileChooser extends Table {
 
 
 			} else if (actor == deleteButton) {
-
+				ListItem selected = list.getSelected();
+				if(selected != null){
+					if (listener != null)
+						listener.onFileDelete(selected.fileHandle);
+				}
 			} else if (actor == list) {
 				ListItem selected = list.getSelected();
 				if (selected != null) {
@@ -296,5 +313,7 @@ public class FileChooser extends Table {
 		public void onFileSave(FileHandle fh);
 
 		public void onFileOpen(FileHandle fh);
+
+		public void onFileDelete(FileHandle fh);
 	}
 }

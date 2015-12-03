@@ -23,9 +23,6 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.XmlReader;
-
-import java.security.interfaces.DSAKey;
 
 /**
  * Created by daniel on 11/18/15.
@@ -69,6 +66,15 @@ public class Terrain implements RenderableProvider, Disposable {
 		this.parameter = null;
 	}
 
+	public void initNewTerrain(String name)
+	{
+		init(TerrainLoader.getNewTerrainParamter(name));
+	}
+
+	public void init(FileHandle terrainFile){
+		init(TerrainLoader.loadTerrainParamter(terrainFile));
+	}
+
 	//public void init(TerrainLoader.TerrainParameter param) {
 	//init(param, true);
 	//}
@@ -79,13 +85,13 @@ public class Terrain implements RenderableProvider, Disposable {
 			disposables.removeIndex(0).dispose();
 		}
 
-		createTerrain(param);
+		buildTerrain(param);
 
 
 		//saveTerrain("test");
 	}
 
-	public void createTerrain(TerrainLoader.TerrainParameter param){
+	public void buildTerrain(TerrainLoader.TerrainParameter param){
 		// clear out/dispose any data from the previous init() call
 		if(chunkGrid!=null){
 			for (Array<TerrainChunk> terrainChunks : chunkGrid) {
@@ -115,6 +121,7 @@ public class Terrain implements RenderableProvider, Disposable {
 			generateFieldData(param.seed, param.fieldWidth, param.fieldHeight);
 		}
 
+		createHeightField();
 		createRenderables();
 	}
 
@@ -122,11 +129,10 @@ public class Terrain implements RenderableProvider, Disposable {
 		this.fieldWidth = parameter.fieldWidth;
 		this.fieldHeight = parameter.fieldHeight;
 		this.fieldData = parameter.fieldData;
-		createHeightField();
+		//createHeightField();
 	}
 
 	private void loadFieldData(final String heightmapName) {
-		System.out.println("hfm: "+heightmapName+"");
 		Pixmap heightPix;
 		if(heightmapName.endsWith(".cim")){
 			heightPix = PixmapIO.readCIM(resolve(heightmapName));
@@ -137,7 +143,7 @@ public class Terrain implements RenderableProvider, Disposable {
 		this.fieldWidth = heightPix.getWidth();
 		this.fieldHeight = heightPix.getHeight();
 		fieldData = TerrainChunk.heightColorsToMap(heightPix.getPixels(), heightPix.getFormat(), fieldWidth, fieldHeight);
-		createHeightField();
+		//createHeightField();
 		heightPix.dispose();
 	}
 
@@ -145,6 +151,8 @@ public class Terrain implements RenderableProvider, Disposable {
 		// max smooth: 181 x 181
 		// max unsmooth: 128 x 128
 
+		this.fieldWidth = fieldWidth;
+		this.fieldHeight = fieldHeight;
 		fieldData = new float[fieldWidth * fieldHeight];
 
 		final double featureSize = 20d;
@@ -157,9 +165,8 @@ public class Terrain implements RenderableProvider, Disposable {
 			}
 		}
 
-		this.fieldWidth = fieldWidth;
-		this.fieldHeight = fieldHeight;
-		createHeightField();
+
+		//createHeightField();
 	}
 
 
@@ -183,6 +190,7 @@ public class Terrain implements RenderableProvider, Disposable {
 		chunk.set(fieldData);
 		putTerrainChunk(0, 0, chunk);
 		chunk.configureField(corner00.x, corner00.z, corner11.x, corner11.z, color, magnitude);
+
 
 
 	}
@@ -226,7 +234,7 @@ public class Terrain implements RenderableProvider, Disposable {
 		if (material != null)
 			return material;
 
-		UtLog.info("create new terrain material");
+		//UtLog.info("create new terrain material");
 
 		TerrainLoader.TerrainParameter param = this.parameter;
 
@@ -350,82 +358,7 @@ public class Terrain implements RenderableProvider, Disposable {
 		}
 	}
 
-	public void loadNewTerrain(String name)
-	{
-		this.parameter = new TerrainLoader.TerrainParameter();
-		parameter.name=name;
-		parameter.displayName=name;
-		init(parameter);
-	}
 
-	public void loadTerrain(FileHandle terrainFile){
-		if(terrainFile == null)
-			throw new IllegalArgumentException("terrainFile can not be null");
-		if(terrainFile.isDirectory())
-			throw new IllegalArgumentException("provided terrainFile ("+terrainFile.file().getAbsolutePath()+") is a directory");
-		if(!terrainFile.exists())
-			throw new IllegalArgumentException("provided terrainFile ("+terrainFile.file().getAbsolutePath()+") does not exist");
-
-		this.parameter = new TerrainLoader.TerrainParameter();
-		try {
-			String name = terrainFile.nameWithoutExtension();
-			XmlReader reader = new XmlReader();
-			XmlReader.Element root = reader.parse(terrainFile);
-			this.parameter.name = root.getAttribute("name",name);
-			this.parameter.displayName = root.getAttribute("displayName",name);
-			this.parameter.scale = root.getFloatAttribute("scale", parameter.scale);
-			this.parameter.magnitude = root.getFloatAttribute("magnitude", parameter.magnitude);
-			this.parameter.chunkWidth = root.getIntAttribute("chunkWidth", parameter.chunkWidth);
-			this.parameter.chunkHeight = root.getIntAttribute("chunkHeight", parameter.chunkHeight);
-
-
-			XmlReader.Element heightData = root.getChildByName("heightData");
-			if(heightData != null){
-				this.parameter.fieldData = null;
-				this.parameter.heightmapName = heightData.getAttribute("heightmapName",null);
-				this.parameter.seed = Long.parseLong(heightData.getAttribute("seed","0"));
-				this.parameter.fieldWidth = root.getIntAttribute("fieldWidth", parameter.fieldWidth);
-				this.parameter.fieldHeight = root.getIntAttribute("fieldHeight", parameter.fieldHeight);
-			}
-
-			XmlReader.Element weightMap1 = root.getChildByName("weightMap1");
-			if(weightMap1!= null){
-				parameter.weightMap1 = weightMap1.getAttribute("tex",null);
-			}
-
-			XmlReader.Element tex1 = root.getChildByName("tex1");
-			if(tex1!= null){
-				parameter.tex1 = tex1.getAttribute("tex",null);
-				parameter.tex1Scale = tex1.getFloatAttribute("scale", parameter.tex1Scale);
-			}
-
-			XmlReader.Element tex2 = root.getChildByName("tex2");
-			if(tex2!= null){
-				parameter.tex2 = tex2.getAttribute("tex",null);
-				parameter.tex2Scale = tex2.getFloatAttribute("scale",parameter.tex2Scale);
-			}
-
-			XmlReader.Element tex3 = root.getChildByName("tex3");
-			if(tex3!= null){
-				parameter.tex3 = tex3.getAttribute("tex",null);
-				parameter.tex3Scale = tex3.getFloatAttribute("scale",parameter.tex3Scale);
-			}
-
-			XmlReader.Element tex4 = root.getChildByName("tex4");
-			if(tex4!= null){
-				parameter.tex4 = tex4.getAttribute("tex",null);
-				parameter.tex4Scale = tex4.getFloatAttribute("scale",parameter.tex4Scale);
-			}
-
-			init(parameter);
-
-		} catch (Exception e) {
-			UtLog.error("could not load terrain", e);
-
-		}
-
-
-	}
 
 
 

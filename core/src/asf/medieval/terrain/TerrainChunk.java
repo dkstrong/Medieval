@@ -211,8 +211,9 @@ public class TerrainChunk implements Disposable {
 	}
 
 	public void set(float[] data, int offset) {
-		if (this.data.length > (data.length - offset))
-			throw new GdxRuntimeException("Incorrect data size");
+		if (this.data.length > (data.length - offset)){
+			throw new GdxRuntimeException("Incorrect data size, this.data:" + this.data.length+", arg data: "+(data.length-offset)+"");
+		}
 		System.arraycopy(data, offset, this.data, 0, this.data.length);
 		//update();
 	}

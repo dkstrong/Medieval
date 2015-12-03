@@ -28,6 +28,7 @@ public class TerrainView implements View {
 		//skydome = new ModelInstance(skyModel);
 
 		terrain = world.assetManager.get("Terrain/test.ter", Terrain.class);
+		//terrain = world.assetManager.get("Terrain/new-terrain.ter", Terrain.class);
 		terrain.camera = world.cameraManager.cam;
 
 
