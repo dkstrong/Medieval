@@ -1,23 +1,20 @@
 package asf.medieval.view.editor;
 
+import asf.medieval.painter.Painter;
+import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.FileWatcher;
 import asf.medieval.utility.FileManager;
+import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
 import java.nio.file.Path;
@@ -27,63 +24,52 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class EditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor {
+public class EditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, Painter.CoordProvider {
 
 	public final MedievalWorld world;
-	private final InternalChangeListener internalCl = new InternalChangeListener();
+
+	private Container<Actor> baseTableContainer;
 
 
-	private Container<Table> baseTableContainer;
-	private SelectBox<ModeSelectItem> modeSelectBox;
-	protected Cell modeContextCell;
+	public ModeSelectPane modeSelectPane;
 
 	private FileWatcher fileWatcher;
 	public final GameEditorMode gameEditorMode;
-	public final TerrainEditorMode terrainEditorMode;
+	public final ModeSelectPane terrainEditorMode;
 
-	protected static class ModeSelectItem {
-		String text;
-		EditorMode mode;
 
-		public ModeSelectItem(String text, EditorMode mode) {
-			this.text = text;
-			this.mode = mode;
-		}
-
-		@Override
-		public String toString() {
-			return text;
-		}
-	}
+	public final EditorMode fileMode;
+	public final TerrainHeightMode heightMode;
+	public final TerrainWeightMode weightMode;
 
 	public EditorView(MedievalWorld world) {
 		this.world = world;
 		// Create SubEditors
+
+		fileMode = new TerrainFileMode(this);
+		heightMode = new TerrainHeightMode(this);
+		weightMode = new TerrainWeightMode(this);
+
+
 		gameEditorMode = new GameEditorMode(world);
-		terrainEditorMode = new TerrainEditorMode(world);
+		terrainEditorMode = new ModeSelectPane("Terrain",world, fileMode, heightMode, weightMode);
+		modeSelectPane = new ModeSelectPane("Editor", world,gameEditorMode,terrainEditorMode);
+
 		gameEditorMode.initUi();
+
+		fileMode.initUi();
+		heightMode.initUi();
+		weightMode.initUi();
+
 		terrainEditorMode.initUi();
 
-		// Tool Table
+		modeSelectPane.initUi();
+
+
+
 		{
-			modeSelectBox = new SelectBox<ModeSelectItem>(world.app.skin);
-			modeSelectBox.getSelection().setProgrammaticChangeEvents(false);
-			modeSelectBox.addListener(internalCl);
-			ModeSelectItem gameSelectItem = new ModeSelectItem("Game", gameEditorMode);
-			ModeSelectItem terrainSelectItem = new ModeSelectItem("Terrain", terrainEditorMode);
-			modeSelectBox.setItems(gameSelectItem,terrainSelectItem);
-
-
-			Table toolTable = new Table(world.app.skin);
-			toolTable.setBackground("default-pane-trans"); // base editor, set up the background
-			toolTable.align(Align.topLeft);
-			toolTable.row();//.padBottom(Value.percentWidth(0.05f));
-			toolTable.add(modeSelectBox);
-			modeContextCell = toolTable.add(new Label("no mode", world.app.skin)).fill().expand().align(Align.topLeft);
-
-
 			// This is the base editor, set up the master container
-			baseTableContainer = new Container<Table>(toolTable);
+			baseTableContainer = new Container<Actor>(modeSelectPane.getToolbarActor());
 			baseTableContainer.setFillParent(true);
 			baseTableContainer.align(Align.topLeft);
 			baseTableContainer.fillX();
@@ -91,68 +77,41 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		}
 
 
-
-
 		// TODO: muuuuhhhh, might need to do relative and local watches for each directory
-		fileWatcher = new FileWatcher(this);
-		fileWatcher.addWatch(FileManager.relative("Terrain"));
-		fileWatcher.addWatch(Gdx.files.local("Shaders"));
+//		fileWatcher = new FileWatcher(this);
+//		fileWatcher.addWatch(FileManager.relative("Terrain"));
+//		fileWatcher.addWatch(Gdx.files.local("Shaders"));
 
 
 		Gdx.app.postRunnable(new Runnable() {
 			@Override
 			public void run() {
-				setMode(terrainEditorMode);
+				modeSelectPane.setEnabled(true);
+				refreshUi();
 			}
 		});
 
 
 	}
 
-	private void refreshUi(){
-		setMode(getMode());
+	public void refreshUi(){
+		modeSelectPane.refreshUi();
 	}
 
 	@Override
 	public void update(float delta) {
-		gameEditorMode.update(delta);
-		terrainEditorMode.update(delta);
+		modeSelectPane.update(delta);
 	}
 
 	@Override
 	public void render(float delta) {
-		gameEditorMode.render(delta);
-		terrainEditorMode.render(delta);
+		modeSelectPane.render(delta);
 	}
 
 	@Override
 	public void dispose() {
 		fileWatcher.dispose();
-		gameEditorMode.dispose();
-		terrainEditorMode.dispose();
-	}
-
-	public EditorMode getMode() {
-		return modeSelectBox.getSelected().mode;
-	}
-
-	public void setMode(EditorMode editorMode){
-		Array<ModeSelectItem> items = modeSelectBox.getItems();
-		boolean valid = false;
-		for (ModeSelectItem item : items) {
-			boolean enabled = editorMode == item.mode;
-			item.mode.setEnabled(enabled);
-			item.mode.refreshUi();
-			if (enabled) {
-				valid = true;
-				modeSelectBox.setSelected(item);
-				modeContextCell.setActor(item.mode.getToolbarActor());
-			}
-
-		}
-		if (!valid)
-			modeContextCell.setActor(null);
-
+		modeSelectPane.dispose();
 	}
 
 	public void setToolbarVisible(boolean visible) {
@@ -219,24 +178,35 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	@Override
 	public void onFileChanged(WatchEvent<Path> event) {
 
-	}
+		/*
 
-	private class InternalChangeListener implements EventListener {
+		System.out.println("file changed:" + event.context() + ", kind: " + event.kind());
 
-		@Override
-		public boolean handle(Event event) {
-			Actor actor = event.getListenerActor();
+		String fileChanged = String.valueOf(event.context());
 
-			if(actor == modeSelectBox){
-				if(event instanceof ChangeListener.ChangeEvent){
-					ModeSelectItem selectItem = modeSelectBox.getSelected();
-					setMode(selectItem.mode);
-				}
-			}
-
-
-			return false;
+		if (fileChanged.endsWith(".ter")) {
+			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
+			//final Terrain terrain = world.terrainView.terrain;
+			//terrain.loadTerrain(terrain.parameter.name);
+		} else if (fileChanged.endsWith(".glsl")) {
+			System.out.println("file changed:" + fileChanged + ", kind: " + event.kind());
+			final Terrain terrain = world.terrainView.terrain;
+			terrain.getTerrainChunk(0, 0).renderable.shader = null;
+			world.modelShaderProvider.terrainShaderProvider.clearShaderCache();
 		}
+
+		 */
 	}
+
+	private final Vector3 tempTranslation = new Vector3();
+
+	@Override
+	public void getPixmapCoord(int screenX, int screenY, int pixmapWidth, int pixmapHeight, Vector2 store) {
+		world.hudView.hudCommandView.getWorldCoord(screenX, screenY, tempTranslation);
+		Terrain terrain = world.terrainView.terrain;
+		store.x = UtMath.scalarLimitsInterpolation(tempTranslation.x, terrain.corner00.x, terrain.corner11.x, 0, pixmapWidth - 1);
+		store.y = UtMath.scalarLimitsInterpolation(tempTranslation.z, terrain.corner00.z, terrain.corner11.z, 0, pixmapHeight - 1);
+	}
+
 
 }

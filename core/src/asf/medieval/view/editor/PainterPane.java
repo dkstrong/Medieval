@@ -111,6 +111,9 @@ public class PainterPane implements EditorMode{
 		painter = painterProvider.providePainter(painter);
 		painter.setPreviewPainting(enabled && paintingPreview);
 
+		System.out.println("preview painting is now "+painter.isPreviewPainting()+" for: "+painterProvider.getClass());
+
+
 		setUiPixmapTool(getUiPixmapTool());
 		setUiPixmapRadius(getUiPixmapRadius());
 		setUiPixmapHardEdge(getUiPixmapHardEdge());

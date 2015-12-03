@@ -25,7 +25,7 @@ import java.io.StringWriter;
  */
 public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 	public final MedievalWorld world;
-	public final TerrainEditorMode terrainEditorMode;
+	public final EditorView terrainEditorMode;
 	public boolean enabled;
 
 	private InternalClickListener internalCl = new InternalClickListener();
@@ -36,7 +36,7 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 	private Button fileMenuWindowCloseButton;
 	private FileChooser fileChooser;
 
-	public TerrainFileMode(TerrainEditorMode terrainEditorMode) {
+	public TerrainFileMode(EditorView terrainEditorMode) {
 		this.world = terrainEditorMode.world;
 		this.terrainEditorMode = terrainEditorMode;
 	}
@@ -268,4 +268,10 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 		System.out.println("Saved file: " + terrainFile.file().getAbsolutePath());
 
 	}
+
+	@Override
+	public String toString(){
+		return "File";
+	}
+
 }

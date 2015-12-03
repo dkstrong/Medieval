@@ -28,7 +28,7 @@ import java.nio.file.Paths;
  */
 public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvider {
 	public final MedievalWorld world;
-	public final TerrainEditorMode terrainEditorMode;
+	public final EditorView terrainEditorMode;
 	public boolean enabled;
 
 	private InternalClickListener internalCl = new InternalClickListener();
@@ -42,7 +42,7 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 	public UiTexMapping wm_selectedTexChannel = null;
 	public PainterPane painterPane;
 
-	public TerrainWeightMode(TerrainEditorMode terrainEditorMode) {
+	public TerrainWeightMode(EditorView terrainEditorMode) {
 		this.world = terrainEditorMode.world;
 		this.terrainEditorMode = terrainEditorMode;
 		painterPane = new PainterPane(world, this);
@@ -345,5 +345,9 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 		}
 	}
 
+	@Override
+	public String toString(){
+		return "Texture";
+	}
 
 }

@@ -17,7 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
  */
 public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvider {
 	public final MedievalWorld world;
-	public final TerrainEditorMode terrainEditorMode;
+	public final EditorView terrainEditorMode;
 	public boolean enabled;
 
 
@@ -32,7 +32,7 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 
 	public PainterPane painterPane;
 
-	public TerrainHeightMode(TerrainEditorMode terrainEditorMode) {
+	public TerrainHeightMode(EditorView terrainEditorMode) {
 		this.world = terrainEditorMode.world;
 		this.terrainEditorMode = terrainEditorMode;
 		painterPane = new PainterPane(world, this);
@@ -339,5 +339,9 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 		//setUiParamMagnitude(magnitude);
 	}
 
+	@Override
+	public String toString(){
+		return "Elevation";
+	}
 
 }

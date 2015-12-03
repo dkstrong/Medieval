@@ -152,4 +152,9 @@ public class GameEditorMode implements EditorMode {
 	////////////////////////////////////////////////////////////
 
 
+	@Override
+	public String toString(){
+		return "Game";
+	}
+
 }
