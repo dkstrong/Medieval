@@ -49,7 +49,7 @@ public class TerrainHeightPane implements EditorNode, PainterPane.PainterProvide
 		toolTable.add(hm_scaleUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
 		toolTable.add(hm_scaleDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
 
-		toolTable.row();
+		//toolTable.row();
 		toolTable.add(UtEditor.createLabel("Magnitude", world.app.skin));
 		toolTable.add(hm_magnitudeTextField = UtEditor.createTextField(terrain.parameter.magnitude + "", world.app.skin, internalCl, internalCl));
 		toolTable.add(hm_magnitudeUpButton = UtEditor.createTextButton("/\\", world.app.skin, internalCl));

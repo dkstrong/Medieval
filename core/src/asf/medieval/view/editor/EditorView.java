@@ -19,7 +19,7 @@ import java.nio.file.WatchEvent;
 
 
 /**
- * Created by daniel on 11/26/15.
+ *Created by daniel on 11/26/15.
  */
 public class EditorView extends SelectNode implements View, FileWatcher.FileChangeListener, Painter.CoordProvider {
 
@@ -67,6 +67,8 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 
 
 		setEnabled(true);
+		//setMode(terrainEditorMode);
+		//terrainEditorMode.setMode(weightHorizontalNode);
 		refreshUi();   // refreshUi() always needs to be called after setEnabled()
 
 
@@ -113,7 +115,7 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 				toggleToolbarVisible();
 				return true;
 		}
-		return false;
+		return super.keyUp(keycode);
 	}
 
 	@Override

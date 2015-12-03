@@ -94,11 +94,11 @@ public class PainterPane implements EditorNode {
 			pixmapSettingsSubtable.add(radiusLabel);
 
 
-			pixmapSettingsSubtable.row();
+			//pixmapSettingsSubtable.row();
 			pixmapSettingsSubtable.add(hardEdgeCaptionLabel);
 			pixmapSettingsSubtable.add(hardEdgeLabel);
 
-			pixmapSettingsSubtable.row();
+			//pixmapSettingsSubtable.row();
 			pixmapSettingsSubtable.add(toolOpacityCaptionLabel);
 			pixmapSettingsSubtable.add(opacityValueLabel);
 

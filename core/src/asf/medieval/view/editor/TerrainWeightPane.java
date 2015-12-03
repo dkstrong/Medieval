@@ -90,7 +90,7 @@ public class TerrainWeightPane implements EditorNode, PainterPane.PainterProvide
 				texSettingsSubtable.add(texLocCaptionLabel);
 				texSettingsSubtable.add(wm_texLocValueLabel);
 
-				texSettingsSubtable.row();
+				//texSettingsSubtable.row();
 				texSettingsSubtable.add(scaleCaptionLabel);
 				texSettingsSubtable.add(wm_scaleValueLabel);
 				//toolTable.row();
