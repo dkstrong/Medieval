@@ -167,6 +167,7 @@ public class TerrainChunk implements Disposable {
 		final int numIndices = (width - 1) * (height - 1) * 6;
 
 		this.mesh = new Mesh(isStatic, numVertices, numIndices, vertexAttributes);
+
 		this.vertices = new float[numVertices * stride];
 
 		setIndices();

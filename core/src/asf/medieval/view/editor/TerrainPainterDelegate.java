@@ -110,9 +110,11 @@ public class TerrainPainterDelegate implements PainterDelegate {
 	public void output() {
 		Terrain terrain = terrainHeightPane.world.terrainView.terrain;
 		terrain.parameter.fieldData = fieldData;
-		terrain.buildTerrain(terrain.parameter);
-		//terrainHeightMapUi.terrainEditorView.refreshPainters();
-		//terrainHeightMapUi.refreshHeightMapUi();
+		terrain.rebuildTerrain(terrain.parameter);
+//		terrain.fieldData = fieldData;
+//		terrain.fieldWidth = fieldWidth;
+//		terrain.fieldHeight = fieldHeight;
+//		terrain.reconfigureHeightField();
 	}
 
 	@Override

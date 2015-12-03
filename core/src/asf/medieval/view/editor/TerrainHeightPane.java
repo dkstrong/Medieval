@@ -285,7 +285,7 @@ public class TerrainHeightPane implements EditorNode, PainterPane.PainterProvide
 		Terrain terrain = world.terrainView.terrain;
 		terrain.parameter.scale = scale;
 
-		terrain.buildTerrain(terrain.parameter);
+		terrain.rebuildTerrain(terrain.parameter);
 		//editorView.refreshPainters();
 		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 
@@ -301,7 +301,7 @@ public class TerrainHeightPane implements EditorNode, PainterPane.PainterProvide
 		Terrain terrain = world.terrainView.terrain;
 		terrain.parameter.magnitude = magnitude;
 
-		terrain.buildTerrain(terrain.parameter);
+		terrain.rebuildTerrain(terrain.parameter);
 		//editorView.refreshPainters();
 		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 

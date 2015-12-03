@@ -85,51 +85,59 @@ public class Terrain implements RenderableProvider, Disposable {
 			disposables.removeIndex(0).dispose();
 		}
 
-		buildTerrain(param);
+		rebuildTerrain(param);
 
 
 		//saveTerrain("test");
 	}
 
-	public void buildTerrain(TerrainLoader.TerrainParameter param){
-		// clear out/dispose any data from the previous init() call
-		if(chunkGrid!=null){
-			for (Array<TerrainChunk> terrainChunks : chunkGrid) {
-				for (TerrainChunk terrainChunk : terrainChunks) {
-					terrainChunk.dispose();
-				}
-			}
-			chunkGrid= null;
-		}
-
-		// start initializng the new terrain
+	public void rebuildTerrain(TerrainLoader.TerrainParameter param){
+		// TODO: combine init() with reubildTerrain() so that
+		// rebuildTerrain() will intelligently reuse materials/renderables
+		// and only build new ones if needed (just like how it will only build a new mesh if the field data cahnged)
 		this.parameter = param;
-		corner00.set(-param.scale, 0, -param.scale);
-		corner11.set(param.scale, 0, param.scale);
-		magnitude = param.magnitude;
-		chunkDataMaxWidth = param.chunkWidth;
-		chunkDataMaxHeight = param.chunkHeight;
 
-		if(param.fieldData!=null){
-			//UtLog.info("creating heightfield from memory");
+		boolean reconfigureOnly = fieldData!= null && fieldData == parameter.fieldData && fieldWidth == parameter.fieldWidth && fieldHeight == parameter.fieldWidth;
+
+		if(!reconfigureOnly)
+		{
+			//System.out.println("create new");
+			// clear out/dispose any data from the previous init() call
+			if(chunkGrid!=null){
+				for (Array<TerrainChunk> terrainChunks : chunkGrid) {
+					for (TerrainChunk terrainChunk : terrainChunks) {
+						terrainChunk.dispose();
+					}
+				}
+				chunkGrid= null;
+			}
+
+			if(param.fieldData!=null){
+				//UtLog.info("creating heightfield from memory");
+				insertFieldData();
+			}else if (param.heightmapName != null) {
+				//UtLog.info("creating heightfield from "+param.heightmapName);
+				loadFieldData(param.heightmapName);
+			} else {
+				//UtLog.info("creating heightfield from seed "+param.seed);
+				generateFieldData(param.seed, param.fieldWidth, param.fieldHeight);
+			}
+
+			createHeightField();
+			createRenderables();
+		}else{
+			//System.out.println("reconfigure");
 			insertFieldData();
-		}else if (param.heightmapName != null) {
-			//UtLog.info("creating heightfield from "+param.heightmapName);
-			loadFieldData(param.heightmapName);
-		} else {
-			//UtLog.info("creating heightfield from seed "+param.seed);
-			generateFieldData(param.seed, param.fieldWidth, param.fieldHeight);
+			reconfigureHeightField();
+			reconfigureRenderables();
 		}
 
-		createHeightField();
-		createRenderables();
 	}
 
 	private void insertFieldData(){
 		this.fieldWidth = parameter.fieldWidth;
 		this.fieldHeight = parameter.fieldHeight;
 		this.fieldData = parameter.fieldData;
-		//createHeightField();
 	}
 
 	private void loadFieldData(final String heightmapName) {
@@ -143,7 +151,6 @@ public class Terrain implements RenderableProvider, Disposable {
 		this.fieldWidth = heightPix.getWidth();
 		this.fieldHeight = heightPix.getHeight();
 		fieldData = TerrainChunk.heightColorsToMap(heightPix.getPixels(), heightPix.getFormat(), fieldWidth, fieldHeight);
-		//createHeightField();
 		heightPix.dispose();
 	}
 
@@ -164,19 +171,23 @@ public class Terrain implements RenderableProvider, Disposable {
 				//data[y * fieldWidth + x] = 1;
 			}
 		}
-
-
-		//createHeightField();
 	}
 
 
 
 	private void createHeightField() {
+
+		corner00.set(-parameter.scale, 0, -parameter.scale);
+		corner11.set(parameter.scale, 0, parameter.scale);
+		magnitude = parameter.magnitude;
+		chunkDataMaxWidth = parameter.chunkWidth;
+		chunkDataMaxHeight = parameter.chunkHeight;
+
 		float heightRatio = fieldHeight / (float) fieldWidth;
 		corner00.z *= heightRatio;
 		corner11.z *= heightRatio;
 		final int vertexAttributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates;
-		final boolean isStatic = true;
+		final boolean isStatic = false; // TODO: this should be passed in from the parameter, in editor mode isStatic = false, otherwise isStatic = true
 		final boolean smooth = true;
 		chunkGrid = new Array<Array<TerrainChunk>>(true, 1, Array.class);
 		TerrainChunk chunk = new TerrainChunk(isStatic, fieldWidth, fieldHeight, smooth, vertexAttributes);
@@ -191,7 +202,31 @@ public class Terrain implements RenderableProvider, Disposable {
 		putTerrainChunk(0, 0, chunk);
 		chunk.configureField(corner00.x, corner00.z, corner11.x, corner11.z, color, magnitude);
 
+	}
 
+	private void reconfigureHeightField(){
+		corner00.set(-parameter.scale, 0, -parameter.scale);
+		corner11.set(parameter.scale, 0, parameter.scale);
+		magnitude = parameter.magnitude;
+		chunkDataMaxWidth = parameter.chunkWidth;
+		chunkDataMaxHeight = parameter.chunkHeight;
+
+		float heightRatio = fieldHeight / (float) fieldWidth;
+		corner00.z *= heightRatio;
+		corner11.z *= heightRatio;
+		final int vertexAttributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.ColorUnpacked | VertexAttributes.Usage.TextureCoordinates;
+		final boolean isStatic = false;
+		final boolean smooth = true;
+		TerrainChunk chunk = chunkGrid.get(0).get(0);
+		chunk.terrain = this;
+		chunk.gridX = 0;
+		chunk.gridY = 0;
+		chunk.fieldStartX = 0;
+		chunk.fieldStartY = 0;
+		chunk.fieldEndX = fieldWidth;
+		chunk.fieldEndY = fieldHeight;
+		chunk.set(fieldData);
+		chunk.configureField(corner00.x, corner00.z, corner11.x, corner11.z, color, magnitude);
 
 	}
 
@@ -222,6 +257,14 @@ public class Terrain implements RenderableProvider, Disposable {
 		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
 			for (TerrainChunk terrainChunk : terrainChunks) {
 				terrainChunk.createRenderable(getMaterial(terrainChunk));
+			}
+		}
+	}
+
+	private void reconfigureRenderables(){
+		for (Array<TerrainChunk> terrainChunks : chunkGrid) {
+			for (TerrainChunk terrainChunk : terrainChunks) {
+				terrainChunk.renderable.meshPart.update();
 			}
 		}
 	}
