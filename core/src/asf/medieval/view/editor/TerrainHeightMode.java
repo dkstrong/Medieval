@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 
 /**
  * Created by daniel on 11/30/15.
@@ -43,6 +44,7 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 	{
 		Terrain terrain = world.terrainView.terrain;
 		toolTable = new Table(world.app.skin);
+		toolTable.align(Align.topLeft);
 		toolTable.row();
 
 		// Painter

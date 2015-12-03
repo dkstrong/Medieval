@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.XmlWriter;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 	public boolean enabled;
 
 	private InternalClickListener internalCl = new InternalClickListener();
-	public Table fileModeTable;
+	public Table toolTable;
 	private Label terrainNameLabel;
 	private Button fileMenuButton;
 	private Container<Window> fileMenuWindowContainer;
@@ -60,17 +61,18 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 			fileMenuWindowContainer.center();
 			fileMenuWindowContainer.minSize(400, 300);
 
-			fileModeTable = new Table(world.app.skin);
-			fileModeTable.row();
-			fileModeTable.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
-			fileModeTable.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
+			toolTable = new Table(world.app.skin);
+			toolTable.align(Align.topLeft);
+			toolTable.row();
+			toolTable.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
+			toolTable.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
 
 		}
 	}
 
 	@Override
 	public Actor getToolbarActor() {
-		return fileModeTable;
+		return toolTable;
 	}
 
 	@Override

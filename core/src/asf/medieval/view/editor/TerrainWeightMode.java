@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
 import java.nio.file.Paths;
@@ -53,6 +54,7 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 		// Weightmap Tools
 		{
 			toolTable = new Table(world.app.skin);
+			toolTable.align(Align.topLeft);
 			toolTable.row();
 
 			// PixmapPainter Tool selector

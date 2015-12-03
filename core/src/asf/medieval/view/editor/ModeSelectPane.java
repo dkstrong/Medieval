@@ -1,6 +1,7 @@
 package asf.medieval.view.editor;
 
 import asf.medieval.view.MedievalWorld;
+import asf.medieval.view.View;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
@@ -15,22 +16,17 @@ import com.badlogic.gdx.utils.Array;
 /**
  * Created by daniel on 12/2/15.
  */
-public class ModeSelectPane implements EditorMode{
-	public final MedievalWorld world;
-	public boolean enabled;
-	public String modeName;
+public class ModeSelectPane extends MultiModePane implements EditorMode{
+
 
 	private final InternalChangeListener internalCl = new InternalChangeListener();
-	public Table toolTable;
+
 	private SelectBox<EditorMode> modeSelectBox;
 	protected Cell modeContextCell;
-	private EditorMode[] modes;
 
 
 	public ModeSelectPane(String modeName, MedievalWorld world, EditorMode... modes) {
-		this.modeName = modeName;
-		this.world = world;
-		this.modes = modes;
+		super(modeName, world, modes);
 	}
 
 	@Override
@@ -40,13 +36,16 @@ public class ModeSelectPane implements EditorMode{
 		modeSelectBox.addListener(internalCl);
 		//ModeSelectPane.ModeSelectItem gameSelectItem = new ModeSelectPane.ModeSelectItem("Game", gameEditorMode);
 		//ModeSelectPane.ModeSelectItem terrainSelectItem = new ModeSelectPane.ModeSelectItem("Terrain", terrainEditorMode);
+		for (EditorMode mode : modes) {
+			mode.initUi();
+		}
 		modeSelectBox.setItems(modes);
 
 
 		toolTable = new Table(world.app.skin);
-		if(modes.length<3) // TODO: need proper way to determine if this is the root table...
+		if(this instanceof View) // TODO: need proper way to determine if this is the root table...
 			toolTable.setBackground("default-pane-trans"); // base editor, set up the background
-		toolTable.align(Align.topLeft);
+		toolTable.align(Align.left);
 		toolTable.row();//.padBottom(Value.percentWidth(0.05f));
 		toolTable.add(modeSelectBox);
 		modeContextCell = toolTable.add(new Label("no mode", world.app.skin)).fill().expand().align(Align.topLeft);
@@ -54,43 +53,13 @@ public class ModeSelectPane implements EditorMode{
 
 	@Override
 	public void refreshUi() {
-		setMode(getMode());
+		// do not need to call super
+		setMode(getMode()); // this calls refreshUI() on all child nodes
 	}
 
 	@Override
 	public Actor getToolbarActor() {
 		return toolTable;
-	}
-
-	@Override
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-		for (EditorMode editorMode : modeSelectBox.getItems()) {
-			editorMode.setEnabled(enabled);
-		}
-	}
-
-	@Override
-	public void update(float delta) {
-		if(!enabled) return;
-		for (EditorMode editorMode : modeSelectBox.getItems()) {
-			editorMode.update(delta);
-		}
-	}
-
-	@Override
-	public void render(float delta) {
-		if(!enabled) return;
-		for (EditorMode editorMode : modeSelectBox.getItems()) {
-			editorMode.render(delta);
-		}
-	}
-
-	@Override
-	public void dispose() {
-		for (EditorMode editorMode : modeSelectBox.getItems()) {
-			editorMode.dispose();
-		}
 	}
 
 	public EditorMode getMode() {
@@ -116,46 +85,6 @@ public class ModeSelectPane implements EditorMode{
 			modeContextCell.setActor(null);
 	}
 
-	@Override
-	public boolean keyDown(int keycode) {
-		return false;
-	}
-
-	@Override
-	public boolean keyUp(int keycode) {
-		return false;
-	}
-
-	@Override
-	public boolean keyTyped(char character) {
-		return false;
-	}
-
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		return false;
-	}
-
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		return false;
-	}
-
-	@Override
-	public boolean scrolled(int amount) {
-		return false;
-	}
-
 	private class InternalChangeListener implements EventListener {
 
 		@Override
@@ -173,8 +102,4 @@ public class ModeSelectPane implements EditorMode{
 		}
 	}
 
-	@Override
-	public String toString() {
-		return modeName;
-	}
 }

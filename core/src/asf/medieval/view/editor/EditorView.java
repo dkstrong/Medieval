@@ -24,52 +24,47 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class EditorView implements View, FileWatcher.FileChangeListener, Disposable, InputProcessor, Painter.CoordProvider {
+public class EditorView extends ModeSelectPane implements View, FileWatcher.FileChangeListener, Painter.CoordProvider {
 
-	public final MedievalWorld world;
 
 	private Container<Actor> baseTableContainer;
 
 
-	public ModeSelectPane modeSelectPane;
-
 	private FileWatcher fileWatcher;
-	public final GameEditorMode gameEditorMode;
-	public final ModeSelectPane terrainEditorMode;
 
+	public final ModeListPane gameEditorMode;
+
+	public final GameEditorMode gameEditorSubNode;
+
+	public final ModeSelectPane terrainEditorMode;
 
 	public final EditorMode fileMode;
 	public final TerrainHeightMode heightMode;
 	public final TerrainWeightMode weightMode;
 
 	public EditorView(MedievalWorld world) {
-		this.world = world;
+		super("Editor",world);
 		// Create SubEditors
+
+		gameEditorSubNode = new GameEditorMode(world);
 
 		fileMode = new TerrainFileMode(this);
 		heightMode = new TerrainHeightMode(this);
 		weightMode = new TerrainWeightMode(this);
 
 
-		gameEditorMode = new GameEditorMode(world);
+		gameEditorMode = new ModeListPane("Game",world, gameEditorSubNode);
 		terrainEditorMode = new ModeSelectPane("Terrain",world, fileMode, heightMode, weightMode);
-		modeSelectPane = new ModeSelectPane("Editor", world,gameEditorMode,terrainEditorMode);
 
-		gameEditorMode.initUi();
 
-		fileMode.initUi();
-		heightMode.initUi();
-		weightMode.initUi();
-
-		terrainEditorMode.initUi();
-
-		modeSelectPane.initUi();
+		this.modes = new EditorMode[]{gameEditorMode,terrainEditorMode};
+		initUi();
 
 
 
 		{
 			// This is the base editor, set up the master container
-			baseTableContainer = new Container<Actor>(modeSelectPane.getToolbarActor());
+			baseTableContainer = new Container<Actor>(getToolbarActor());
 			baseTableContainer.setFillParent(true);
 			baseTableContainer.align(Align.topLeft);
 			baseTableContainer.fillX();
@@ -86,7 +81,7 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 		Gdx.app.postRunnable(new Runnable() {
 			@Override
 			public void run() {
-				modeSelectPane.setEnabled(true);
+				setEnabled(true);
 				refreshUi();
 			}
 		});
@@ -94,24 +89,11 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 
 	}
 
-	public void refreshUi(){
-		modeSelectPane.refreshUi();
-	}
-
-	@Override
-	public void update(float delta) {
-		modeSelectPane.update(delta);
-	}
-
-	@Override
-	public void render(float delta) {
-		modeSelectPane.render(delta);
-	}
 
 	@Override
 	public void dispose() {
 		fileWatcher.dispose();
-		modeSelectPane.dispose();
+		super.dispose();
 	}
 
 	public void setToolbarVisible(boolean visible) {
@@ -131,47 +113,12 @@ public class EditorView implements View, FileWatcher.FileChangeListener, Disposa
 	}
 
 	@Override
-	public boolean keyDown(int keycode) {
-		return false;
-	}
-
-	@Override
 	public boolean keyUp(int keycode) {
 		switch (keycode) {
 			case Input.Keys.TAB:
 				toggleToolbarVisible();
 				return true;
 		}
-		return false;
-	}
-
-	@Override
-	public boolean keyTyped(char character) {
-		return false;
-	}
-
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		return false;
-	}
-
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		return false;
-	}
-
-	@Override
-	public boolean scrolled(int amount) {
 		return false;
 	}
 
