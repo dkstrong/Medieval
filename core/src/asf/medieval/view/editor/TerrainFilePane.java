@@ -24,9 +24,11 @@ import java.io.StringWriter;
 /**
  * Created by daniel on 12/2/15.
  */
-public class TerrainFileMode implements EditorMode, FileChooser.Listener {
+public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 	public final MedievalWorld world;
-	public final EditorView terrainEditorMode;
+	public final EditorView editorView;
+	public PainterPane heightPainerPane;
+	public PainterPane weightPainterPane;
 	public boolean enabled;
 
 	private InternalClickListener internalCl = new InternalClickListener();
@@ -37,37 +39,34 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 	private Button fileMenuWindowCloseButton;
 	private FileChooser fileChooser;
 
-	public TerrainFileMode(EditorView terrainEditorMode) {
-		this.world = terrainEditorMode.world;
-		this.terrainEditorMode = terrainEditorMode;
+	public TerrainFilePane(EditorView editorView, PainterPane heightPainerPane, PainterPane weightPainterPane) {
+		this.world = editorView.world;
+		this.editorView = editorView;
+		this.heightPainerPane = heightPainerPane;
+		this.weightPainterPane = weightPainterPane;
 	}
 
 	public void initUi()
 	{
 		Terrain terrain = world.terrainView.terrain;
 
-		// file mode
-		{
+		Window fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
+		fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton = UtEditor.createTextButton("[X]", world.app.skin, internalCl));
 
-			Window fileMenuWindow = UtEditor.createModalWindow("Save/Open/Delete Terrain File", world.app.skin);
-			fileMenuWindow.getTitleTable().add(fileMenuWindowCloseButton = UtEditor.createTextButton("[X]", world.app.skin, internalCl));
+		fileChooser = UtEditor.createFileChooser(this, world.app.skin);
+		fileMenuWindow.row();
+		fileMenuWindow.add(fileChooser).fill().expand();
 
-			fileChooser = UtEditor.createFileChooser(this, world.app.skin);
-			fileMenuWindow.row();
-			fileMenuWindow.add(fileChooser).fill().expand();
+		fileMenuWindowContainer = new Container<Window>(fileMenuWindow);
+		fileMenuWindowContainer.setFillParent(true);
+		fileMenuWindowContainer.center();
+		fileMenuWindowContainer.minSize(400, 300);
 
-			fileMenuWindowContainer = new Container<Window>(fileMenuWindow);
-			fileMenuWindowContainer.setFillParent(true);
-			fileMenuWindowContainer.center();
-			fileMenuWindowContainer.minSize(400, 300);
-
-			toolTable = new Table(world.app.skin);
-			toolTable.align(Align.topLeft);
-			toolTable.row();
-			toolTable.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
-			toolTable.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
-
-		}
+		toolTable = new Table(world.app.skin);
+		toolTable.align(Align.left);
+		toolTable.row();
+		toolTable.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
+		toolTable.add(fileMenuButton = UtEditor.createTextButton("..", world.app.skin, internalCl));
 	}
 
 	@Override
@@ -106,14 +105,14 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 	public void onFileSave(FileHandle fh) {
 		String name = fh.nameWithoutExtension();
 		saveTerrain(name);
-		terrainEditorMode.refreshUi();
+		editorView.refreshUi();
 		fileMenuWindowContainer.remove();
 	}
 
 	@Override
 	public void onFileOpen(FileHandle fh) {
 		world.terrainView.terrain.loadTerrain(fh);
-		terrainEditorMode.refreshUi();
+		editorView.refreshUi();
 		fileMenuWindowContainer.remove();
 	}
 
@@ -262,10 +261,10 @@ public class TerrainFileMode implements EditorMode, FileChooser.Listener {
 		}
 
 		FileHandle heightmapFh = FileManager.relative(parameter.heightmapName);
-		terrainEditorMode.heightMode.savePainterToFile(heightmapFh);
+		heightPainerPane.savePainterToFile(heightmapFh);
 
 		FileHandle weightmap1Fh = FileManager.relative(parameter.weightMap1);
-		terrainEditorMode.weightMode.savePainterToFile(weightmap1Fh);
+		weightPainterPane.savePainterToFile(weightmap1Fh);
 
 		System.out.println("Saved file: " + terrainFile.file().getAbsolutePath());
 

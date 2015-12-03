@@ -3,7 +3,6 @@ package asf.medieval.view.editor;
 import asf.medieval.painter.Painter;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.view.MedievalWorld;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -16,9 +15,9 @@ import com.badlogic.gdx.utils.Align;
 /**
  * Created by daniel on 11/30/15.
  */
-public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvider {
+public class TerrainHeightPane implements EditorNode, PainterPane.PainterProvider {
 	public final MedievalWorld world;
-	public final EditorView terrainEditorMode;
+	public final EditorView editorView;
 	public boolean enabled;
 
 
@@ -31,12 +30,10 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 	private TextField hm_magnitudeTextField;
 	private TextButton hm_magnitudeUpButton, hm_magnitudeDownButton;
 
-	public PainterPane painterPane;
 
-	public TerrainHeightMode(EditorView terrainEditorMode) {
-		this.world = terrainEditorMode.world;
-		this.terrainEditorMode = terrainEditorMode;
-		painterPane = new PainterPane(world, this);
+	public TerrainHeightPane(EditorView editorView) {
+		this.world = editorView.world;
+		this.editorView = editorView;
 	}
 
 	@Override
@@ -44,37 +41,19 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 	{
 		Terrain terrain = world.terrainView.terrain;
 		toolTable = new Table(world.app.skin);
-		toolTable.align(Align.topLeft);
+		toolTable.align(Align.left);
+
 		toolTable.row();
+		toolTable.add(UtEditor.createLabel("Scale", world.app.skin));
+		toolTable.add(hm_scaleTextField = UtEditor.createTextField(terrain.parameter.scale + "", world.app.skin, internalCl, internalCl));
+		toolTable.add(hm_scaleUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
+		toolTable.add(hm_scaleDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
 
-		// Painter
-		{
-			painterPane.initUi();
-
-			toolTable.add(painterPane.getToolbarActor());
-		}
-
-
-		// Heightmap tools
-		{
-			Table scaleMagTable = new Table(world.app.skin);
-
-			scaleMagTable.row();
-			scaleMagTable.add(UtEditor.createLabel("Scale", world.app.skin));
-			scaleMagTable.add(hm_scaleTextField = UtEditor.createTextField(terrain.parameter.scale + "", world.app.skin, internalCl, internalCl));
-			scaleMagTable.add(hm_scaleUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
-			scaleMagTable.add(hm_scaleDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
-
-			scaleMagTable.row();
-			scaleMagTable.add(UtEditor.createLabel("Magnitude", world.app.skin));
-			scaleMagTable.add(hm_magnitudeTextField = UtEditor.createTextField(terrain.parameter.magnitude + "", world.app.skin, internalCl, internalCl));
-			scaleMagTable.add(hm_magnitudeUpButton =UtEditor.createTextButton("/\\",world.app.skin, internalCl));
-			scaleMagTable.add(hm_magnitudeDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
-
-
-			//toolTable.row();
-			toolTable.add(scaleMagTable).fill().maxWidth(10);
-		}
+		toolTable.row();
+		toolTable.add(UtEditor.createLabel("Magnitude", world.app.skin));
+		toolTable.add(hm_magnitudeTextField = UtEditor.createTextField(terrain.parameter.magnitude + "", world.app.skin, internalCl, internalCl));
+		toolTable.add(hm_magnitudeUpButton = UtEditor.createTextButton("/\\", world.app.skin, internalCl));
+		toolTable.add(hm_magnitudeDownButton =UtEditor.createTextButton("\\/",world.app.skin, internalCl));
 
 	}
 
@@ -101,25 +80,17 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 		currentPainter = new Painter(terrainPainterDelegate);
 		currentPainter.setBrushColor(new Color(1,1,1,1));
 		currentPainter.setBrushOpacity(0.1f);
-		currentPainter.coordProvider = terrainEditorMode;
+		currentPainter.coordProvider = editorView;
 		return currentPainter;
 
 	}
 
 	@Override
 	public void refreshUi() {
-
-		painterPane.refreshUi();
-
-
 		setUiParamScale(getParamScale());
 		setUiParamMagnitude(getParamMagnitude());
 
 
-	}
-
-	public void savePainterToFile(FileHandle fh){
-		painterPane.painter.output(fh);
 	}
 
 	////////////
@@ -128,7 +99,6 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 
 	public void setEnabled(boolean enabled){
 		this.enabled = enabled;
-		painterPane.setEnabled(enabled);
 	}
 
 	private float buttonHoldTimer;
@@ -165,19 +135,16 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 			}
 		}
 
-		painterPane.update(delta);
 	}
 
 	public void render(float delta){
 		if(!enabled)
 			return;
-		painterPane.render(delta);
 
 	}
 
 	public void dispose()
 	{
-		painterPane.dispose();
 	}
 
 
@@ -319,7 +286,7 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 		terrain.parameter.scale = scale;
 
 		terrain.createTerrain(terrain.parameter);
-		//terrainEditorMode.refreshPainters();
+		//editorView.refreshPainters();
 		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 
 		//setUiParamScale(scale);
@@ -335,7 +302,7 @@ public class TerrainHeightMode implements EditorMode, PainterPane.PainterProvide
 		terrain.parameter.magnitude = magnitude;
 
 		terrain.createTerrain(terrain.parameter);
-		//terrainEditorMode.refreshPainters();
+		//editorView.refreshPainters();
 		refreshUi(); // refresh just terrain height, not the entire terrain editor view
 
 		//setUiParamMagnitude(magnitude);

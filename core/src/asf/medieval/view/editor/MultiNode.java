@@ -9,16 +9,16 @@ import com.badlogic.gdx.utils.Align;
 /**
  * Created by daniel on 12/2/15.
  */
-public abstract class MultiModePane implements EditorMode{
+public abstract class MultiNode implements EditorNode {
 	public final MedievalWorld world;
 	public boolean enabled;
 	public String modeName;
 
 	protected Table toolTable;
-	protected EditorMode[] modes;
+	protected EditorNode[] modes;
 
 
-	public MultiModePane(String modeName, MedievalWorld world, EditorMode... modes) {
+	public MultiNode(String modeName, MedievalWorld world, EditorNode... modes) {
 		this.modeName = modeName;
 		this.world = world;
 		this.modes = modes;
@@ -31,14 +31,14 @@ public abstract class MultiModePane implements EditorMode{
 			toolTable.setBackground("default-pane-trans"); // base editor, set up the background
 		toolTable.align(Align.left);
 		toolTable.row();
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			mode.initUi();
 		}
 	}
 
 	@Override
 	public void refreshUi() {
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			mode.refreshUi();
 		}
 	}
@@ -51,38 +51,38 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-		for (EditorMode editorMode : modes) {
-			editorMode.setEnabled(enabled);
+		for (EditorNode editorNode : modes) {
+			editorNode.setEnabled(enabled);
 		}
 	}
 
 	@Override
 	public void update(float delta) {
 		if(!enabled) return;
-		for (EditorMode editorMode : modes) {
-			editorMode.update(delta);
+		for (EditorNode editorNode : modes) {
+			editorNode.update(delta);
 		}
 	}
 
 	@Override
 	public void render(float delta) {
 		if(!enabled) return;
-		for (EditorMode editorMode : modes) {
-			editorMode.render(delta);
+		for (EditorNode editorNode : modes) {
+			editorNode.render(delta);
 		}
 	}
 
 	@Override
 	public void dispose() {
-		for (EditorMode editorMode : modes) {
-			editorMode.dispose();
+		for (EditorNode editorNode : modes) {
+			editorNode.dispose();
 		}
 	}
 
 	@Override
 	public boolean keyDown(int keycode) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.keyDown(keycode))
 				return true;
 		}
@@ -92,7 +92,7 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public boolean keyUp(int keycode) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.keyUp(keycode))
 				return true;
 		}
@@ -102,7 +102,7 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public boolean keyTyped(char character) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.keyTyped(character))
 				return true;
 		}
@@ -112,7 +112,7 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.touchDown(screenX, screenY, pointer, button))
 				return true;
 		}
@@ -122,7 +122,7 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.touchUp(screenX, screenY, pointer, button))
 				return true;
 		}
@@ -132,7 +132,7 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.touchDragged(screenX, screenY, pointer))
 				return true;
 		}
@@ -142,7 +142,7 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.mouseMoved(screenX, screenY))
 				return true;
 		}
@@ -152,7 +152,7 @@ public abstract class MultiModePane implements EditorMode{
 	@Override
 	public boolean scrolled(int amount) {
 		if(!enabled) return false;
-		for (EditorMode mode : modes) {
+		for (EditorNode mode : modes) {
 			if(mode.scrolled(amount))
 				return true;
 		}

@@ -1,40 +1,22 @@
 package asf.medieval.view.editor;
 
-import asf.medieval.painter.Painter;
-import asf.medieval.terrain.Terrain;
-import asf.medieval.utility.FileWatcher;
-import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
-
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
 
 /**
  * Created by daniel on 11/26/15.
  */
-public class GameEditorMode implements EditorMode {
+public class GameEditorPane implements EditorNode {
 	public final MedievalWorld world;
 	private boolean enabled;
 
 	private Table toolTable;
 
 
-	public GameEditorMode(MedievalWorld world) {
+	public GameEditorPane(MedievalWorld world) {
 		this.world = world;
 
 	}

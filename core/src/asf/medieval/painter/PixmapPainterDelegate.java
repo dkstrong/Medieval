@@ -15,7 +15,7 @@ import com.badlogic.gdx.utils.Array;
  */
 public class PixmapPainterDelegate implements PainterDelegate {
 
-	private Painter painter;
+	public Painter painter;
 	public Pixmap pixmap;
 	public Texture texture;
 

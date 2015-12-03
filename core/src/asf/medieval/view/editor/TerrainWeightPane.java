@@ -6,7 +6,6 @@ import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainTextureAttribute;
 import asf.medieval.view.MedievalWorld;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -27,9 +26,9 @@ import java.nio.file.Paths;
 /**
  * Created by daniel on 11/30/15.
  */
-public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvider {
+public class TerrainWeightPane implements EditorNode, PainterPane.PainterProvider {
 	public final MedievalWorld world;
-	public final EditorView terrainEditorMode;
+	public final EditorView editorView;
 	public boolean enabled;
 
 	private InternalClickListener internalCl = new InternalClickListener();
@@ -41,12 +40,10 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 	public final Array<UiTexMapping> wm_uiTexMappings = new Array<UiTexMapping>(true, 4, UiTexMapping.class);
 	public Label wm_texLocValueLabel, wm_scaleValueLabel;
 	public UiTexMapping wm_selectedTexChannel = null;
-	public PainterPane painterPane;
 
-	public TerrainWeightMode(EditorView terrainEditorMode) {
-		this.world = terrainEditorMode.world;
-		this.terrainEditorMode = terrainEditorMode;
-		painterPane = new PainterPane(world, this);
+	public TerrainWeightPane(EditorView editorView) {
+		this.world = editorView.world;
+		this.editorView = editorView;
 	}
 
 	@Override
@@ -54,16 +51,8 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 		// Weightmap Tools
 		{
 			toolTable = new Table(world.app.skin);
-			toolTable.align(Align.topLeft);
+			toolTable.align(Align.left);
 			toolTable.row();
-
-			// PixmapPainter Tool selector
-			{
-
-				painterPane.initUi();
-
-				toolTable.add(painterPane.getToolbarActor());
-			}
 
 			// Texture Channel Selector
 			{
@@ -185,7 +174,7 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 		//wm_pixmapPainter = new PixmapPainter(1024, 1024, Pixmap.Format.RGBA8888);
 		painterModel = new PixmapPainterDelegate(currentTexture);
 		currentPainter = new Painter(painterModel);
-		currentPainter.coordProvider = terrainEditorMode;
+		currentPainter.coordProvider = editorView;
 		world.terrainView.terrain.setOverrideMaterialAttribute(TerrainTextureAttribute.WeightMap1, painterModel.texture, 1);
 
 		return currentPainter;
@@ -193,8 +182,6 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 
 
 	public void refreshUi() {
-
-		painterPane.refreshUi();
 
 		// TODO: handle if the number of textures changes...
 		refreshUiTexMapping(wm_uiTexMappings.get(0), TerrainTextureAttribute.Tex1);
@@ -210,9 +197,6 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 
 	}
 
-	public void savePainterToFile(FileHandle fh) {
-		painterPane.painter.output(fh);
-	}
 
 	////////////
 	/// View methods
@@ -220,21 +204,18 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-		painterPane.setEnabled(enabled);
 	}
 
 	public void update(float delta) {
 		if (!enabled) return;
-		painterPane.update(delta);
 	}
 
 	public void render(float delta) {
 		if (!enabled) return;
-		painterPane.render(delta);
 	}
 
 	public void dispose() {
-		painterPane.dispose();
+
 	}
 
 
@@ -248,8 +229,8 @@ public class TerrainWeightMode implements EditorMode, PainterPane.PainterProvide
 
 	public void setUiPixmapTexChannel(UiTexMapping selectedTexChannel) {
 		this.wm_selectedTexChannel = selectedTexChannel;
-		if (painterPane.painter != null)
-			painterPane.painter.setBrushColor(selectedTexChannel.weightmapColor);
+		if (painterModel.painter != null)
+			painterModel.painter.setBrushColor(selectedTexChannel.weightmapColor);
 		selectedTexChannel.toolbarButton.setChecked(true);
 
 		wm_texLocValueLabel.setText(selectedTexChannel.texLocationFileName);

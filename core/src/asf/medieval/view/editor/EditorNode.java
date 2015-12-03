@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.Disposable;
 /**
  * Created by daniel on 12/2/15.
  */
-public interface EditorMode extends Disposable, InputProcessor {
+public interface EditorNode extends Disposable, InputProcessor {
 
 	public void initUi();
 

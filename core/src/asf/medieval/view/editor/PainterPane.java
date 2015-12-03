@@ -5,6 +5,7 @@ import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -18,7 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 /**
  * Created by daniel on 12/2/15.
  */
-public class PainterPane implements EditorMode{
+public class PainterPane implements EditorNode {
 	public final MedievalWorld world;
 	public final PainterProvider painterProvider;
 	public boolean enabled;
@@ -316,5 +317,9 @@ public class PainterPane implements EditorMode{
 		public void keyTyped(TextField textField, char c) {
 
 		}
+	}
+
+	public void savePainterToFile(FileHandle fh){
+		painter.output(fh);
 	}
 }

@@ -3,19 +3,16 @@ package asf.medieval.view.editor;
 import asf.medieval.painter.Painter;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.FileWatcher;
-import asf.medieval.utility.FileManager;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.View;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Disposable;
 
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
@@ -24,7 +21,7 @@ import java.nio.file.WatchEvent;
 /**
  * Created by daniel on 11/26/15.
  */
-public class EditorView extends ModeSelectPane implements View, FileWatcher.FileChangeListener, Painter.CoordProvider {
+public class EditorView extends SelectNode implements View, FileWatcher.FileChangeListener, Painter.CoordProvider {
 
 
 	private Container<Actor> baseTableContainer;
@@ -32,45 +29,48 @@ public class EditorView extends ModeSelectPane implements View, FileWatcher.File
 
 	private FileWatcher fileWatcher;
 
-	public final ModeListPane gameEditorMode;
-
-	public final GameEditorMode gameEditorSubNode;
-
-	public final ModeSelectPane terrainEditorMode;
-
-	public final EditorMode fileMode;
-	public final TerrainHeightMode heightMode;
-	public final TerrainWeightMode weightMode;
 
 	public EditorView(MedievalWorld world) {
 		super("Editor",world);
 		// Create SubEditors
 
-		gameEditorSubNode = new GameEditorMode(world);
+		// Game
+		GameEditorPane gameEditorSubNode = new GameEditorPane(world);
+		HorizontalRowNode gameEditorMode = new HorizontalRowNode("Game",world, gameEditorSubNode);
 
-		fileMode = new TerrainFileMode(this);
-		heightMode = new TerrainHeightMode(this);
-		weightMode = new TerrainWeightMode(this);
+		// Terrain
+		//	Height
+		TerrainHeightPane terrainHeightPane = new TerrainHeightPane(this);
+		PainterPane terrainHeightPainterPane = new PainterPane(world, terrainHeightPane);
+		HorizontalRowNode heightHorizontalNode = new HorizontalRowNode("Elevation",world, terrainHeightPainterPane, terrainHeightPane);
+
+		//	Weight
+		TerrainWeightPane terrainWeightPane = new TerrainWeightPane(this);
+		PainterPane terrainWeightPainerPane = new PainterPane(world, terrainWeightPane);
+		HorizontalRowNode weightHorizontalNode = new HorizontalRowNode("Texture",world, terrainWeightPainerPane, terrainWeightPane);
+
+		//	File
+		TerrainFilePane fileMode = new TerrainFilePane(this, terrainHeightPainterPane, terrainWeightPainerPane);
+
+		SelectNode terrainEditorMode = new SelectNode("Terrain",world, fileMode, heightHorizontalNode, weightHorizontalNode);
 
 
-		gameEditorMode = new ModeListPane("Game",world, gameEditorSubNode);
-		terrainEditorMode = new ModeSelectPane("Terrain",world, fileMode, heightMode, weightMode);
-
-
-		this.modes = new EditorMode[]{gameEditorMode,terrainEditorMode};
+		// Editor View
+		this.modes = new EditorNode[]{gameEditorMode,terrainEditorMode};
 		initUi();
 
+		baseTableContainer = new Container<Actor>(getToolbarActor());
+		baseTableContainer.setFillParent(true);
+		baseTableContainer.align(Align.topLeft);
+		baseTableContainer.fillX();
+		world.stage.addActor(baseTableContainer);
 
 
-		{
-			// This is the base editor, set up the master container
-			baseTableContainer = new Container<Actor>(getToolbarActor());
-			baseTableContainer.setFillParent(true);
-			baseTableContainer.align(Align.topLeft);
-			baseTableContainer.fillX();
-			world.stage.addActor(baseTableContainer);
-		}
+		setEnabled(true);
+		refreshUi();   // refreshUi() always needs to be called after setEnabled()
 
+
+		// Editor view functionality (file watches etc)
 
 		// TODO: muuuuhhhh, might need to do relative and local watches for each directory
 //		fileWatcher = new FileWatcher(this);
@@ -78,13 +78,7 @@ public class EditorView extends ModeSelectPane implements View, FileWatcher.File
 //		fileWatcher.addWatch(Gdx.files.local("Shaders"));
 
 
-		Gdx.app.postRunnable(new Runnable() {
-			@Override
-			public void run() {
-				setEnabled(true);
-				refreshUi();
-			}
-		});
+
 
 
 	}
