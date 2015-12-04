@@ -77,13 +77,6 @@ public class HudCommandView implements View,InputProcessor {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-
-
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if(button == Input.Buttons.RIGHT)
 		{
 			if(world.hudView.hudSelectionView.selectedViews.size > 0)
@@ -108,6 +101,14 @@ public class HudCommandView implements View,InputProcessor {
 
 			return true;
 		}
+		return false;
+	}
+
+
+
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+
 		return false;
 	}
 

@@ -95,7 +95,15 @@ public class Scenario {
 		if(modelInfo.structure){
 			return newStructure(owner, location, modelId);
 		}else{
-			return newSoldier(owner, location, modelId);
+			Token barracks = getBarracksToBuild(owner,location, modelId);
+			final Vector2 spawnLoc = barracks.location;
+
+			Token soldier =  newSoldier(owner, spawnLoc, modelId);
+
+			InfantryController infantry = (InfantryController)soldier.agent;
+			infantry.setTarget(location);
+
+			return soldier;
 		}
 	}
 
@@ -146,6 +154,33 @@ public class Scenario {
 			listener.onNewToken(token);
 		return token;
 	}
+
+	private Array<Token> tempTokens = new Array<Token>(false, 16, Token.class);
+
+	public Token getBarracksToBuild(int owner, Vector2 location, int modelId) {
+		Token closestBarracks = null;
+		float closestDist2 = Float.MAX_VALUE;
+		for (Token token : tokens) {
+			if (token.owner.id == owner) {
+				if (token.barracks != null) {
+					if(closestBarracks == null){
+						closestBarracks = token;
+						closestDist2 = token.location.dst2(location);
+					}else{
+						float dist2 = token.location.dst2(location);
+						if(dist2 < closestDist2){
+							closestBarracks = token;
+							closestDist2 = dist2;
+						}
+					}
+
+				}
+			}
+		}
+
+		return closestBarracks;
+	}
+
 
 	public void setRandomNonOverlappingPosition (Token token, float minX, float maxX, float minY, float maxY) {
 		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
