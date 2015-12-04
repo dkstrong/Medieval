@@ -275,6 +275,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			addGameObject(new InfantryView(this,token));
 		}else if(token.agent instanceof StructureController){
 			addGameObject(new StructureView(this,token));
+			hudView.hudBuildView.refreshUi();
+
 		}
 
 	}

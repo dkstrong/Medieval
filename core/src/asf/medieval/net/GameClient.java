@@ -10,6 +10,9 @@ import com.badlogic.gdx.utils.IntMap;
  */
 public abstract class GameClient {
 	public IntMap<Player> players = new IntMap<Player>();
+	/**
+	 * the local player
+	 */
 	public Player player;
 	public Scenario scenario;
 

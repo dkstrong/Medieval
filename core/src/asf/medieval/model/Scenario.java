@@ -30,11 +30,7 @@ public class Scenario {
 
 	public Scenario(ScenarioRand rand) {
 		this.rand = rand;
-		models.put(ModelId.Church.ordinal(),new ModelInfo(true));
-		models.put(ModelId.Knight.ordinal(),new ModelInfo(false));
-		models.put(ModelId.Skeleton.ordinal(),new ModelInfo(false));
-		models.put(ModelId.RockMonster.ordinal(),new ModelInfo(false));
-		models.put(ModelId.Jimmy.ordinal(),new ModelInfo(false));
+		ModelInfo.standardConfiguration(models);
 	}
 
 	public void setListener(Listener listener) {
@@ -141,6 +137,7 @@ public class Scenario {
 		token.owner = players.get(owner);
 		token.location.set(location);
 		token.elevation = terrain.getElevation(location.x,location.y);
+		token.barracks = new BarracksController(token);
 		token.agent = new StructureController(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);

@@ -19,6 +19,8 @@ public class Token {
 	public SteerController agent;
 	public AttackController attack;
 	public DamageController damage;
+	public BarracksController barracks;
+
 
 
 	public void update(float delta)

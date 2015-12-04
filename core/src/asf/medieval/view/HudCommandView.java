@@ -139,11 +139,11 @@ public class HudCommandView implements View,InputProcessor {
 		return false;
 	}
 
-	public void spawnCommand(ModelId modelId, Vector3 spawnTarget){
+	public void spawnCommand(int modelId, Vector3 spawnTarget){
 
 		Command buildCommand = new Command();
 		buildCommand.location = UtMath.toVector2(spawnTarget, new Vector2());
-		buildCommand.modelId = modelId.ordinal();
+		buildCommand.modelId = modelId;
 		world.gameClient.sendCommand(buildCommand);
 
 	}
