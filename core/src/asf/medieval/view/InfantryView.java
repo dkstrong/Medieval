@@ -1,7 +1,6 @@
 package asf.medieval.view;
 
 import asf.medieval.model.steer.InfantryController;
-import asf.medieval.model.ModelId;
 import asf.medieval.model.Token;
 import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
@@ -46,7 +45,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		mvi = world.models.get(soldierToken.modelId);
+		mvi = world.modelViewInfo.get(soldierToken.modelId);
 
 
 		Model model = world.assetManager.get(mvi.assetLocation[0]);

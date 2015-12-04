@@ -1,8 +1,8 @@
 package asf.medieval.view;
 
-import asf.medieval.model.BarracksController;
+import asf.medieval.CursorId;
 import asf.medieval.model.ModelId;
-import asf.medieval.model.Player;
+import asf.medieval.model.ModelInfo;
 import asf.medieval.model.Token;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -23,7 +23,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 
 /**
  * Created by daniel on 11/20/15.
@@ -36,9 +35,6 @@ public class HudBuildView implements View, InputProcessor {
 	private ModelBuildNode currentModelBuildNode;
 	public final Vector3 translation = new Vector3();
 	public final Quaternion rotation = new Quaternion();
-
-	private Array<BarracksController> barracks = new Array<BarracksController>(false, 8, BarracksController.class);
-
 
 	public HudBuildView(MedievalWorld world) {
 		this.world = world;
@@ -68,28 +64,14 @@ public class HudBuildView implements View, InputProcessor {
 	}
 
 	public void refreshUi() {
-		final Player localPlayer = world.gameClient.player;
-		barracks.clear();
-		for (Token token : world.scenario.tokens) {
-			if (token.owner.id == localPlayer.id) {
-				if (token.barracks != null) {
-					barracks.add(token.barracks);
-				}
-			}
-		}
-
 		if (currentRootBuildNode != null) {
 			currentRootBuildNode.refreshUi();
 		}
 
 	}
 
-	private BarracksController getBarracksToBuild(int modelId) {
-		for (BarracksController barrack : barracks) {
-			if (barrack.canBuild(modelId))
-				return barrack;
-		}
-		return null;
+	private Token getBarracksToBuild(int modelId) {
+		return world.scenario.getBarracksToBuild(world.gameClient.player.id, null, modelId);
 	}
 
 	@Override
@@ -103,13 +85,16 @@ public class HudBuildView implements View, InputProcessor {
 	public void render(float delta) {
 		if (currentModelBuildNode != null) {
 
-			currentModelBuildNode.modelInstance.transform.set(
-				translation.x, translation.y, translation.z,
-				rotation.x, rotation.y, rotation.z, rotation.w,
-				1, 1, 1
-			);
-			world.shadowBatch.render(currentModelBuildNode.modelInstance);
-			world.modelBatch.render(currentModelBuildNode.modelInstance, world.environment);
+			if (currentModelBuildNode.modelInstance != null) {
+				currentModelBuildNode.modelInstance.transform.set(
+					translation.x, translation.y, translation.z,
+					rotation.x, rotation.y, rotation.z, rotation.w,
+					1, 1, 1
+				);
+				world.shadowBatch.render(currentModelBuildNode.modelInstance);
+				world.modelBatch.render(currentModelBuildNode.modelInstance, world.environment);
+			}
+
 		}
 	}
 
@@ -241,18 +226,17 @@ public class HudBuildView implements View, InputProcessor {
 			return false;
 		}
 
-		public void setCell(Actor actor){
+		public void setCell(Actor actor) {
 
-			if(actor == null){
+			if (actor == null) {
 				cell.setActor(null);
 				container.minSize(400, 0);
 				//System.out.println("off");
-			}else{
+			} else {
 				cell.setActor(actor);
 				container.minSize(400, 0);
 				//System.out.println("on");
 			}
-
 
 
 		}
@@ -285,7 +269,7 @@ public class HudBuildView implements View, InputProcessor {
 
 		public CategoryBuildNode(int categoryModelId, ModelBuildNode... childNodes) {
 			this.categoryModelId = categoryModelId;
-			ModelViewInfo mvi = world.models.get(categoryModelId);
+			ModelViewInfo mvi = world.modelViewInfo.get(categoryModelId);
 			commonInit(mvi.name, childNodes);
 		}
 
@@ -382,21 +366,30 @@ public class HudBuildView implements View, InputProcessor {
 
 	private class ModelBuildNode implements BuildNode, EventListener {
 		public TextButton button;
-		public final int modelId;
-		public final ModelInstance modelInstance;
-
 		public CategoryBuildNode parent;
 
+		public final int modelId;
+		public ModelInstance modelInstance;
+
+		public int cursor;
 
 		public ModelBuildNode(int modelId) {
-			ModelViewInfo mvi = world.models.get(modelId);
+			ModelViewInfo mvi = world.modelViewInfo.get(modelId);
+			ModelInfo mi = world.scenario.modelInfo.get(modelId);
 			button = new TextButton(mvi.name, world.app.skin, "toggle");
 			button.setUserObject(this);
 			button.addListener(this);
 
 			this.modelId = modelId;
-			Model model = world.assetManager.get(mvi.assetLocation[0]);
-			modelInstance = new ModelInstance(model);
+
+			if (mi.structure) {
+				Model model = world.assetManager.get(mvi.assetLocation[0]);
+				modelInstance = new ModelInstance(model);
+				cursor = -1;
+			} else {
+				cursor = CursorId.RECRUIT_SOLDIER;
+			}
+
 
 		}
 
@@ -408,15 +401,16 @@ public class HudBuildView implements View, InputProcessor {
 		@Override
 		public boolean handle(Event event) {
 			if (event instanceof ChangeListener.ChangeEvent) {
-				if (modelInstance != null) {
-					if (button.isChecked()) {
-						currentModelBuildNode = this;
-					} else {
-						if (currentModelBuildNode == this)
-							currentModelBuildNode = null;
+				if (button.isChecked()) {
+					currentModelBuildNode = this;
+					world.app.setCusor(cursor);
+				} else {
+					if (currentModelBuildNode == this) {
+						currentModelBuildNode = null;
+						world.app.setCusor(CursorId.DEFAULT);
 					}
-					return true;
 				}
+				return true;
 			}
 			return false;
 		}

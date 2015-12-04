@@ -135,6 +135,19 @@ Kevin Boyette
 
 ### Interface
 
+Knight Hand Cursor
+http://opengameart.org/content/knights-glove-mouse-cursor
+http://opengameart.org/content/knights-glove-mouse-cursor-0
+CC-BY-SA 3.0
+
+Dwarven Cursor
+http://opengameart.org/content/dwarven-cursor
+CC-BY-SA 3.0
+
+
+Pointer 5
+http://opengameart.org/content/pointers-part-5
+CC0
 
 ### Music
 
@@ -182,3 +195,12 @@ http://opengameart.org/content/simple-axe
 
 Decor
 http://opengameart.org/content/medieval-props-textured
+
+Cursors:
+http://opengameart.org/content/pointers-contd
+http://opengameart.org/content/iron-plague-pointercursor
+
+
+Icons of armor and weapons:
+http://opengameart.org/content/osare-weapon-icons
+http://opengameart.org/content/helmet-dagger-icons

@@ -8,7 +8,9 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -18,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.I18NBundle;
+import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.esotericsoftware.kryonet.Client;
@@ -35,6 +38,7 @@ public class MedievalApp extends ApplicationAdapter {
 	public Preferences prefs;
 	public I18NBundle i18n;
 
+
 	public Skin skin;
 	public TextureAtlas pack;
 	private Texture backgroundTexture;
@@ -43,6 +47,7 @@ public class MedievalApp extends ApplicationAdapter {
 	private AbstractScreen screen;
 	public Stage stage;
 	protected Group stageScreen, stageDialog;
+	private IntMap<Cursor> cursors;
 
 	@Override
 	public void create () {
@@ -53,6 +58,7 @@ public class MedievalApp extends ApplicationAdapter {
 		initFileManager();
 		initI18n();
 		initTextures();
+		setCusor(CursorId.DEFAULT);
 		//setScreen(ScreenId.Main);
 		loadStraightInToGame();
 	}
@@ -86,6 +92,25 @@ public class MedievalApp extends ApplicationAdapter {
 		backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 		backgroundImage = new Image(new TiledDrawable(new TextureRegion(backgroundTexture)), Scaling.fill);
 
+
+		Pixmap pixmap;
+		cursors = new IntMap<Cursor>(8);
+		cursors.put(CursorId.OS, null);
+
+		pixmap = new Pixmap(Gdx.files.internal("Cursors/RPG_Mouse_Cursor_3.png"));
+		cursors.put(CursorId.DEFAULT, Gdx.graphics.newCursor(pixmap,0,0));
+		pixmap.dispose();
+
+		pixmap = new Pixmap(Gdx.files.internal("Cursors/cursor_down.gif"));
+		cursors.put(CursorId.RECRUIT_SOLDIER, Gdx.graphics.newCursor(pixmap,0,0));
+		pixmap.dispose();
+
+	}
+
+	public void setCusor(int cursorId){
+		if(cursorId <0) return;
+		Cursor cursor = cursors.get(cursorId);
+		Gdx.graphics.setCursor(cursor);
 	}
 
 	@Override

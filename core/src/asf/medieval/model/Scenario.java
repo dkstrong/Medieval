@@ -5,10 +5,7 @@ import asf.medieval.model.steer.SteerGraph;
 import asf.medieval.model.steer.StructureController;
 import asf.medieval.shape.Box;
 import asf.medieval.terrain.Terrain;
-import asf.medieval.terrain.TerrainChunk;
 import asf.medieval.utility.UtMath;
-import asf.medieval.view.ModelViewInfo;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
@@ -20,7 +17,7 @@ public class Scenario {
 	private transient Listener listener;
 
 	public final ScenarioRand rand;
-	public final IntMap<ModelInfo> models = new IntMap<ModelInfo>(8);
+	public final IntMap<ModelInfo> modelInfo = new IntMap<ModelInfo>(8);
 	public transient Terrain terrain;
 	public final SteerGraph steerGraph = new SteerGraph();
 
@@ -30,7 +27,7 @@ public class Scenario {
 
 	public Scenario(ScenarioRand rand) {
 		this.rand = rand;
-		ModelInfo.standardConfiguration(models);
+		ModelInfo.standardConfiguration(modelInfo);
 	}
 
 	public void setListener(Listener listener) {
@@ -90,7 +87,7 @@ public class Scenario {
 
 	public Token newToken(int owner, Vector2 location, int modelId){
 
-		ModelInfo modelInfo = models.get(modelId);
+		ModelInfo modelInfo = this.modelInfo.get(modelId);
 
 		if(modelInfo.structure){
 			return newStructure(owner, location, modelId);
@@ -163,7 +160,9 @@ public class Scenario {
 		for (Token token : tokens) {
 			if (token.owner.id == owner) {
 				if (token.barracks != null) {
-					if(closestBarracks == null){
+					if(location == null){
+						return token;
+					}else if(closestBarracks == null){
 						closestBarracks = token;
 						closestDist2 = token.location.dst2(location);
 					}else{

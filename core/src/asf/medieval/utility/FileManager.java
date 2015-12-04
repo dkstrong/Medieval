@@ -1,16 +1,17 @@
 package asf.medieval.utility;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 
 /**
  * Created by daniel on 12/1/15.
  */
-public class FileManager {
+public class FileManager implements FileHandleResolver {
 
 	private static String relativePath;
 
-	private FileManager(){
+	public FileManager(){
 
 	}
 
@@ -70,5 +71,8 @@ public class FileManager {
 	}
 
 
-
+	@Override
+	public FileHandle resolve(String fileName) {
+		return moddable(fileName);
+	}
 }

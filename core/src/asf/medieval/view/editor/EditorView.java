@@ -61,10 +61,10 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 		this.modes = new EditorNode[]{gameEditorMode,terrainEditorMode};
 		initUi();
 
-		setEnabled(true);
+		//setEnabled(true);
 		//setMode(terrainEditorMode);
 		//terrainEditorMode.setMode(weightHorizontalNode);
-		refreshUi();   // refreshUi() always needs to be called after setEnabled()
+		//refreshUi();   // refreshUi() always needs to be called after setEnabled()
 
 
 		// Editor view functionality (file watches etc)
@@ -154,8 +154,12 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 	public void setToolbarVisible(boolean visible) {
 		if (visible) {
 			world.stage.addActor(baseTableContainer);
+			setEnabled(true);
+			refreshUi();   // refreshUi() always needs to be called after setEnabled()
 		} else {
 			baseTableContainer.remove();
+			setEnabled(false);
+			refreshUi();   // refreshUi() always needs to be called after setEnabled()
 		}
 	}
 
@@ -181,12 +185,27 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 
 	@Override
 	public boolean keyUp(int keycode) {
+		if(keycode == Input.Keys.GRAVE){
+			toggleToolbarVisible();
+			return true;
+		}
+
+		if(!enabled)
+			return false;
+
 		switch (keycode) {
 			case Input.Keys.C:
 				world.cameraManager.rtsCamController.printCamValues();
 				return true;
-			case Input.Keys.T:
-				toggleToolbarVisible();
+			case Input.Keys.TAB:
+				EditorNode mode = getMode();
+				for (int i = 0; i < modes.length; i++) {
+					if(modes[i] == mode){
+						if(++i >= modes.length) i=0;
+						setMode(modes[i]);
+						return true;
+					}
+				}
 				return true;
 		}
 		return super.keyUp(keycode);

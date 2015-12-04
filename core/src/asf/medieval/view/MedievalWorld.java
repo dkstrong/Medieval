@@ -1,5 +1,6 @@
 package asf.medieval.view;
 
+import asf.medieval.CursorId;
 import asf.medieval.MedievalApp;
 import asf.medieval.model.ModelId;
 import asf.medieval.model.steer.InfantryController;
@@ -15,14 +16,16 @@ import asf.medieval.net.OfflineGameClient;
 import asf.medieval.model.Player;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
+import asf.medieval.utility.FileManager;
+import asf.medieval.view.editor.EditorInputEater;
 import asf.medieval.view.editor.EditorView;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -83,7 +86,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	public GameServer gameServer;
 	public GameClient gameClient;
 
-	public final IntMap<ModelViewInfo> models = new IntMap<ModelViewInfo>(8);
+	public final IntMap<ModelViewInfo> modelViewInfo = new IntMap<ModelViewInfo>(8);
 	public final Scenario scenario;
 	public final Array<View> gameObjects;
 	public HudView hudView;
@@ -116,16 +119,16 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		assetManager = new AssetManager();
 
-		assetManager.setLoader(Terrain.class, new TerrainLoader(new InternalFileHandleResolver()));
+		assetManager.setLoader(Terrain.class, new TerrainLoader(new FileManager()));
 		inputMultiplexer = new InputMultiplexer(internalLoadingInputAdapter, stage);
 
 		Gdx.input.setInputProcessor(internalLoadingInputAdapter);
 
-		ModelViewInfo.standardConfiguration(models);
+		ModelViewInfo.standardConfiguration(modelViewInfo);
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
 
-		for (ModelViewInfo modelViewInfo : models.values()) {
+		for (ModelViewInfo modelViewInfo : this.modelViewInfo.values()) {
 			for (String s : modelViewInfo.assetLocation) {
 				assetManager.load(s, Model.class);
 			}
@@ -133,7 +136,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		//AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Terrain/new-terrain.ter", Terrain.class,TerrainLoader.getNewTerrainParamter("new-terrain"));
 		//assetManager.load(terrainAssetDescriptor);
-		assetManager.load("Terrain/test.ter",Terrain.class);
+		assetManager.load("Terrain/muh.ter",Terrain.class);
 		//assetManager.load("Models/skydome.g3db", Model.class);
 
 
@@ -183,6 +186,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 			hasDoneLoading = true;
 			pack =  assetManager.get("Packs/Game.atlas", TextureAtlas.class);
+
+			app.setCusor(CursorId.DEFAULT);
+
+
+
 			//sounds.init();
 			//fxManager.init();
 			//dungeonApp.music.setPlaylist(SongId.MainTheme, SongId.Arabesque, SongId.RitualNorm);
@@ -208,17 +216,21 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			}
 
 
-
 			if(editorView!=null){
 				inputMultiplexer.addProcessor(editorView);
 			}
+
 			inputMultiplexer.addProcessor(cameraManager.rtsCamController);
+
+			if(editorView!=null){
+				// this input processor ensures the game doesnt receive input
+				// unless the editor toolbar is hidden.
+				inputMultiplexer.addProcessor(new EditorInputEater(editorView));
+			}
 			inputMultiplexer.addProcessor(hudView);
 			inputMultiplexer.addProcessor(hudView.hudBuildView);
 			inputMultiplexer.addProcessor(hudView.hudCommandView);
 			inputMultiplexer.addProcessor(hudView.hudSelectionView);
-
-
 		}
 
 		gameClient.sendReadyAction();
