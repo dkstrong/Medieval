@@ -1,18 +1,9 @@
 package asf.medieval.view;
 
-import asf.medieval.model.Command;
-import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.model.Player;
-import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g3d.decals.Decal;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
@@ -31,8 +22,8 @@ public class HudView implements View, InputProcessor {
 	private Container topRightLabelContainer;
 	private Label topRightLabel;
 
-	private Container bottomLeftLabelContainer;
-	private Label bottomLeftLabel;
+	private Container brLabelContainer;
+	private Label brLabel;
 
 	private Container topLeftLabelContainer;
 	private Label topLeftLabel;
@@ -51,11 +42,11 @@ public class HudView implements View, InputProcessor {
 		world.stage.addActor(topRightLabelContainer);
 
 
-		bottomLeftLabel = new Label("Hello, there!", world.app.skin);
-		bottomLeftLabel.setAlignment(Align.bottomLeft, Align.bottomLeft);
-		bottomLeftLabelContainer = new Container<Label>(bottomLeftLabel);
-		bottomLeftLabelContainer.align(Align.bottomLeft).pad(10);
-		world.stage.addActor(bottomLeftLabelContainer);
+		brLabel = new Label("Hello, there!", world.app.skin);
+		brLabel.setAlignment(Align.bottomRight, Align.bottomRight);
+		brLabelContainer = new Container<Label>(brLabel);
+		brLabelContainer.align(Align.bottomRight).pad(10);
+		world.stage.addActor(brLabelContainer);
 
 		topLeftLabel = new Label("Hello, there!", world.app.skin);
 		topLeftLabel.setAlignment(Align.topLeft, Align.topLeft);
@@ -71,7 +62,7 @@ public class HudView implements View, InputProcessor {
 
 
 		topRightLabelContainer.setBounds(0, 0, width, height);
-		bottomLeftLabelContainer.setBounds(0, 0, width, height);
+		brLabelContainer.setBounds(0, 0, width, height);
 		topLeftLabelContainer.setBounds(0, 0, width, height);
 		if(hudBuildView!=null)
 			hudBuildView.resize(width,height);
@@ -149,9 +140,9 @@ public class HudView implements View, InputProcessor {
 
 
 		if (hudSelectionView==null || hudSelectionView.selectedViews.size < 1) {
-			bottomLeftLabel.setText("");
+			brLabel.setText("");
 		} else {
-			bottomLeftLabel.setText("Selected: " + hudSelectionView.selectedViews.size);
+			brLabel.setText("Selected: " + hudSelectionView.selectedViews.size);
 		}
 
 	}
