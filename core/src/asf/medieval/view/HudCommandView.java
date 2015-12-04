@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Command;
+import asf.medieval.model.ModelId;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -138,6 +139,26 @@ public class HudCommandView implements View,InputProcessor {
 		return false;
 	}
 
+	public void spawnCommand(ModelId modelId, Vector3 spawnTarget){
+
+		if(modelId == ModelId.Church){
+			Command buildCommand = new Command();
+			buildCommand.location = UtMath.toVector2(spawnTarget, new Vector2());
+			buildCommand.structure = true;
+			world.gameClient.sendCommand(buildCommand);
+		}else if(modelId == ModelId.Knight || modelId == ModelId.Skeleton){
+			Command command = new Command();
+			command.location = UtMath.toVector2(spawnTarget, new Vector2());
+			world.gameClient.sendCommand(command);
+		}else if(modelId == ModelId.Jimmy){
+			Command jimmyCommand = new Command();
+			jimmyCommand.location = UtMath.toVector2(spawnTarget, new Vector2());
+			jimmyCommand.jimmy = true;
+			world.gameClient.sendCommand(jimmyCommand);
+		}
+
+	}
+
 	@Override
 	public boolean keyUp(int keycode) {
 		switch(keycode)
@@ -145,26 +166,6 @@ public class HudCommandView implements View,InputProcessor {
 			case Input.Keys.SPACE:
 				spacebarDown = false;
 				break;
-			case Input.Keys.I:
-				Command command = new Command();
-				command.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				world.gameClient.sendCommand(command);
-				return true;
-			case Input.Keys.J:
-				Command jimmyCommand = new Command();
-				jimmyCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				jimmyCommand.jimmy = true;
-				world.gameClient.sendCommand(jimmyCommand);
-				return true;
-			case Input.Keys.B:
-				Command buildCommand = new Command();
-				buildCommand.location = UtMath.toVector2(world.cameraManager.rtsCamController.center, new Vector2());
-				buildCommand.structure = true;
-				world.gameClient.sendCommand(buildCommand);
-				return true;
-			case Input.Keys.C:
-				world.cameraManager.rtsCamController.printCamValues();
-				return true;
 		}
 		return false;
 	}

@@ -73,7 +73,7 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 		toolTable.add(saveTerrainButton = UtEditor.createTextButton("Save..", world.app.skin, internalCl));
 		toolTable.add(deleteTerrainButton = UtEditor.createTextButton("Delete..", world.app.skin, internalCl));
 
-		toolTable.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin));
+		toolTable.add(terrainNameLabel = UtEditor.createLabel(terrain.parameter.name + ".ter", world.app.skin)).expand().align(Align.center);
 	}
 
 	@Override
@@ -131,7 +131,8 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 
 	@Override
 	public void onFileDelete(FileHandle fh) {
-			System.out.println("delete file: "+fh.file().getAbsolutePath());
+		deleteTerrain(fh);
+		fileChooser.changeDirectory("Terrain", new String[]{".ter"}, null);
 	}
 
 	@Override
@@ -218,7 +219,27 @@ public class TerrainFilePane implements EditorNode, FileChooser.Listener {
 	}
 
 	private void deleteTerrain(FileHandle fh){
+		TerrainLoader.TerrainParameter terrainParameter = TerrainLoader.loadTerrainParamter(fh);
+		deleteFile(fh);
+		deleteRelativeFile(terrainParameter.heightmapName);
+		deleteRelativeFile(terrainParameter.weightMap1);
+	}
 
+	private void deleteRelativeFile(String fileName){
+		if(fileName!=null){
+			fileName = fileName.trim();
+			FileHandle relativeFh = FileManager.relative(fileName);
+			deleteFile(relativeFh);
+		}
+	}
+
+	private void deleteFile(FileHandle fh){
+		if(fh.exists() && !fh.isDirectory()){
+			boolean result = fh.delete();
+			if(result){
+				System.out.println("deleted: "+fh.file().getAbsolutePath());
+			}
+		}
 	}
 
 	private void saveTerrain(String name) {

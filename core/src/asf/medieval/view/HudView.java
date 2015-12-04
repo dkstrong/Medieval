@@ -23,8 +23,10 @@ import com.badlogic.gdx.utils.Align;
 public class HudView implements View, InputProcessor {
 
 	private MedievalWorld world;
+	public HudBuildView hudBuildView;
 	public HudCommandView hudCommandView;
 	public HudSelectionView hudSelectionView;
+
 
 	private Container topRightLabelContainer;
 	private Label topRightLabel;
@@ -38,8 +40,10 @@ public class HudView implements View, InputProcessor {
 
 	public HudView(MedievalWorld world) {
 		this.world = world;
+		hudBuildView = new HudBuildView(world);
 		hudCommandView = new HudCommandView(world);
 		hudSelectionView = new HudSelectionView(world);
+
 		topRightLabel = new Label("Hello, there!", world.app.skin);
 		topRightLabel.setAlignment(Align.topRight, Align.topRight);
 		topRightLabelContainer = new Container<Label>(topRightLabel);
@@ -69,6 +73,8 @@ public class HudView implements View, InputProcessor {
 		topRightLabelContainer.setBounds(0, 0, width, height);
 		bottomLeftLabelContainer.setBounds(0, 0, width, height);
 		topLeftLabelContainer.setBounds(0, 0, width, height);
+		if(hudBuildView!=null)
+			hudBuildView.resize(width,height);
 		if(hudCommandView!=null)
 			hudCommandView.resize(width, height);
 		if(hudSelectionView!=null)
@@ -77,6 +83,8 @@ public class HudView implements View, InputProcessor {
 
 	@Override
 	public void update(float delta) {
+		if(hudBuildView!=null)
+			hudBuildView.update(delta);
 		if(hudCommandView!=null)
 			hudCommandView.update(delta);
 		if(hudSelectionView!=null)
@@ -88,16 +96,9 @@ public class HudView implements View, InputProcessor {
 
 	@Override
 	public void render(float delta) {
-		// http://www.badlogicgames.com/forum/viewtopic.php?f=11&t=16813
-		/*
-		Runtime rt = Runtime.getRuntime();
-		long max = rt.maxMemory();
-		long total = rt.totalMemory();
-		long free = rt.freeMemory();
-		long used = total - free;
-		int availableProcessors = rt.availableProcessors();
-		*/
 
+		if(hudBuildView!=null)
+			hudBuildView.render(delta);
 		if(hudCommandView!=null)
 			hudCommandView.render(delta);
 		if(hudSelectionView!=null)
@@ -139,23 +140,7 @@ public class HudView implements View, InputProcessor {
 			topLeftLabel.setText("");
 		}
 
-
-		String soldierStatusString = "";
-		Token soldier = world.scenario.getSoldier(1);
-		if(soldier != null){
-			soldierStatusString+="Pos: "+UtMath.round(soldier.location,2);
-			soldierStatusString+="\nElevation: "+soldier.elevation;
-			soldierStatusString+="\nDirection: "+soldier.direction;
-			Vector3 normal = world.terrainView.terrain.getWeightedNormalAt(new Vector3(soldier.location.x,0,soldier.location.y), new Vector3());
-			soldierStatusString+="\nNormal: "+UtMath.round(normal,2);
-		}
 		topRightLabel.setText(
-
-			"FPS: " + Gdx.graphics.getFramesPerSecond() +
-				"\nMem: " + (Gdx.app.getJavaHeap() / 1024 / 1024) + " MB" +
-				"\nTokens: " + world.scenario.tokens.size +
-				"\n"+ soldierStatusString +
-				"\n" +
 				(gameServerStatusString != null ? "\n" + gameServerStatusString : "") +
 				(gameClientStatusString != null ? "\n" + gameClientStatusString : "")
 

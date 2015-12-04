@@ -80,7 +80,7 @@ public class UtEditor {
 		style.imageUp = drawable;
 
 		ImageButton imageButton = new ImageButton(style);
-		imageButton.getImageCell().maxSize(25).padTop(2).padBottom(2);
+		imageButton.getImageCell().maxSize(50).padTop(2).padBottom(2);
 		if(listener!=null)
 			imageButton.addListener(listener);
 		return imageButton;
@@ -90,7 +90,7 @@ public class UtEditor {
 
 		ImageButton imageButton = new ImageButton(skin, styleName);
 
-		imageButton.getImageCell().maxSize(25).padTop(2).padBottom(2);
+		imageButton.getImageCell().maxSize(50).padTop(2).padBottom(2);
 		if(listener!=null)
 			imageButton.addListener(listener);
 		return imageButton;

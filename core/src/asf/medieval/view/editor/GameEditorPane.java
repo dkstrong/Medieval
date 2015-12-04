@@ -2,8 +2,11 @@ package asf.medieval.view.editor;
 
 import asf.medieval.view.MedievalWorld;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 /**
@@ -11,13 +14,18 @@ import com.badlogic.gdx.utils.Align;
  */
 public class GameEditorPane implements EditorNode {
 	public final MedievalWorld world;
+	public final EditorView editorView;
 	private boolean enabled;
 
+	InternalCLickListener internalCl = new InternalCLickListener();
 	private Table toolTable;
 
+	private TextButton fpsToggleButton;
 
-	public GameEditorPane(MedievalWorld world) {
-		this.world = world;
+
+	public GameEditorPane(EditorView editorView) {
+		this.editorView = editorView;
+		this.world = editorView.world;
 
 	}
 
@@ -27,11 +35,16 @@ public class GameEditorPane implements EditorNode {
 	@Override
 	public void initUi() {
 
+
+
 		toolTable = new Table(world.app.skin);
 		toolTable.align(Align.left);
 
 		toolTable.row();
 		toolTable.add(new Label("Game Mode", world.app.skin));
+		toolTable.add(fpsToggleButton = UtEditor.createTextButtonToggle("Show FPS", world.app.skin,internalCl));
+
+
 
 	}
 
@@ -44,6 +57,8 @@ public class GameEditorPane implements EditorNode {
 
 	@Override
 	public void refreshUi() {
+		fpsToggleButton.setChecked(editorView.isFpsVisible());
+
 	}
 
 	@Override
@@ -129,10 +144,15 @@ public class GameEditorPane implements EditorNode {
 	}
 
 
-	////////////////////////////////////////////////////////////
-	/// Begin methods that edit the terrain or edit files
-	////////////////////////////////////////////////////////////
-
+	private class InternalCLickListener extends ClickListener{
+		@Override
+		public void clicked(InputEvent event, float x, float y) {
+			Actor actor = event.getListenerActor();
+			if(actor == fpsToggleButton){
+				editorView.toggleFpsVisible();
+			}
+		}
+	}
 
 	@Override
 	public String toString(){
