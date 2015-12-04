@@ -32,6 +32,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	public boolean selected = false;
 	private final Decal selectionDecal = new Decal();
 
+	public ModelViewInfo mvi;
 	private Animation[] idle;
 	private Animation[] walk;
 	private Animation[] attack ;
@@ -45,84 +46,26 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		String asset;
-		if(token.modelId == ModelId.Jimmy){
-			asset = "Models/Jimmy/Jimmy_r1.g3db";
-		}else if(token.modelId == ModelId.RockMonster){
-			asset = "Models/Characters/rockMonster_01.g3db";
-		}else if(token.modelId == ModelId.Knight){
-			asset = "Models/Characters/knight_01.g3db";
-		}else{
-			asset = "Models/Characters/Skeleton.g3db";
-		}
+		mvi = world.models.get(soldierToken.modelId);
 
 
-		Model model = world.assetManager.get(asset);
+		Model model = world.assetManager.get(mvi.assetLocation[0]);
 
 		modelInstance = new ModelInstance(model);
 		if (modelInstance.animations.size > 0) {
-			if(token.modelId == ModelId.Jimmy){
-				for (Animation anim : modelInstance.animations) {
-					if(anim.id.startsWith("Idle01")){
-						idle = new Animation[]{anim};
-					}else if(anim.id.startsWith("MoveForward")){
-						walk = new Animation[]{anim};
-					}else if(anim.id.startsWith("FlareThrow")){
-						attack = new Animation[]{anim};
-					}else if(anim.id.startsWith("ThrustersOn")){
-						hit = new Animation[]{anim};
-					}else if(anim.id.startsWith("Death01")){ // Death01  // TurtleOnDizzyWithFall // TurtleOnDizzy
-						die = new Animation[]{anim};
-					}
-					//System.out.println(anim.id);
-				}
-			}else if(token.modelId == ModelId.RockMonster){
-				for (Animation anim : modelInstance.animations) {
-					if(anim.id.startsWith("idle")){
-						idle = new Animation[]{anim};
-					}else if(anim.id.startsWith("walk")){ // walk_old
-						walk = new Animation[]{anim};
-					}else if(anim.id.startsWith("attack")){
-						attack = new Animation[]{anim};
-					}else if(anim.id.startsWith("damage")){
-						hit = new Animation[]{anim};
-					}else if(anim.id.startsWith("die")){ // pile_of_rocks
-						die = new Animation[]{anim};
-					}
-					//System.out.println(anim.id);
-				}
-			}else if(token.modelId == ModelId.Knight){
-				for (Animation anim : modelInstance.animations) {
-					if(anim.id.startsWith("idle")){
-						idle = new Animation[]{anim};
-					}else if(anim.id.startsWith("walk")){ // sprint
-						walk = new Animation[]{anim};
-					}else if(anim.id.startsWith("AttackSword")){ // AttackUnarmed
-						attack = new Animation[]{anim};
-					}else if(anim.id.startsWith("damage")){
-						hit = new Animation[]{anim};
-					}else if(anim.id.startsWith("die")){ // pile_of_rocks
-						die = new Animation[]{anim};
-					}
-					//System.out.println(anim.id);
-				}
-			}else{
-				for (Animation anim : modelInstance.animations) {
-					if(anim.id.startsWith("Idle")){
-						idle = new Animation[]{anim};
-					}else if(anim.id.startsWith("Walk")){
-						walk = new Animation[]{anim};
-					}else if(anim.id.startsWith("Attack")){
-						attack = new Animation[]{anim};
-					}else if(anim.id.startsWith("Hit")){
-						hit = new Animation[]{anim};
-					}else if(anim.id.startsWith("Die")){
-						die = new Animation[]{anim};
-					}
+			for (Animation animation : modelInstance.animations) {
+				if(animation.id.startsWith(mvi.idleAnims[0])){
+					idle = new Animation[]{animation};
+				}else if(animation.id.startsWith(mvi.walkAnims[0])){
+					walk = new Animation[]{animation};
+				}else if(animation.id.startsWith(mvi.attackAnims[0])){
+					attack = new Animation[]{animation};
+				}else if(animation.id.startsWith(mvi.hitAnims[0])){
+					hit = new Animation[]{animation};
+				}else if(animation.id.startsWith(mvi.dieAnims[0])){
+					die = new Animation[]{animation};
 				}
 			}
-
-
 			animController = new AnimationController(modelInstance);
 			animController.animate(idle[MathUtils.random.nextInt(idle.length)].id, 0, -1, -1, 1, this, 0.2f);
 		}
@@ -150,20 +93,23 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 
 	private void loadKnightWeapons()
 	{
-		if (token.modelId != ModelId.Knight) return;
+		if(mvi.assetLocation.length ==3)
+		{
+			// TODO: if im going to have attachable submodels as a thing, then i need tobetter
+			// integrate this with ModelViewInfo.. but I think I'm going to phase this out when
+			// i get better models and have all infantry just be single models
+			boolean offhandIsPrimary = false;
+
+			weaponAttachmentNode = offhandIsPrimary ? modelInstance.getNode("attach_l", true, true) : modelInstance.getNode("attach_r", true, true);
 
 
-		boolean offhandIsPrimary = false;
+			Model weaponModel = world.assetManager.get(mvi.assetLocation[1], Model.class);
+			weaponModelInstance = new ModelInstance(weaponModel);
 
-		weaponAttachmentNode = offhandIsPrimary ? modelInstance.getNode("attach_l", true, true) : modelInstance.getNode("attach_r", true, true);
-
-
-		Model weaponModel = world.assetManager.get("Models/Loot/Sword/BasicSword.g3db", Model.class);
-		weaponModelInstance = new ModelInstance(weaponModel);
-
-		Model weaponOffhandModel = world.assetManager.get("Models/Loot/Sword/Shield.g3db", Model.class);
-		offhandModelInstance = new ModelInstance(weaponOffhandModel);
-		offhandAttachmentNode = modelInstance.getNode("shield", true, true);
+			Model weaponOffhandModel = world.assetManager.get(mvi.assetLocation[2], Model.class);
+			offhandModelInstance = new ModelInstance(weaponOffhandModel);
+			offhandAttachmentNode = modelInstance.getNode("shield", true, true);
+		}
 
 	}
 
@@ -174,6 +120,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		translation.set(token.location.x,token.elevation,token.location.y);
 		rotation.setFromAxisRad(0,1,0,token.direction);
 		float speed = agent.getVelocity().len();
+
 
 		if(token.damage != null && token.damage.health <=0){
 			if (!animController.current.animation.id.startsWith(die[0].id)){
@@ -195,10 +142,10 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		{
 			float animSpeed = speed  /agent.getMaxSpeed() * 0.5f;
 			if (!animController.current.animation.id.startsWith(walk[0].id)){
-				if(token.modelId == ModelId.Jimmy)
-					animController.animate(walk[0].id, 0, -1, 1, animSpeed, this, 0.2f);
-				else{
+				if(mvi.loopWalkAnimation)
 					animController.animate(walk[0].id, 0, -1, -1, animSpeed, this, 0.2f);
+				else{
+					animController.animate(walk[0].id, 0, -1, 1, animSpeed, this, 0.2f);
 				}
 			}else{
 				animController.current.speed = animSpeed;

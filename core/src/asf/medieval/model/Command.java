@@ -9,8 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Command {
 	public int tokenId;
 	public Vector2 location;
-	public boolean structure;
-	public boolean jimmy;
+	public int modelId;
 
 	public void performCommand(int playerId, Scenario scenario)
 	{
@@ -22,11 +21,7 @@ public class Command {
 
 		}else{
 			// spawn command
-			if(structure){
-				Token token = scenario.newStructure(playerId,location);
-			}else{
-				Token token = scenario.newSoldier(playerId, location,jimmy);
-			}
+			scenario.newToken(playerId, location, modelId);
 		}
 	}
 }

@@ -11,7 +11,7 @@ public class Token {
 	public Scenario scenario;
 	public Player owner;
 	public int id;
-	public ModelId modelId;
+	public int modelId;
 	public final Vector2 location = new Vector2();
 	public float elevation;
 	public float direction;

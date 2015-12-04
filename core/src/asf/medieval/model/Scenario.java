@@ -7,6 +7,8 @@ import asf.medieval.shape.Box;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainChunk;
 import asf.medieval.utility.UtMath;
+import asf.medieval.view.ModelViewInfo;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
@@ -18,6 +20,7 @@ public class Scenario {
 	private transient Listener listener;
 
 	public final ScenarioRand rand;
+	public final IntMap<ModelInfo> models = new IntMap<ModelInfo>(8);
 	public transient Terrain terrain;
 	public final SteerGraph steerGraph = new SteerGraph();
 
@@ -27,6 +30,11 @@ public class Scenario {
 
 	public Scenario(ScenarioRand rand) {
 		this.rand = rand;
+		models.put(ModelId.Church.ordinal(),new ModelInfo(true));
+		models.put(ModelId.Knight.ordinal(),new ModelInfo(false));
+		models.put(ModelId.Skeleton.ordinal(),new ModelInfo(false));
+		models.put(ModelId.RockMonster.ordinal(),new ModelInfo(false));
+		models.put(ModelId.Jimmy.ordinal(),new ModelInfo(false));
 	}
 
 	public void setListener(Listener listener) {
@@ -84,16 +92,25 @@ public class Scenario {
 
 	private int lastTokenId = 0;
 
-	public Token newSoldier(int owner, Vector2 location, boolean jimmy)
+	public Token newToken(int owner, Vector2 location, int modelId){
+
+		ModelInfo modelInfo = models.get(modelId);
+
+		if(modelInfo.structure){
+			return newStructure(owner, location, modelId);
+		}else{
+			return newSoldier(owner, location, modelId);
+		}
+	}
+
+	public Token newSoldier(int owner, Vector2 location, int modelId)
 	{
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
 		token.owner = players.get(owner);
-		token.modelId = owner == 1 ? ModelId.Skeleton : ModelId.Knight;
-		if(jimmy)
-			token.modelId = ModelId.Jimmy;
+		token.modelId = modelId;
 		token.shape = new Box(1f, 7.5f);
 		token.location.set(location);
 		token.attack = new AttackController(token);
@@ -110,13 +127,13 @@ public class Scenario {
 		return token;
 	}
 
-	public Token newStructure(int owner, Vector2 location)
+	public Token newStructure(int owner, Vector2 location, int modelId)
 	{
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
-		token.modelId = ModelId.Church;
+		token.modelId = modelId;
 		float width = 9.5f;
 		float height = 10f;
 		float depth = 10.2f;

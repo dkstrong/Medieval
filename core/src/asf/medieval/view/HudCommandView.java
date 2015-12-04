@@ -141,21 +141,10 @@ public class HudCommandView implements View,InputProcessor {
 
 	public void spawnCommand(ModelId modelId, Vector3 spawnTarget){
 
-		if(modelId == ModelId.Church){
-			Command buildCommand = new Command();
-			buildCommand.location = UtMath.toVector2(spawnTarget, new Vector2());
-			buildCommand.structure = true;
-			world.gameClient.sendCommand(buildCommand);
-		}else if(modelId == ModelId.Knight || modelId == ModelId.Skeleton){
-			Command command = new Command();
-			command.location = UtMath.toVector2(spawnTarget, new Vector2());
-			world.gameClient.sendCommand(command);
-		}else if(modelId == ModelId.Jimmy){
-			Command jimmyCommand = new Command();
-			jimmyCommand.location = UtMath.toVector2(spawnTarget, new Vector2());
-			jimmyCommand.jimmy = true;
-			world.gameClient.sendCommand(jimmyCommand);
-		}
+		Command buildCommand = new Command();
+		buildCommand.location = UtMath.toVector2(spawnTarget, new Vector2());
+		buildCommand.modelId = modelId.ordinal();
+		world.gameClient.sendCommand(buildCommand);
 
 	}
 

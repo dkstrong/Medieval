@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.MedievalApp;
+import asf.medieval.model.ModelId;
 import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.Scenario;
 import asf.medieval.model.ScenarioRand;
@@ -38,6 +39,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.Random;
@@ -81,6 +83,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	public GameServer gameServer;
 	public GameClient gameClient;
 
+	public final IntMap<ModelViewInfo> models = new IntMap<ModelViewInfo>(8);
 	public final Scenario scenario;
 	public final Array<View> gameObjects;
 	public HudView hudView;
@@ -118,24 +121,20 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		Gdx.input.setInputProcessor(internalLoadingInputAdapter);
 
+		ModelViewInfo.standardConfiguration(models);
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
-		//assetManager.load("Models/skydome.g3db", Model.class);
-		assetManager.load("Models/Characters/knight_01.g3db", Model.class);
-		//assetManager.load("Models/Loot/Sword/BasicSword.g3db", Model.class);
-		//assetManager.load("Models/Loot/Sword/Shield.g3db", Model.class);
-		assetManager.load("Models/Characters/Skeleton.g3db", Model.class);
-		//assetManager.load("Models/Characters/rockMonster_01.g3db", Model.class);
-		assetManager.load("Models/Church/Church.g3db", Model.class);
-		assetManager.load("Models/Jimmy/Jimmy_r1.g3db", Model.class);
 
-		//assetManager.load("Models/skydome.g3db", Model.class);
+		for (ModelViewInfo modelViewInfo : models.values()) {
+			for (String s : modelViewInfo.assetLocation) {
+				assetManager.load(s, Model.class);
+			}
+		}
 
 		//AssetDescriptor<Terrain> terrainAssetDescriptor = new AssetDescriptor<Terrain>("Terrain/new-terrain.ter", Terrain.class,TerrainLoader.getNewTerrainParamter("new-terrain"));
 		//assetManager.load(terrainAssetDescriptor);
 		assetManager.load("Terrain/test.ter",Terrain.class);
-
-
+		//assetManager.load("Models/skydome.g3db", Model.class);
 
 
 		gameObjects = new Array<View>(false, 128, View.class);
@@ -234,11 +233,11 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 	private void onAllPlayersReady(){
 		for(int i= 0; i<0; i++){
-			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(1, new Vector2(0,0),false),30,50,-50,50);
+			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(1, new Vector2(0,0), ModelId.Skeleton.ordinal()),30,50,-50,50);
 		}
 
 		for(int i= 0; i<0; i++){
-			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0),false),-50,-30,-50,50 );
+			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0), ModelId.Skeleton.ordinal()),-50,-30,-50,50 );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));
 		//scenario.newSoldier(1,new Vector2(-74.47005f, 169.50835f), true);
