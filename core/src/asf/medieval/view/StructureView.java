@@ -3,8 +3,12 @@ package asf.medieval.view;
 import asf.medieval.model.Token;
 import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.Quaternion;
@@ -27,6 +31,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 	public boolean selected = false;
 	private final Decal selectionDecal = new Decal();
 
+	public ModelViewInfo mvi;
 	private final String openAnim;
 
 	public StructureView(MedievalWorld world, Token structureToken) {
@@ -36,9 +41,11 @@ public class StructureView implements View, SelectableView, AnimationController.
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
+		mvi = world.modelViewInfo.get(token.modelId);
 
-		Model model = world.assetManager.get("Models/Church/Church.g3db");
+		Model model = world.assetManager.get(mvi.assetLocation[0]);
 		modelInstance = new ModelInstance(model);
+
 		if (modelInstance.animations.size > 0) {
 			animController = new AnimationController(modelInstance);
 			openAnim = modelInstance.animations.get(0).id;
@@ -48,6 +55,13 @@ public class StructureView implements View, SelectableView, AnimationController.
 			openAnim = null;
 		}
 		//rotation.setEulerAngles(180f, 0, 0);
+
+		if(mvi.materialAttributes!=null){
+			for (Material mat : modelInstance.materials) {
+				mat.set(mvi.materialAttributes);
+			}
+		}
+
 
 
 

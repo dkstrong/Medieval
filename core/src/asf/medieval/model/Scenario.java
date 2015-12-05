@@ -135,6 +135,7 @@ public class Scenario {
 
 	public Token newStructure(int owner, Vector2 location, int modelId)
 	{
+		ModelInfo mi = this.modelInfo.get(modelId);
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
@@ -148,6 +149,27 @@ public class Scenario {
 		token.location.set(location);
 		token.elevation = terrain.getElevation(location.x,location.y);
 		token.barracks = new BarracksController(token);
+		token.agent = new StructureController(token);
+		steerGraph.agents.add(token.agent);
+		tokens.add(token);
+
+		if(listener!=null)
+			listener.onNewToken(token);
+		return token;
+	}
+
+	public Token newResource(Vector2 location, int modelId){
+		Token token= new Token();
+		++lastTokenId;
+		token.id = lastTokenId;
+		token.scenario = this;
+		token.modelId = modelId;
+		token.shape = new Box(1,7.5f);
+		token.owner = Player.NULL_PLAYER;
+		token.location.set(location);
+		token.elevation = terrain.getElevation(location.x,location.y);
+		token.resource = new ResourceController(token);
+
 		token.agent = new StructureController(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);

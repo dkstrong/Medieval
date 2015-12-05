@@ -38,7 +38,8 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 
 		// Game
 		GameEditorPane gameEditorSubNode = new GameEditorPane(this);
-		HorizontalRowNode gameEditorMode = new HorizontalRowNode("Game",world, gameEditorSubNode);
+		BuilderEditorPane builderEditorPane = new BuilderEditorPane(this);
+		HorizontalRowNode gameEditorMode = new HorizontalRowNode("Game",world, gameEditorSubNode,builderEditorPane);
 
 		// Terrain
 		//	Height

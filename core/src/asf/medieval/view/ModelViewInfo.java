@@ -2,6 +2,11 @@ package asf.medieval.view;
 
 import asf.medieval.model.ModelId;
 import asf.medieval.model.ModelInfo;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g3d.Attribute;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
 import com.badlogic.gdx.utils.IntMap;
 
 /**
@@ -17,6 +22,8 @@ public class ModelViewInfo {
 	public String[] attackAnims;
 	public String[] hitAnims;
 	public String[] dieAnims;
+
+	public Attribute[] materialAttributes;
 
 	public void setAssetLocation(String... assetLocation) {
 		this.assetLocation = assetLocation;
@@ -45,6 +52,15 @@ public class ModelViewInfo {
 
 	public static void standardConfiguration(IntMap<ModelViewInfo> store)
 	{
+		ModelViewInfo tree = new ModelViewInfo();
+		tree.name = "Tree";
+		tree.setAssetLocation("Models/Foliage/Tree.g3db");
+		tree.materialAttributes = new Attribute[]{
+			new IntAttribute(IntAttribute.CullFace, 0),
+			new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA),
+			new FloatAttribute(FloatAttribute.AlphaTest, 0.5f)
+		};
+
 		ModelViewInfo church = new ModelViewInfo();
 		church.name = "Church";
 		church.setAssetLocation("Models/Church/Church.g3db");
@@ -87,6 +103,7 @@ public class ModelViewInfo {
 		jimmy.setDieAnims("Death01");
 
 
+		store.put(ModelId.Tree.ordinal(), tree);
 		store.put(ModelId.Church.ordinal(), church);
 		store.put(ModelId.Knight.ordinal(), knight);
 		store.put(ModelId.Skeleton.ordinal(), skeleton);

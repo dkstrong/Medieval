@@ -9,6 +9,8 @@ import java.util.Arrays;
  */
 public class Player {
 
+	public static final Player NULL_PLAYER = new Player();
+
 	public int playerId;
 	public int team;
 	public String name;
@@ -20,6 +22,13 @@ public class Player {
 
 	public final int[] lockedModels;
 
+	private Player() {
+		playerId = -1;
+		team = -1;
+		name = "World";
+		resources = new int[ResourceId.values().length];
+		lockedModels = new int[0];
+	}
 
 	public Player(User init) {
 		playerId = init.id;

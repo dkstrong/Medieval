@@ -145,6 +145,12 @@ public class HudBuildView implements View, InputProcessor {
 
 	@Override
 	public boolean keyUp(int keycode) {
+		switch(keycode)
+		{
+			case Input.Keys.TAB:
+				currentRootBuildNode.buttonGroup.uncheckAll();
+				return true;
+		}
 		return false;
 	}
 

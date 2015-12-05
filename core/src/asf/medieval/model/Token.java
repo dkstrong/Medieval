@@ -20,6 +20,8 @@ public class Token {
 	public AttackController attack;
 	public DamageController damage;
 	public BarracksController barracks;
+	public ResourceController resource;
+
 
 
 

@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.IntMap;
  */
 public class ModelInfo {
 
+	public ResourceId resource;
 	public boolean structure;
 	public int[] buildCosts;
 	public int popCost;
@@ -18,6 +19,9 @@ public class ModelInfo {
 
 	public static void standardConfiguration(IntMap<ModelInfo> store)
 	{
+		ModelInfo tree = new ModelInfo(true);
+		tree.resource = ResourceId.Wood;
+
 		ModelInfo church = new ModelInfo(true);
 		church.buildCosts[ResourceId.Gold.ordinal()] = 100;
 		church.buildCosts[ResourceId.Wood.ordinal()] = 25;
@@ -40,6 +44,7 @@ public class ModelInfo {
 		jimmy.buildCosts[ResourceId.Gold.ordinal()] = 100;
 		jimmy.popCost = 2;
 
+		store.put(ModelId.Tree.ordinal(),tree);
 		store.put(ModelId.Church.ordinal(),church);
 		store.put(ModelId.Knight.ordinal(),knight);
 		store.put(ModelId.Skeleton.ordinal(),skeleton);

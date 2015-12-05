@@ -1,6 +1,8 @@
 package asf.medieval.view.editor;
 
 import asf.medieval.view.MedievalWorld;
+import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -23,6 +25,7 @@ public class GameEditorPane implements EditorNode {
 	private TextButton fpsToggleButton;
 
 
+
 	public GameEditorPane(EditorView editorView) {
 		this.editorView = editorView;
 		this.world = editorView.world;
@@ -43,7 +46,6 @@ public class GameEditorPane implements EditorNode {
 		toolTable.row();
 		toolTable.add(new Label("Game Mode", world.app.skin));
 		toolTable.add(fpsToggleButton = UtEditor.createTextButtonToggle("Show FPS", world.app.skin,internalCl));
-
 
 
 	}

@@ -36,3 +36,8 @@ because it sees that it is its own action
 it doesnt trigger the confirmation code
 
 
+
+
+Graphics todo:
+
+frustum culling for infantry and structures. use their collision boxes as bounding boxes...
