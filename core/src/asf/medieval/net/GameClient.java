@@ -16,6 +16,12 @@ public abstract class GameClient {
 	public User user;
 	public Scenario scenario;
 
+	public GameClient(User user, Scenario scenario) {
+		this.user = user;
+		this.scenario = scenario;
+		if(this.user == null) throw new AssertionError("user can not be null");
+	}
+
 	public abstract void updateGameFrame(float delta);
 
 	public abstract void sendCommand(Command command);

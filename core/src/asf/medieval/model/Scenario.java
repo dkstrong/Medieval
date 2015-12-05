@@ -90,7 +90,7 @@ public class Scenario {
 
 	private int lastTokenId = 0;
 
-	public Token newToken(int owner, Vector2 location, int modelId){
+	public Token buildToken(int owner, Vector2 location, int modelId){
 
 		ModelInfo modelInfo = this.modelInfo.get(modelId);
 

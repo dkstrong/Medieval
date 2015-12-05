@@ -21,7 +21,7 @@ public class Command {
 
 		}else{
 			// spawn command
-			scenario.newToken(playerId, location, modelId);
+			scenario.buildToken(playerId, location, modelId);
 		}
 	}
 }

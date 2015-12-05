@@ -87,6 +87,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	public GameServer gameServer;
 	public GameClient gameClient;
 
+	public final ResourceViewInfo[] resourceViewInfo;
 	public final IntMap<ModelViewInfo> modelViewInfo = new IntMap<ModelViewInfo>(8);
 	public final Scenario scenario;
 	public final Array<View> gameObjects;
@@ -125,6 +126,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		Gdx.input.setInputProcessor(internalLoadingInputAdapter);
 
+		resourceViewInfo = ResourceViewInfo.standardConfiguration();
 		ModelViewInfo.standardConfiguration(modelViewInfo);
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
@@ -152,28 +154,22 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		}
 
 		if(settings.server ||  settings.client){
+			User player = new User();
+			player.name = System.getProperty("user.name");
 			String hostname = settings.server ? "localhost" : settings.hostName;
-			NetworkedGameClient networkedNetworkedGameClient = new NetworkedGameClient();
-			networkedNetworkedGameClient.scenario = scenario;
-			User player = new User();
-			player.name = System.getProperty("user.name");
-			networkedNetworkedGameClient.connectToServer(hostname, settings.gameServerConfig.tcpPort, settings.gameServerConfig.udpPort, player);
-			gameClient = networkedNetworkedGameClient;
+
+			NetworkedGameClient netGameClient = new NetworkedGameClient(player,scenario);
+			netGameClient.connectToServer(hostname, settings.gameServerConfig.tcpPort, settings.gameServerConfig.udpPort);
+			gameClient = netGameClient;
 		}else{
-			OfflineGameClient offlineGameClient = new OfflineGameClient();
-			offlineGameClient.scenario = scenario;
-			User player = new User();
-			player.id = 1;
-			player.team = 1;
-			player.name = System.getProperty("user.name");
-			offlineGameClient.user = player;
-			offlineGameClient.users.put(1,player);
-			User computerPlayer = new User();
-			computerPlayer.id = 2;
-			computerPlayer.team = 2;
-			computerPlayer.name="Computer";
-			offlineGameClient.users.put(2,computerPlayer);
-			gameClient = offlineGameClient;
+			User user = new User();
+			user.id = 1;
+			user.team = 1;
+			user.name = System.getProperty("user.name");
+
+			OfflineGameClient offGameClient = new OfflineGameClient(user, scenario);
+			offGameClient.connectToServer();
+			gameClient = offGameClient;
 		}
 
 	}
@@ -234,6 +230,10 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			inputMultiplexer.addProcessor(hudView.hudSelectionView);
 		}
 
+
+		// TODO; this might be a race condition, I might need to check to ensure that the client has received all "AddUser" messages
+		// TODO: before sending a ready action, or bad timing could lead to the scenario simulation starting- but the scenario
+		// TODO: may not have been populated with all users yet.
 		gameClient.sendReadyAction();
 		if(gameClient.isAllPlayersReady()){
 			loading = false;

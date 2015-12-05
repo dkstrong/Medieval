@@ -1,13 +1,12 @@
 package asf.medieval.net;
 
-import asf.medieval.model.Player;
 import asf.medieval.model.Scenario;
 import asf.medieval.net.message.Action;
 import asf.medieval.net.message.ActionConfirmation;
-import asf.medieval.net.message.AddPlayer;
+import asf.medieval.net.message.AddUser;
 import asf.medieval.net.message.Login;
 import asf.medieval.net.message.ReadyToStart;
-import asf.medieval.net.message.RemovePlayer;
+import asf.medieval.net.message.RemoveUser;
 import asf.medieval.utility.UtLog;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
@@ -195,15 +194,15 @@ public class GameServer implements Disposable, GameHost {
 
 			loggedInPlayerConnections.put(connection.user.id, connection);
 
-			AddPlayer addPlayer = new AddPlayer();
-			addPlayer.user = connection.user;
+			AddUser addUser = new AddUser();
+			addUser.user = connection.user;
 
 			// inform players of new login
 			// also inform new login of existing players
 			for (UserConnection loggedInPc : loggedInPlayerConnections.values()) {
-				loggedInPc.sendTCP(addPlayer);
+				loggedInPc.sendTCP(addUser);
 				if(loggedInPc.user.id != connection.user.id){
-					AddPlayer informExisting = new AddPlayer();
+					AddUser informExisting = new AddUser();
 					informExisting.user = loggedInPc.user;
 					connection.sendTCP(informExisting);
 				}
@@ -232,9 +231,9 @@ public class GameServer implements Disposable, GameHost {
 			loggedInPlayerConnections.remove(connection.user.id);
 
 
-			RemovePlayer removePlayer = new RemovePlayer();
-			removePlayer.user = connection.user;
-			server.sendToAllTCP(removePlayer);
+			RemoveUser removeUser = new RemoveUser();
+			removeUser.user = connection.user;
+			server.sendToAllTCP(removeUser);
 		}
 	}
 

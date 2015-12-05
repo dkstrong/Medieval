@@ -1,16 +1,15 @@
 package asf.medieval.net;
 
 import asf.medieval.model.Command;
-import asf.medieval.model.Player;
 import asf.medieval.model.Scenario;
 import asf.medieval.net.message.Action;
 import asf.medieval.net.message.ActionConfirmation;
 import asf.medieval.net.message.ReadyToStart;
-import asf.medieval.net.message.AddPlayer;
+import asf.medieval.net.message.AddUser;
 import asf.medieval.net.message.Login;
 import asf.medieval.net.message.Register;
 import asf.medieval.net.message.RegistrationRequired;
-import asf.medieval.net.message.RemovePlayer;
+import asf.medieval.net.message.RemoveUser;
 import asf.medieval.utility.UtLog;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -34,8 +33,8 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 	public int udpPort;
 	public Client client;
 
-
-	public NetworkedGameClient() {
+	public NetworkedGameClient(User user, Scenario scenario) {
+		super(user, scenario);
 
 		com.esotericsoftware.minlog.Log.set(Log.LEVEL_NONE);
 		client = new Client();
@@ -47,12 +46,12 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 		UtLog.trace("client thread started");
 	}
 
-	public void connectToServer(String hostName, int tcpPort, int udpPort, User player){
+	public void connectToServer(String hostName, int tcpPort, int udpPort){
 		this.hostName = hostName;
 		this.tcpPort = tcpPort;
 		this.udpPort = udpPort;
-		this.user = player;
-		if(this.user == null) throw new AssertionError("player can not be null");
+
+
 
 		try {
 			client.connect(5000, hostName, tcpPort, udpPort);
@@ -245,8 +244,8 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 			register.name = "new name";
 			register.otherStuff = "other stuff";
 			client.sendTCP(register);
-		}else if (message instanceof AddPlayer) {
-			AddPlayer msg = (AddPlayer)message;
+		}else if (message instanceof AddUser) {
+			AddUser msg = (AddUser)message;
 			if(client.getID() == msg.user.id){
 				//this msg is about this local player, update his object
 				user.set(msg.user);
@@ -281,8 +280,8 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 
 			scenario.addPlayer(msg.user);
 
-		}else if (message instanceof RemovePlayer) {
-			RemovePlayer msg = (RemovePlayer)message;
+		}else if (message instanceof RemoveUser) {
+			RemoveUser msg = (RemoveUser)message;
 
 			User existingPlayer = users.remove(msg.user.id);
 			if (existingPlayer != null){
@@ -318,10 +317,10 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 
 	public static void main(String[] args) {
 		UtLog.logLevel = UtLog.TRACE;
-		NetworkedGameClient networkedGameClient = new NetworkedGameClient();
 		User player = new User();
 		player.name ="Gergh";
-		networkedGameClient.connectToServer("localHost", 27677, 27677,player);
+		NetworkedGameClient networkedGameClient = new NetworkedGameClient(player,null);
+		networkedGameClient.connectToServer("localHost", 27677, 27677);
 
 
 	}

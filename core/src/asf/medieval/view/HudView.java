@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.Align;
 public class HudView implements View, InputProcessor {
 
 	private MedievalWorld world;
+	public HudResourceView hudResourceView;
 	public HudBuildView hudBuildView;
 	public HudCommandView hudCommandView;
 	public HudSelectionView hudSelectionView;
@@ -32,6 +33,7 @@ public class HudView implements View, InputProcessor {
 
 	public HudView(MedievalWorld world) {
 		this.world = world;
+		hudResourceView = new HudResourceView(world);
 		hudBuildView = new HudBuildView(world);
 		hudCommandView = new HudCommandView(world);
 		hudSelectionView = new HudSelectionView(world);
@@ -75,6 +77,8 @@ public class HudView implements View, InputProcessor {
 
 	@Override
 	public void update(float delta) {
+		if(hudResourceView!=null)
+			hudResourceView.update(delta);
 		if(hudBuildView!=null)
 			hudBuildView.update(delta);
 		if(hudCommandView!=null)
@@ -88,7 +92,8 @@ public class HudView implements View, InputProcessor {
 
 	@Override
 	public void render(float delta) {
-
+		if(hudResourceView!=null)
+			hudResourceView.render(delta);
 		if(hudBuildView!=null)
 			hudBuildView.render(delta);
 		if(hudCommandView!=null)

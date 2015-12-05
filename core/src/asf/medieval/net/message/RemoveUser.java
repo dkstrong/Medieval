@@ -6,6 +6,6 @@ import asf.medieval.net.User;
 /**
  * Created by daniel on 11/15/15.
  */
-public class RemovePlayer {
+public class RemoveUser {
 	public User user;
 }

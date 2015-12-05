@@ -10,6 +10,27 @@ import com.badlogic.gdx.utils.IntMap;
  */
 public class OfflineGameClient extends GameClient {
 
+	public OfflineGameClient(User user, Scenario scenario) {
+		super(user, scenario);
+	}
+
+	public void connectToServer()
+	{
+
+		users.put(1,user);
+
+		User computerUser = new User();
+		computerUser.id = 2;
+		computerUser.team = 2;
+		computerUser.name="Computer";
+		users.put(2,computerUser);
+
+		for (User p : users.values()) {
+			scenario.addPlayer(p);
+		}
+
+	}
+
 	@Override
 	public void updateGameFrame(float delta) {
 		scenario.update(delta);
@@ -23,9 +44,7 @@ public class OfflineGameClient extends GameClient {
 	@Override
 	public void sendReadyAction() {
 		user.loading = 1;
-		for (User p : users.values()) {
-			scenario.addPlayer(p);
-		}
+
 	}
 
 	@Override
