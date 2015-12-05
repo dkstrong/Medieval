@@ -60,10 +60,9 @@ public class StructureView implements View, SelectableView, AnimationController.
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
-		float angle = token.agent.getVelocity().angleRad(Vector2.Y);
-		rotation.setFromAxisRad(0,1,0,angle);
+		//float angle = token.agent.getVelocity().angleRad(Vector2.Y);
+		//rotation.setFromAxisRad(0,1,0,angle);
 
-		translation.set(token.location.x,token.elevation,token.location.y);
 
 	}
 
@@ -72,7 +71,8 @@ public class StructureView implements View, SelectableView, AnimationController.
 	@Override
 	public void update(float delta) {
 
-
+		translation.set(token.location.x,token.elevation,token.location.y);
+		rotation.setFromAxisRad(0,1,0,token.direction);
 
 		if (animController != null)
 		{
