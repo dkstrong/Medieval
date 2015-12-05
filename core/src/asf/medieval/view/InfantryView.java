@@ -45,7 +45,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		mvi = world.modelViewInfo.get(soldierToken.modelId);
+		mvi = world.modelViewInfo[soldierToken.modelId];
 
 
 		Model model = world.assetManager.get(mvi.assetLocation[0]);

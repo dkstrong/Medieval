@@ -50,8 +50,9 @@ public class ModelViewInfo {
 	}
 
 
-	public static void standardConfiguration(IntMap<ModelViewInfo> store)
+	public static ModelViewInfo[] standardConfiguration()
 	{
+		ModelViewInfo[] store = new ModelViewInfo[ModelId.values().length];
 		ModelViewInfo tree = new ModelViewInfo();
 		tree.name = "Tree";
 		tree.setAssetLocation("Models/Foliage/Tree.g3db");
@@ -102,13 +103,13 @@ public class ModelViewInfo {
 		jimmy.setHitAnims("ThrustersOn");
 		jimmy.setDieAnims("Death01");
 
+		store[ModelId.Tree.ordinal()] = tree;
+		store[ModelId.Church.ordinal()] = church;
+		store[ModelId.Knight.ordinal()] = knight;
+		store[ModelId.Skeleton.ordinal()] = skeleton;
+		store[ModelId.RockMonster.ordinal()] = rockMonster;
+		store[ModelId.Jimmy.ordinal()] = jimmy;
 
-		store.put(ModelId.Tree.ordinal(), tree);
-		store.put(ModelId.Church.ordinal(), church);
-		store.put(ModelId.Knight.ordinal(), knight);
-		store.put(ModelId.Skeleton.ordinal(), skeleton);
-		store.put(ModelId.RockMonster.ordinal(), rockMonster);
-		store.put(ModelId.Jimmy.ordinal(), jimmy);
-
+		return store;
 	}
 }

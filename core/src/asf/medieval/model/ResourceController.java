@@ -15,8 +15,8 @@ public class ResourceController {
 	}
 
 	public int getResourceId(){
-		ModelInfo mi = token.scenario.modelInfo.get(token.modelId);
-		return mi.resource.ordinal();
+		ModelInfo mi = token.scenario.modelInfo[token.modelId];
+		return mi.resourceId;
 	}
 
 

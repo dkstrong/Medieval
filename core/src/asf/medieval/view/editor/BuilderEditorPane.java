@@ -221,8 +221,8 @@ public class BuilderEditorPane implements EditorNode {
 
 
 		public ModelBuildMapping(int modelId) {
-			ModelViewInfo mvi = world.modelViewInfo.get(modelId);
-			ModelInfo mi = world.scenario.modelInfo.get(modelId);
+			ModelViewInfo mvi = world.modelViewInfo[modelId];
+			ModelInfo mi = world.scenario.modelInfo[modelId];
 			button = new TextButton(mvi.name, world.app.skin, "toggle");
 			button.setUserObject(this);
 			button.addListener(this);

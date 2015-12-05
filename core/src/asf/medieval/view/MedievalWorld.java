@@ -88,7 +88,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	public GameClient gameClient;
 
 	public final ResourceViewInfo[] resourceViewInfo;
-	public final IntMap<ModelViewInfo> modelViewInfo = new IntMap<ModelViewInfo>(8);
+	public final ModelViewInfo[] modelViewInfo;
 	public final Scenario scenario;
 	public final Array<View> gameObjects;
 	public HudView hudView;
@@ -127,12 +127,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		Gdx.input.setInputProcessor(internalLoadingInputAdapter);
 
 		resourceViewInfo = ResourceViewInfo.standardConfiguration();
-		ModelViewInfo.standardConfiguration(modelViewInfo);
+		modelViewInfo = ModelViewInfo.standardConfiguration();
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
 
-		for (ModelViewInfo modelViewInfo : this.modelViewInfo.values()) {
-			for (String s : modelViewInfo.assetLocation) {
+		for (ModelViewInfo mvi : modelViewInfo) {
+			for (String s : mvi.assetLocation) {
 				assetManager.load(s, Model.class);
 			}
 		}

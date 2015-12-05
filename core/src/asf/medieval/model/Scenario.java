@@ -18,18 +18,16 @@ public class Scenario {
 	private transient Listener listener;
 
 	public final ScenarioRand rand;
-	public final IntMap<ModelInfo> modelInfo = new IntMap<ModelInfo>(8);
+	public final ModelInfo[] modelInfo;
 	public transient Terrain terrain;
+
 	public final SteerGraph steerGraph = new SteerGraph();
-
 	public IntMap<Player> players = new IntMap<Player>(2);
-
-
 	public Array<Token> tokens = new Array<Token>(false, 256, Token.class);
 
 	public Scenario(ScenarioRand rand) {
 		this.rand = rand;
-		ModelInfo.standardConfiguration(modelInfo);
+		modelInfo = ModelInfo.standardConfiguration();
 	}
 
 	public void setListener(Listener listener) {
@@ -92,7 +90,7 @@ public class Scenario {
 
 	public Token buildToken(int owner, Vector2 location, int modelId){
 
-		ModelInfo modelInfo = this.modelInfo.get(modelId);
+		ModelInfo modelInfo = this.modelInfo[modelId];
 
 		if(modelInfo.structure){
 			return newStructure(owner, location, modelId);
@@ -135,7 +133,7 @@ public class Scenario {
 
 	public Token newStructure(int owner, Vector2 location, int modelId)
 	{
-		ModelInfo mi = this.modelInfo.get(modelId);
+		ModelInfo mi = this.modelInfo[modelId];
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;

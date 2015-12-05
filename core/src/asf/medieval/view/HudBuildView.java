@@ -275,7 +275,7 @@ public class HudBuildView implements View, InputProcessor {
 
 		public CategoryBuildNode(int categoryModelId, ModelBuildNode... childNodes) {
 			this.categoryModelId = categoryModelId;
-			ModelViewInfo mvi = world.modelViewInfo.get(categoryModelId);
+			ModelViewInfo mvi = world.modelViewInfo[categoryModelId];
 			commonInit(mvi.name, childNodes);
 		}
 
@@ -380,8 +380,8 @@ public class HudBuildView implements View, InputProcessor {
 		public int cursor;
 
 		public ModelBuildNode(int modelId) {
-			ModelViewInfo mvi = world.modelViewInfo.get(modelId);
-			ModelInfo mi = world.scenario.modelInfo.get(modelId);
+			ModelViewInfo mvi = world.modelViewInfo[modelId];
+			ModelInfo mi = world.scenario.modelInfo[modelId];
 			button = new TextButton(mvi.name, world.app.skin, "toggle");
 			button.setUserObject(this);
 			button.addListener(this);

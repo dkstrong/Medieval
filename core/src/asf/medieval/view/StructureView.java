@@ -41,7 +41,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		mvi = world.modelViewInfo.get(token.modelId);
+		mvi = world.modelViewInfo[token.modelId];
 
 		Model model = world.assetManager.get(mvi.assetLocation[0]);
 		modelInstance = new ModelInstance(model);
