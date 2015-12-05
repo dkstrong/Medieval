@@ -9,11 +9,11 @@ import com.badlogic.gdx.utils.IntMap;
  * Created by daniel on 11/16/15.
  */
 public abstract class GameClient {
-	public IntMap<Player> players = new IntMap<Player>();
+	public IntMap<User> users = new IntMap<User>();
 	/**
 	 * the local player
 	 */
-	public Player player;
+	public User user;
 	public Scenario scenario;
 
 	public abstract void updateGameFrame(float delta);

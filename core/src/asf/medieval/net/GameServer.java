@@ -26,7 +26,7 @@ public class GameServer implements Disposable, GameHost {
 	private Server server;
 	private boolean bound = false;
 
-	public IntMap<PlayerConnection> loggedInPlayerConnections = new IntMap<PlayerConnection>();
+	public IntMap<UserConnection> loggedInPlayerConnections = new IntMap<UserConnection>();
 
 	public Scenario scenario;
 
@@ -34,7 +34,7 @@ public class GameServer implements Disposable, GameHost {
 		com.esotericsoftware.minlog.Log.set(com.esotericsoftware.minlog.Log.LEVEL_NONE);
 		server = new Server() {
 			protected Connection newConnection () {
-				return new PlayerConnection();
+				return new UserConnection();
 			}
 		};
 
@@ -89,8 +89,8 @@ public class GameServer implements Disposable, GameHost {
 
 
 	// This holds per connection state.
-	private static class PlayerConnection extends Connection {
-		public Player player;
+	private static class UserConnection extends Connection {
+		public User user;
 		public LongMap<UnconfirmedAction> unconfirmedActions = new LongMap<UnconfirmedAction>(8);
 	}
 
@@ -113,12 +113,12 @@ public class GameServer implements Disposable, GameHost {
 		}
 
 		// We know all connections for this server are actually CharacterConnections.
-		PlayerConnection connection = (PlayerConnection)c;
+		UserConnection connection = (UserConnection)c;
 
 		if(message instanceof ActionConfirmation){
 			ActionConfirmation confirmation = (ActionConfirmation) message;
 			//System.out.println(String.valueOf(confirmation));
-			PlayerConnection actionMakerConnection = loggedInPlayerConnections.get(confirmation.playerId);
+			UserConnection actionMakerConnection = loggedInPlayerConnections.get(confirmation.playerId);
 			UnconfirmedAction unconfirmedAction = actionMakerConnection.unconfirmedActions.get(confirmation.lockstepFrame);
 			unconfirmedAction.confirmedByPlayers.add(confirmation.confirmedByPlayerId);
 
@@ -135,8 +135,11 @@ public class GameServer implements Disposable, GameHost {
 			connection.unconfirmedActions.put(action.lockstepFrame,new UnconfirmedAction(action));
 			//System.out.println(String.valueOf(action));
 
-			server.sendToAllExceptTCP(action.playerId, action);
-
+			for (UserConnection userConnection : loggedInPlayerConnections.values()) {
+				if(userConnection.user.id != action.playerId){
+					userConnection.sendTCP(action);
+				}
+			}
 
 		}else if(message instanceof ReadyToStart){
 			ReadyToStart ready = (ReadyToStart) message;
@@ -146,25 +149,29 @@ public class GameServer implements Disposable, GameHost {
 			readyAction.lockstepFrame = 1;
 			connection.unconfirmedActions.put(readyAction.lockstepFrame,new UnconfirmedAction(readyAction));
 
-			server.sendToAllExceptTCP(readyAction.playerId, readyAction);
+			for (UserConnection userConnection : loggedInPlayerConnections.values()) {
+				if(userConnection.user.id != readyAction.playerId){
+					userConnection.sendTCP(readyAction);
+				}
+			}
 
 		}else if (message instanceof Login) {
 
 			// Ignore if already logged in.
-			if (connection.player != null)
+			if (connection.user != null)
 				return;
 			Login login = (Login)message;
 
 			// Reject if the name is invalid or already logged in or something like that
-			if (!isValid(login.player.name)) {
-				login.player.name = "Lazy Typist";
+			if (!isValid(login.user.name)) {
+				login.user.name = "Lazy Typist";
 				//c.close();
 				return;
 			}
 			// Append suffix to name if name is taken
-			for (PlayerConnection other : loggedInPlayerConnections.values()) {
-				if(other.player.name.equals(login.player.name)){
-					login.player.name +=" (1)";
+			for (UserConnection other : loggedInPlayerConnections.values()) {
+				if(other.user.name.equals(login.user.name)){
+					login.user.name +=" (1)";
 				}
 			}
 
@@ -179,22 +186,25 @@ public class GameServer implements Disposable, GameHost {
 
 			// valid login, add him to the list and notify
 			// everyone else on the server
-			connection.player = login.player;
-			connection.player.id = c.getID();
-			connection.player.team = connection.player.id;
+			connection.user = login.user;
+			connection.user.cid = c.getID();
+			// TODO: properly assign id and team from the scenario configuration.
+			// id number can not be changed after this point.
+			connection.user.id = connection.user.cid;
+			connection.user.team = connection.user.cid;
 
-			loggedInPlayerConnections.put(connection.player.id, connection);
+			loggedInPlayerConnections.put(connection.user.id, connection);
 
 			AddPlayer addPlayer = new AddPlayer();
-			addPlayer.player = connection.player;
+			addPlayer.user = connection.user;
 
 			// inform players of new login
 			// also inform new login of existing players
-			for (PlayerConnection loggedInPc : loggedInPlayerConnections.values()) {
+			for (UserConnection loggedInPc : loggedInPlayerConnections.values()) {
 				loggedInPc.sendTCP(addPlayer);
-				if(loggedInPc.player.id != connection.player.id){
+				if(loggedInPc.user.id != connection.user.id){
 					AddPlayer informExisting = new AddPlayer();
-					informExisting.player = loggedInPc.player;
+					informExisting.user = loggedInPc.user;
 					connection.sendTCP(informExisting);
 				}
 			}
@@ -216,14 +226,14 @@ public class GameServer implements Disposable, GameHost {
 
 	@Override
 	public void onDisconnected(Connection c) {
-		PlayerConnection connection = (PlayerConnection)c;
-		UtLog.trace("one of my clients disconnected: "+connection.player);
-		if (connection.player != null) {
-			loggedInPlayerConnections.remove(connection.player.id);
+		UserConnection connection = (UserConnection)c;
+		UtLog.trace("one of my clients disconnected: "+connection.user);
+		if (connection.user != null) {
+			loggedInPlayerConnections.remove(connection.user.id);
 
 
 			RemovePlayer removePlayer = new RemovePlayer();
-			removePlayer.player = connection.player;
+			removePlayer.user = connection.user;
 			server.sendToAllTCP(removePlayer);
 		}
 	}

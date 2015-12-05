@@ -2,6 +2,7 @@ package asf.medieval.view;
 
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.model.Player;
+import asf.medieval.net.User;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -108,8 +109,8 @@ public class HudView implements View, InputProcessor {
 				gameServerStatusString = networkedGameClient.isConnected() ? "Connected to: " + networkedGameClient.hostName + ":" + networkedGameClient.tcpPort : "No Server Connection";
 
 			gameClientStatusString = "Players:";
-			if (networkedGameClient.player.id > 0 && networkedGameClient.players.containsKey(networkedGameClient.player.id)) {
-				gameClientStatusString += "\n" + String.valueOf(networkedGameClient.player);
+			if (networkedGameClient.user.id > 0 && networkedGameClient.users.containsKey(networkedGameClient.user.id)) {
+				gameClientStatusString += "\n" + String.valueOf(networkedGameClient.user);
 				requestPingTimer -= delta;
 				if (requestPingTimer < 0) {
 					requestPingTimer = 15;
@@ -118,8 +119,8 @@ public class HudView implements View, InputProcessor {
 				int returnTripTime = networkedGameClient.client.getReturnTripTime();
 				gameClientStatusString += " [" + returnTripTime + "]";
 			}
-			for (Player player : networkedGameClient.players.values()) {
-				if (player.id != networkedGameClient.player.id) {
+			for (User player : networkedGameClient.users.values()) {
+				if (player.id != networkedGameClient.user.id) {
 					gameClientStatusString += "\n" + String.valueOf(player);
 				}
 			}

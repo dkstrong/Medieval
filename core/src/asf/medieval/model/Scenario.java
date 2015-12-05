@@ -3,6 +3,7 @@ package asf.medieval.model;
 import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.steer.SteerGraph;
 import asf.medieval.model.steer.StructureController;
+import asf.medieval.net.User;
 import asf.medieval.shape.Box;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.UtMath;
@@ -22,6 +23,7 @@ public class Scenario {
 	public final SteerGraph steerGraph = new SteerGraph();
 
 	public IntMap<Player> players = new IntMap<Player>(2);
+
 
 	public Array<Token> tokens = new Array<Token>(false, 256, Token.class);
 
@@ -45,26 +47,29 @@ public class Scenario {
 
 	}
 
-	public void addPlayer(Player player){
-		Player existingPlayer = players.get(player.id);
-
+	public void addPlayer(User user){
+		Player existingPlayer = players.get(user.id);
 		if(existingPlayer == null)
 		{
-			Player newPlayer = player.cpy();
-			players.put(newPlayer.id, newPlayer);
+			// new player
+			Player newPlayer = new Player(user);
+			players.put(newPlayer.playerId, newPlayer);
 			if(listener!=null)
 				listener.onNewPlayer(newPlayer);
 		}
 		else
 		{
-			existingPlayer.set(player);
+			// update exisisting player
+
+			existingPlayer.name = user.name;
+			existingPlayer.team = user.team;
 			if(listener!=null)
 				listener.onUpdatePlayer(existingPlayer);
 		}
 	}
 
-	public void removePlayer(Player player){
-		Player removedPlayed = players.remove(player.id);
+	public void removePlayer(User user){
+		Player removedPlayed = players.remove(user.id);
 		if(removedPlayed!=null && listener!=null)
 			listener.onRemovePlayer(removedPlayed);
 	}
@@ -158,7 +163,7 @@ public class Scenario {
 		Token closestBarracks = null;
 		float closestDist2 = Float.MAX_VALUE;
 		for (Token token : tokens) {
-			if (token.owner.id == owner) {
+			if (token.owner.playerId == owner) {
 				if (token.barracks != null) {
 					if(location == null){
 						return token;

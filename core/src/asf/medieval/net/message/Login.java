@@ -1,6 +1,7 @@
 package asf.medieval.net.message;
 
 import asf.medieval.model.Player;
+import asf.medieval.net.User;
 
 /**
  * sent by the client to server to login, contains
@@ -10,5 +11,5 @@ import asf.medieval.model.Player;
  * Created by daniel on 11/15/15.
  */
 public class Login {
-	public Player player;
+	public User user;
 }

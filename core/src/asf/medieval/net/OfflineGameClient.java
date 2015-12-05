@@ -17,20 +17,20 @@ public class OfflineGameClient extends GameClient {
 
 	@Override
 	public void sendCommand(Command command) {
-		command.performCommand(player.id,scenario);
+		command.performCommand(user.id,scenario);
 	}
 
 	@Override
 	public void sendReadyAction() {
-		player.loading = 1;
-		for (Player p : players.values()) {
+		user.loading = 1;
+		for (User p : users.values()) {
 			scenario.addPlayer(p);
 		}
 	}
 
 	@Override
 	public boolean isAllPlayersReady() {
-		return player.loading==1;
+		return user.loading==1;
 	}
 
 	@Override

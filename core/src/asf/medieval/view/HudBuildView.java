@@ -71,7 +71,7 @@ public class HudBuildView implements View, InputProcessor {
 	}
 
 	private Token getBarracksToBuild(int modelId) {
-		return world.scenario.getBarracksToBuild(world.gameClient.player.id, null, modelId);
+		return world.scenario.getBarracksToBuild(world.gameClient.user.id, null, modelId);
 	}
 
 	@Override

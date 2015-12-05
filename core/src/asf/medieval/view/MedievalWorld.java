@@ -14,6 +14,7 @@ import asf.medieval.net.GameServer;
 import asf.medieval.net.GameServerConfig;
 import asf.medieval.net.OfflineGameClient;
 import asf.medieval.model.Player;
+import asf.medieval.net.User;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileManager;
@@ -154,24 +155,24 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			String hostname = settings.server ? "localhost" : settings.hostName;
 			NetworkedGameClient networkedNetworkedGameClient = new NetworkedGameClient();
 			networkedNetworkedGameClient.scenario = scenario;
-			Player player = new Player();
+			User player = new User();
 			player.name = System.getProperty("user.name");
 			networkedNetworkedGameClient.connectToServer(hostname, settings.gameServerConfig.tcpPort, settings.gameServerConfig.udpPort, player);
 			gameClient = networkedNetworkedGameClient;
 		}else{
 			OfflineGameClient offlineGameClient = new OfflineGameClient();
 			offlineGameClient.scenario = scenario;
-			Player player = new Player();
+			User player = new User();
 			player.id = 1;
 			player.team = 1;
 			player.name = System.getProperty("user.name");
-			offlineGameClient.player = player;
-			offlineGameClient.players.put(1,player);
-			Player computerPlayer = new Player();
+			offlineGameClient.user = player;
+			offlineGameClient.users.put(1,player);
+			User computerPlayer = new User();
 			computerPlayer.id = 2;
 			computerPlayer.team = 2;
 			computerPlayer.name="Computer";
-			offlineGameClient.players.put(2,computerPlayer);
+			offlineGameClient.users.put(2,computerPlayer);
 			gameClient = offlineGameClient;
 		}
 
