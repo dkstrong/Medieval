@@ -14,13 +14,6 @@ import java.util.List;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-		RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-		List<String> arguments = runtimeMxBean.getInputArguments();
-		System.out.println("arguments: ");
-		// -XX:+StrictFP
-		for (String argument : arguments) {
-			System.out.println(argument);
-		}
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 

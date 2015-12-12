@@ -1,6 +1,11 @@
 package asf.medieval.utility;
 
+import org.decimal4j.api.DecimalArithmetic;
+import org.decimal4j.immutable.Decimal18f;
+import org.decimal4j.immutable.Decimal2f;
 import org.junit.Test;
+
+import java.math.RoundingMode;
 
 import static org.junit.Assert.*;
 

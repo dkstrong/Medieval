@@ -22,9 +22,6 @@ public class Token {
 	public BarracksController barracks;
 	public ResourceController resource;
 
-
-
-
 	public void update(float delta)
 	{
 		if(attack != null){
