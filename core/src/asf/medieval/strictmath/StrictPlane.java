@@ -19,7 +19,7 @@ public strictfp class StrictPlane {
 	/**
 	 * Constant of the plane. See formula in class definition.
 	 */
-	public StrictPoint constant;
+	public final StrictPoint constant = new StrictPoint();
 
 	public final static StrictPoint TEMP_POINT = new StrictPoint();
 

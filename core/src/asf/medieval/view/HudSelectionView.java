@@ -1,6 +1,7 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Token;
+import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.utility.StretchableImage;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Gdx;
@@ -62,7 +63,8 @@ public class HudSelectionView implements View,InputProcessor {
 	}
 
 	private boolean canSelectToken(Token token){
-		if(token.damage!=null && token.damage.health <=0) return false;
+		// TODO: this should be handled within the model package..
+		if(token.damage!=null && token.damage.health.lessThanOrEqual(StrictPoint.ZERO)) return false;
 		if(token.owner.playerId!= world.gameClient.user.id) return false;
 
 		return true;
@@ -177,7 +179,10 @@ public class HudSelectionView implements View,InputProcessor {
 						// TODO: check for obstruction by structures..
 						// TODO: will need to make some kind of "terrainish" array that stores
 						// TODO: the terrain and structures and anything else that obstructs selection
-						tokenCenterWorldCoord.set(sgo.getTranslation()).add(0,sgo.getToken().shape.dimensions.y/2f,0);
+						tokenCenterWorldCoord.set(sgo.getTranslation()).
+							add(	0,
+								sgo.getModelViewInfo().shape.dimensions.y/2f,
+								0);
 						getScreenCord(tokenCenterWorldCoord, tokenCenterScreenCoord);
 
 						Ray ray = world.cameraManager.cam.getPickRay(tokenCenterScreenCoord.x, tokenCenterScreenCoord.y);

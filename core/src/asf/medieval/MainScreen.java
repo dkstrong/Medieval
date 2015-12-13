@@ -136,7 +136,7 @@ public class MainScreen extends AbstractScreen{
 
 			if (actor == hostGameButton) {
 				MedievalWorld.Settings settings = new MedievalWorld.Settings();
-				settings.random = new Random(1);
+				settings.scenarioSeed = 1;
 				settings.server = true;
 				settings.gameServerConfig = new GameServerConfig();
 				settings.gameServerConfig.tcpPort = Integer.parseInt(portTextfield.getText().trim());
@@ -144,10 +144,10 @@ public class MainScreen extends AbstractScreen{
 				app.loadWorld(settings);
 			} else if (actor == joinGameButton) {
 				MedievalWorld.Settings settings = new MedievalWorld.Settings();
-				settings.random = new Random(1);
+				settings.scenarioSeed = 1;
 				settings.client = true;
-				settings.gameServerConfig = new GameServerConfig();
 				settings.hostName = hostNameTextfield.getText().trim();
+				settings.gameServerConfig = new GameServerConfig();
 				settings.gameServerConfig.tcpPort = Integer.parseInt(portTextfield.getText().trim());
 				settings.gameServerConfig.udpPort = settings.gameServerConfig.tcpPort;
 
@@ -155,7 +155,7 @@ public class MainScreen extends AbstractScreen{
 			} else if (actor == editorGameButton) {
 				MedievalWorld.Settings settings = new MedievalWorld.Settings();
 
-				settings.random = new Random(1);
+				settings.scenarioSeed = 1;
 				settings.editor = true;
 
 				app.loadWorld(settings);

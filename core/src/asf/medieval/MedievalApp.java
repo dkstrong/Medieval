@@ -187,7 +187,7 @@ public class MedievalApp extends ApplicationAdapter {
 	{
 		MedievalWorld.Settings settings = new MedievalWorld.Settings();
 
-		settings.random = new Random(1);
+		settings.scenarioSeed = 1;
 		settings.editor = true;
 
 		final boolean onlineGame = false;

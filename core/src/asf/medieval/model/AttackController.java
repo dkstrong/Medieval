@@ -1,27 +1,32 @@
 package asf.medieval.model;
 
 import asf.medieval.model.steer.InfantryController;
+import asf.medieval.strictmath.StrictPoint;
 
 /**
  * Created by daniel on 11/19/15.
  */
-public class AttackController {
+public strictfp class AttackController {
 	public Token token;
-	public float meleeAttack;
-	public float chargeAttack;
+	public final StrictPoint meleeAttack = new StrictPoint();
+	public final StrictPoint chargeAttack = new StrictPoint();
 
 	public Token target;
 
-	public float attackU;
-	public float attackDuration;
+	public final StrictPoint attackU = new StrictPoint();
+	public final StrictPoint attackDuration = new StrictPoint();
 
 	public AttackController(Token token) {
 		this.token = token;
 	}
 
-	public void update(float delta){
+	private static final StrictPoint dst = new StrictPoint();
+	private static final StrictPoint targetingRadius = new StrictPoint();
+	private static final StrictPoint dmg = new StrictPoint();
+
+	public void update(StrictPoint delta){
 		if(target == null){
-			if(token.damage.attacker == null && token.damage.health >0){
+			if(token.damage.attacker == null && token.damage.health.greaterThan(StrictPoint.ZERO)){
 				Token newTarget = null;
 				for (int i = 0; i < token.scenario.tokens.size; i++) {
 					Token other = token.scenario.tokens.items[i];
@@ -29,14 +34,16 @@ public class AttackController {
 					if(other.damage == null) continue;
 					if(token.owner.team == other.owner.team) continue;
 					if(other.damage.attacker != null) continue;
-					if(other.damage.health <=0) continue;
+					if(other.damage.health.lessThanOrEqual(StrictPoint.ZERO)) continue;
 
 					// TODO: also compare velocities (unless both characters have the same velocity- the one with
 					// higher velocity gets attack precedence
 					// also maybe consider in height and give height precedence
 					// also precedence when attacking a target that is already in combat.
 					// maybe also consider the direction theyre facing and so on.
-					if(other.location.dst(token.location) < token.shape.radius + other.shape.radius *2f)
+					other.location.dst(token.location,dst);
+					targetingRadius.set(other.mi.shape.radius).mul("2").add(token.mi.shape.radius);
+					if(dst.lessThan(targetingRadius))
 					{
 						newTarget = other;
 					}
@@ -45,14 +52,17 @@ public class AttackController {
 					attackTarget(newTarget);
 			}
 		}else {
-			attackU += delta;
-			if(attackU >= attackDuration){
-				float dmg = meleeAttack - target.damage.meleeDefense;
-				if(dmg < 1) dmg = 1;
+			attackU.add(delta);
+			if(attackU.greaterThanOrEqual(attackDuration)){
+				dmg.set(meleeAttack).sub(target.damage.meleeDefense);
+				if(dmg.lessThan(StrictPoint.ONE))
+					dmg.set(StrictPoint.ONE);
+
 
 				((InfantryController)token.agent).clearTarget();
 
-				target.damage.health -= dmg;
+				target.damage.health.sub(dmg);
+
 				//System.out.println("Wham! "+token.modelId+" attacked "+target.modelId);
 				// TODO: the reason units get stuck when moving while mid attack animation
 				// is because clear attack target clears the command.
@@ -68,8 +78,8 @@ public class AttackController {
 	public void attackTarget(Token target){
 		//System.out.println(token.modelId+ " attack "+target.modelId);
 		this.target = target;
-		attackU = 0;
-		attackDuration = 2f;
+		attackU.set(StrictPoint.ZERO);
+		attackDuration.set("2");
 
 		((InfantryController) token.agent).setCombatTarget(target.agent);
 
@@ -81,7 +91,7 @@ public class AttackController {
 
 	public void clearAttackTarget(){
 		((InfantryController)token.agent).clearTarget();
-		attackU = -1;
+		attackU.set("-1");
 		if(target != null){
 			target.damage.clearAttacked(token);
 			target = null;

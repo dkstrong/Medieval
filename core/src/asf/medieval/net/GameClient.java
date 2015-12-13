@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.IntMap;
 /**
  * Created by daniel on 11/16/15.
  */
-public abstract class GameClient {
+public strictfp abstract class GameClient {
 	public IntMap<User> users = new IntMap<User>();
 	/**
 	 * the local player

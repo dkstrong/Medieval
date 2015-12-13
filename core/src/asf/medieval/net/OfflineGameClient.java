@@ -1,14 +1,14 @@
 package asf.medieval.net;
 
 import asf.medieval.model.Command;
-import asf.medieval.model.Player;
 import asf.medieval.model.Scenario;
-import com.badlogic.gdx.utils.IntMap;
+import asf.medieval.strictmath.VecHelper;
+import asf.medieval.strictmath.StrictPoint;
 
 /**
  * Created by daniel on 11/16/15.
  */
-public class OfflineGameClient extends GameClient {
+public strictfp class OfflineGameClient extends GameClient {
 
 	public OfflineGameClient(User user, Scenario scenario) {
 		super(user, scenario);
@@ -31,9 +31,13 @@ public class OfflineGameClient extends GameClient {
 
 	}
 
+	private final StrictPoint strictDelta = new StrictPoint();
+
+
 	@Override
 	public void updateGameFrame(float delta) {
-		scenario.update(delta);
+		strictDelta.fromFloat(delta);
+		scenario.update(strictDelta);
 	}
 
 	@Override
@@ -43,13 +47,13 @@ public class OfflineGameClient extends GameClient {
 
 	@Override
 	public void sendReadyAction() {
-		user.loading = 1;
+		user.loading = new StrictPoint(StrictPoint.ONE);
 
 	}
 
 	@Override
 	public boolean isAllPlayersReady() {
-		return user.loading==1;
+		return user.loading.greaterThanOrEqual(StrictPoint.ONE);
 	}
 
 	@Override

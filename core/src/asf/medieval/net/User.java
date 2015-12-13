@@ -1,5 +1,7 @@
 package asf.medieval.net;
 
+import asf.medieval.strictmath.StrictPoint;
+
 /**
  * Created by daniel on 12/4/15.
  */
@@ -8,7 +10,7 @@ public class User {
 	public int id;
 	public int team;
 	public String name;
-	public float loading;
+	public StrictPoint loading;
 
 	public User() {
 	}
@@ -29,7 +31,7 @@ public class User {
 		id = user.id;
 		team = user.team;
 		name = user.name;
-		loading = user.loading;
+		loading = new StrictPoint(user.loading);
 	}
 
 	public User cpy(){

@@ -5,7 +5,7 @@ import com.esotericsoftware.kryonet.Connection;
 /**
  * Created by daniel on 11/16/15.
  */
-public interface GameHost {
+public strictfp interface GameHost {
 
 	public void onConnected(Connection connection);
 

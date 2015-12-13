@@ -2,6 +2,7 @@ package asf.medieval.view;
 
 import asf.medieval.model.Token;
 import asf.medieval.shape.Shape;
+import asf.medieval.strictmath.VecHelper;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -22,7 +23,6 @@ import com.badlogic.gdx.math.collision.Ray;
 public class StructureView implements View, SelectableView, AnimationController.AnimationListener {
 	private MedievalWorld world;
 	public final Token token;
-	public final Shape shape;
 	private ModelInstance modelInstance;
 	private AnimationController animController;
 	public final Vector3 translation = new Vector3();
@@ -38,7 +38,6 @@ public class StructureView implements View, SelectableView, AnimationController.
 		this.world = world;
 		this.token = structureToken;
 
-		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
 		mvi = world.modelViewInfo[token.modelId];
@@ -70,14 +69,14 @@ public class StructureView implements View, SelectableView, AnimationController.
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(token.shape.radius *3.5f, token.shape.radius *3.5f);
+		selectionDecal.setDimensions(mvi.shape.radius *3.5f, mvi.shape.radius *3.5f);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
 		//float angle = token.agent.getVelocity().angleRad(Vector2.Y);
 		//rotation.setFromAxisRad(0,1,0,angle);
 
-
+		VecHelper.toVector3(token.location, token.elevation, translation);
 	}
 
 	private boolean triggerAnim = false;
@@ -85,8 +84,9 @@ public class StructureView implements View, SelectableView, AnimationController.
 	@Override
 	public void update(float delta) {
 
-		translation.set(token.location.x,token.elevation,token.location.y);
-		rotation.setFromAxisRad(0,1,0,token.direction);
+		VecHelper.toVector3(token.location, token.elevation, translation);
+
+		rotation.setFromAxisRad(0,1,0,token.direction.toFloat());
 
 		if (animController != null)
 		{
@@ -128,8 +128,9 @@ public class StructureView implements View, SelectableView, AnimationController.
 	 * or when there is an intersection: the squared distance between the center of this
 	 * object and the point on the ray closest to this object when there is intersection.
 	 */
+	@Override
 	public float intersects(Ray ray) {
-		return shape.intersects(modelInstance.transform, ray);
+		return mvi.shape.intersects(modelInstance.transform, ray);
 	}
 
 	@Override
@@ -150,6 +151,11 @@ public class StructureView implements View, SelectableView, AnimationController.
 	@Override
 	public Vector3 getTranslation() {
 		return translation;
+	}
+
+	@Override
+	public ModelViewInfo getModelViewInfo() {
+		return mvi;
 	}
 
 	@Override

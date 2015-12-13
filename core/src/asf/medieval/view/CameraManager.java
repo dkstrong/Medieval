@@ -33,6 +33,11 @@ public class CameraManager {
 //		rtsCamController.tilt = 0.51479614f;
 //		rtsCamController.distance = 181.32997f;
 
+		rtsCamController.center.set(61.499596f,8.188561f,5.9921885f);
+		rtsCamController.rot = -2.880188f;
+		rtsCamController.tilt = 0.5064049f;
+		rtsCamController.distance = 200.0f;
+
 		// TODO: camManager needs to act as a middleman for the Cam controllers
 		// so if the camera type changes so will the relevant input processing...
 	}

@@ -5,10 +5,26 @@ package asf.medieval.strictmath;
  */
 public strictfp class StrictPoint {
 
+	public static final StrictPoint ZERO = new StrictPoint("0");
+	public static final StrictPoint ONE = new StrictPoint("1");
+	public static final StrictPoint TWO = new StrictPoint("2");
+	public static final StrictPoint THREE = new StrictPoint("3");
+	public static final StrictPoint FOUR = new StrictPoint("4");
+	public static final StrictPoint FIVE = new StrictPoint("5");
+	public static final StrictPoint SIX = new StrictPoint("6");
+	public static final StrictPoint SEVEN = new StrictPoint("7");
+	public static final StrictPoint EIGHT = new StrictPoint("8");
+	public static final StrictPoint NINE = new StrictPoint("9");
+	public static final StrictPoint TEN = new StrictPoint("10");
+
 	public static final StrictPoint MIN_ROUNDING_ERROR = new StrictPoint(0.000001f);
+	public static final StrictPoint MAX_VALUE = new StrictPoint(Float.MAX_VALUE);
 	public static final StrictPoint PI = new StrictPoint(3.1415927f);
-	public static final StrictPoint radDeg = new StrictPoint(180f/PI.val);
-	public static final StrictPoint degRad = new StrictPoint(PI.val/180f);
+	public static final StrictPoint PI2 = new StrictPoint(3.1415927f * 2f);
+	private static final StrictPoint RAD_DEG = new StrictPoint(180f/PI.val);
+	private static final StrictPoint DEG_RAD = new StrictPoint(PI.val/180f);
+
+	private static final StrictPoint TEMP_POINT = new StrictPoint();
 
 	public float val;
 
@@ -41,6 +57,19 @@ public strictfp class StrictPoint {
 		return this;
 	}
 
+	/**
+	 * bringing in float values is not deterministic, this should only be used for the user input
+	 * when  creating commands to be processed by the server, the server will then respond with a
+	 * a proper strict point..
+	 *
+	 * @param value
+	 * @return
+	 */
+	public StrictPoint fromFloat(float value){
+		this.val = value;
+		return this;
+	}
+
 	public StrictPoint set(String value){
 		this.val = Float.valueOf(value);
 		return this;
@@ -63,6 +92,16 @@ public strictfp class StrictPoint {
 
 	public StrictPoint mul(StrictPoint other){
 		val *= other.val;
+		return this;
+	}
+
+	public StrictPoint mul(String other){
+		val *= TEMP_POINT.set(other).val;
+		return this;
+	}
+
+	public StrictPoint negate(){
+		val *= -1f;
 		return this;
 	}
 
@@ -124,12 +163,12 @@ public strictfp class StrictPoint {
 	}
 
 	public StrictPoint degRad(){
-		val *= degRad.val;
+		val *= DEG_RAD.val;
 		return this;
 	}
 
 	public StrictPoint radDeg(){
-		val *= radDeg.val;
+		val *= RAD_DEG.val;
 		return this;
 	}
 
@@ -152,6 +191,17 @@ public strictfp class StrictPoint {
 	public boolean isZero (StrictPoint tolerance) {
 		return StrictMath.abs(val) <= tolerance.val;
 	}
+
+	public boolean lessThan(StrictPoint other){return val < other.val;}
+
+	public boolean lessThanOrEqual(StrictPoint other){return val <= other.val;}
+
+	public boolean greaterThan(StrictPoint other){return val > other.val;}
+
+	public boolean greaterThanOrEqual(StrictPoint other){return val >= other.val;}
+
+
+	public float toFloat(){return val;}
 
 	@Override
 	public String toString(){

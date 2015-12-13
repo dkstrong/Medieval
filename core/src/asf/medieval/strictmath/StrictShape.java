@@ -10,6 +10,11 @@ public strictfp class StrictShape {
 	public final StrictVec2 dimensions = new StrictVec2();
 	public final StrictPoint radius = new StrictPoint();
 
+	public StrictShape fromRadius(String r){
+
+		return fromRadius(new StrictPoint(r));
+	}
+
 	public StrictShape fromRadius(StrictPoint r){
 
 		dimensions.x.val = r.val*2f;
@@ -22,6 +27,13 @@ public strictfp class StrictShape {
 		return this;
 	}
 
+	public StrictShape fromExtents(final String xExtent, final String yExtent, final String xCenter, final String yCenter){
+		return fromExtents(new StrictPoint(xExtent),
+			new StrictPoint(yExtent),
+			new StrictPoint(xCenter),
+			new StrictPoint(yCenter)
+			);
+	}
 	public StrictShape fromExtents(final StrictPoint xExtent, final StrictPoint yExtent, final StrictPoint xCenter, final StrictPoint yCenter){
 
 		dimensions.x.val = xExtent.val*2f;

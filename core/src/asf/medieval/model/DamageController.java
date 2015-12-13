@@ -1,31 +1,32 @@
 package asf.medieval.model;
 
 import asf.medieval.model.steer.InfantryController;
+import asf.medieval.strictmath.StrictPoint;
 
 /**
  * Created by daniel on 11/19/15.
  */
-public class DamageController {
+public strictfp class DamageController {
 	public Token token;
 
-	public float health = 10;
-	public float meleeDefense;
-	public float chargeDefense;
+	public final StrictPoint health = new StrictPoint("10");
+	public final StrictPoint meleeDefense = new StrictPoint("0");
+	public final StrictPoint chargeDefense= new StrictPoint("0");
 
 	public Token attacker;
 
-	public float hitU;
-	public float hitDuration;
+	public final StrictPoint hitU= new StrictPoint("0");
+	public final StrictPoint hitDuration= new StrictPoint("0");
 
 	public DamageController(Token token) {
 		this.token = token;
 	}
 
-	public void update(float delta)
+	public void update(StrictPoint delta)
 	{
 		if(attacker != null)
 		{
-			hitU = attacker.attack.attackU;
+			hitU.set(attacker.attack.attackU);
 		}
 
 	}
@@ -35,8 +36,8 @@ public class DamageController {
 
 		if(this.attacker == null && token.attack.target == null){
 			this.attacker = attacker;
-			hitU = 0;
-			hitDuration = attacker.attack.attackDuration;
+			hitU.set(StrictPoint.ZERO);
+			hitDuration.set(attacker.attack.attackDuration);
 
 			((InfantryController) token.agent).setCombatTarget(attacker.agent);
 		}
@@ -48,16 +49,16 @@ public class DamageController {
 		if(this.attacker == attacker)
 		{
 			this.attacker = null;
-			hitU = -1;
-			if(health >0){
+			hitU.set("-1");
+
+			// TODO; i think this is what causes the issue of rotating dead bodies
+			// when did clearTarget() isnt called and i dont think the PostBehavior
+			// gets reset
+			if(health.val >StrictPoint.ZERO.val){
 				((InfantryController)token.agent).clearTarget();
 			}else{
 				((InfantryController)token.agent).setDeath(token.location);
 			}
-
-
-
-
 		}
 
 	}

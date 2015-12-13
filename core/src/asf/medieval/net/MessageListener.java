@@ -7,7 +7,7 @@ import com.esotericsoftware.kryonet.Listener;
 /**
  * Created by daniel on 11/16/15.
  */
-class MessageListener extends Listener {
+public strictfp class MessageListener extends Listener {
 	private GameHost gameHost;
 
 	public MessageListener(GameHost gameHost) {

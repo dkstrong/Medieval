@@ -5,7 +5,7 @@ import asf.medieval.model.steer.InfantryController;
 /**
  * Created by daniel on 11/19/15.
  */
-public class BarracksController {
+public strictfp class BarracksController {
 	public Token token;
 
 

@@ -21,7 +21,7 @@ import java.io.*;
 /**
  * Created by daniel on 11/15/15.
  */
-public class GameServer implements Disposable, GameHost {
+public strictfp class GameServer implements Disposable, GameHost {
 	private Server server;
 	private boolean bound = false;
 

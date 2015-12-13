@@ -3,6 +3,8 @@ package asf.medieval.view.editor;
 import asf.medieval.CursorId;
 import asf.medieval.model.ModelId;
 import asf.medieval.model.ModelInfo;
+import asf.medieval.strictmath.StrictVec2;
+import asf.medieval.strictmath.VecHelper;
 import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.ModelViewInfo;
@@ -175,7 +177,8 @@ public class BuilderEditorPane implements EditorNode {
 		if (!enabled) return false;
 		if (currentModelBuildNode != null) {
 			if (button == Input.Buttons.LEFT) {
-				world.scenario.newResource(UtMath.toVector2(translation, new Vector2()), currentModelBuildNode.modelId);
+				StrictVec2 loc = VecHelper.toVec2(translation, new StrictVec2());
+				world.scenario.newResource(loc, currentModelBuildNode.modelId);
 				if (!Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					buttonGroup.uncheckAll();
 				}

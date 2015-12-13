@@ -7,7 +7,7 @@ import java.util.Arrays;
 /**
  * Created by daniel on 11/15/15.
  */
-public class Player {
+public strictfp class Player {
 
 	public static final Player NULL_PLAYER = new Player();
 

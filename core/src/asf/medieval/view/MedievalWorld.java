@@ -5,7 +5,6 @@ import asf.medieval.MedievalApp;
 import asf.medieval.model.ModelId;
 import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.Scenario;
-import asf.medieval.model.ScenarioRand;
 import asf.medieval.model.steer.StructureController;
 import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
@@ -15,6 +14,8 @@ import asf.medieval.net.GameServerConfig;
 import asf.medieval.net.OfflineGameClient;
 import asf.medieval.model.Player;
 import asf.medieval.net.User;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileManager;
@@ -25,8 +26,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -43,7 +42,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.Random;
@@ -60,7 +58,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		public String hostName;
 		public boolean client;
 		public boolean editor;
-		public Random random;
+		public long scenarioSeed;
 	}
 
 	public final MedievalApp app;
@@ -146,7 +144,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		gameObjects = new Array<View>(false, 128, View.class);
 
 
-		scenario =new Scenario(new ScenarioRand(settings.random) );
+		scenario =new Scenario(settings.scenarioSeed);
 
 		if(settings.server){
 			gameServer = new GameServer();
@@ -245,12 +243,20 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	}
 
 	private void onAllPlayersReady(){
-		for(int i= 0; i<0; i++){
-			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(1, new Vector2(0,0), ModelId.Skeleton.ordinal()),30,50,-50,50);
+		StrictPoint thirty = new StrictPoint("10");
+		StrictPoint negThirty = new StrictPoint("-10");
+		StrictPoint fifty = new StrictPoint("90");
+		StrictPoint negFifty = new StrictPoint("-70");
+		for(int i= 0; i<10; i++){
+			scenario.setRandomNonOverlappingPosition(
+				scenario.newSoldier(1, new StrictVec2(), ModelId.Knight.ordinal()),
+				thirty,fifty,negFifty,fifty);
 		}
 
-		for(int i= 0; i<0; i++){
-			scenario.setRandomNonOverlappingPosition(scenario.newSoldier(2, new Vector2(0,0), ModelId.Skeleton.ordinal()),-50,-30,-50,50 );
+		for(int i= 0; i<10; i++){
+			scenario.setRandomNonOverlappingPosition(
+				scenario.newSoldier(2, new StrictVec2(), ModelId.Skeleton.ordinal()),
+				negFifty,negThirty,negFifty,fifty );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));
 		//scenario.newSoldier(1,new Vector2(-74.47005f, 169.50835f), true);
@@ -306,9 +312,6 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			if (!paused) {
 				//hudSpatial.updateInput(delta);
 				gameClient.updateGameFrame(delta);
-				float modelDelta = 0.05f;
-				float deltaRatio = modelDelta / delta;
-				float adjustedDelta = delta/deltaRatio;
 				for (final View view : gameObjects) {
 					view.update(delta);
 				}

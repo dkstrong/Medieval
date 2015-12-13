@@ -1,6 +1,8 @@
 package asf.medieval.model.steer.behavior;
 
 import asf.medieval.model.steer.SteerController;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -8,26 +10,26 @@ import com.badlogic.gdx.math.Vector2;
  *
  * Created by daniel on 11/13/15.
  */
-public class Pursuit implements Behavior{
+public strictfp class Pursuit implements Behavior{
 
 	public SteerController agent;
 	public SteerController target;
 
-	private Vector2 force = new Vector2();
+	private StrictVec2 force = new StrictVec2();
+
+	private static final StrictPoint tempPoint = new StrictPoint();
 
 	@Override
-	public void update(float delta) {
-
+	public void update(StrictPoint delta) {
 		newVersion(delta);
-
 	}
 
-	private void newVersion(float delta)
+	private void newVersion(StrictPoint delta)
 	{
-		float distance = agent.getLocation().dst(target.getLocation());
-		float t = distance / agent.getMaxSpeed();
+		StrictPoint distance = agent.getLocation().dst(target.getLocation(),tempPoint);
+		StrictPoint t = distance.div(agent.getMaxSpeed());
 
-		Vector2 targetLocation = target.getFutureLocation(t);
+		StrictVec2 targetLocation = target.getFutureLocation(t);
 
 		// does a basic seek to the future location of the target
 		force.set(targetLocation).sub(agent.getLocation());
@@ -35,13 +37,12 @@ public class Pursuit implements Behavior{
 		force.sub(agent.getVelocity());
 	}
 
-	private void oldVersion(float delta)
+	private void oldVersion(StrictPoint delta)
 	{
-		Vector2 targetLocation = target.getFutureLocation(delta);
+		StrictVec2 targetLocation = target.getFutureLocation(delta);
 		// calculate speed difference to see how far ahead we need to leed
-		float speedDiff = target.getMaxSpeed() - agent.getMaxSpeed();
-		float desiredSpeed = (target.getMaxSpeed() + speedDiff) * delta;
-
+		StrictPoint speedDiff = tempPoint.set(target.getMaxSpeed()).sub(agent.getMaxSpeed());
+		StrictPoint desiredSpeed = speedDiff.add(target.getMaxSpeed()).mul(delta);
 
 		force.set(target.getVelocity()).scl(desiredSpeed);
 		force.add(targetLocation);
@@ -50,7 +51,7 @@ public class Pursuit implements Behavior{
 	}
 
 	@Override
-	public Vector2 getForce() {
+	public StrictVec2 getForce() {
 		return force;
 	}
 }

@@ -2,6 +2,8 @@ package asf.medieval.view;
 
 import asf.medieval.model.ModelId;
 import asf.medieval.model.ModelInfo;
+import asf.medieval.shape.Box;
+import asf.medieval.shape.Shape;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
@@ -15,6 +17,7 @@ import com.badlogic.gdx.utils.IntMap;
 public class ModelViewInfo {
 
 	public String name;
+	public Shape shape;
 	public String[] assetLocation;
 	public String[] idleAnims;
 	public boolean loopWalkAnimation = true;
@@ -55,6 +58,7 @@ public class ModelViewInfo {
 		ModelViewInfo[] store = new ModelViewInfo[ModelId.values().length];
 		ModelViewInfo tree = new ModelViewInfo();
 		tree.name = "Tree";
+		tree.shape = new Box(1f, 7.5f);
 		tree.setAssetLocation("Models/Foliage/Tree.g3db");
 		tree.materialAttributes = new Attribute[]{
 			new IntAttribute(IntAttribute.CullFace, 0),
@@ -64,10 +68,16 @@ public class ModelViewInfo {
 
 		ModelViewInfo church = new ModelViewInfo();
 		church.name = "Church";
+		float churchWidth = 9.5f;
+		float churchHeight = 10f;
+		float churchDepth = 10.2f;
+		church.shape = new Box( churchWidth, churchHeight, churchDepth, churchWidth*0.05f, churchHeight, -churchDepth*0.75f);
 		church.setAssetLocation("Models/Church/Church.g3db");
 
+		Shape infantryShape = new Box(1f, 7.5f);
 		ModelViewInfo knight = new ModelViewInfo();
 		knight.name = "Knight";
+		knight.shape = infantryShape;
 		knight.setAssetLocation("Models/Characters/knight_01.g3db","Models/Loot/Sword/BasicSword.g3db","Models/Loot/Sword/Shield.g3db");
 		knight.setIdleAnims("idle");
 		knight.setWalkAnims("walk");  // sprint
@@ -77,6 +87,7 @@ public class ModelViewInfo {
 
 		ModelViewInfo skeleton = new ModelViewInfo();
 		skeleton.name = "Skeleton";
+		skeleton.shape = infantryShape;
 		skeleton.setAssetLocation("Models/Characters/Skeleton.g3db");
 		skeleton.setIdleAnims("Idle");
 		skeleton.setWalkAnims("Walk");
@@ -86,6 +97,7 @@ public class ModelViewInfo {
 
 		ModelViewInfo rockMonster = new ModelViewInfo();
 		rockMonster.name = "Rock Monster";
+		rockMonster.shape = infantryShape;
 		rockMonster.setAssetLocation("Models/Characters/rockMonster_01.g3db");
 		rockMonster.setIdleAnims("idle");
 		rockMonster.setWalkAnims("walk");
@@ -95,6 +107,7 @@ public class ModelViewInfo {
 
 		ModelViewInfo jimmy = new ModelViewInfo();
 		jimmy.name = "Jimmy";
+		jimmy.shape = infantryShape;
 		jimmy.setAssetLocation("Models/Jimmy/Jimmy_r1.g3db");
 		jimmy.setIdleAnims("Idle01");
 		jimmy.setWalkAnims("MoveForward");

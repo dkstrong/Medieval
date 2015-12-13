@@ -2,6 +2,7 @@ package asf.medieval.view.editor;
 
 import asf.medieval.model.Token;
 import asf.medieval.painter.Painter;
+import asf.medieval.strictmath.VecHelper;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.FileWatcher;
 import asf.medieval.utility.UtMath;
@@ -123,12 +124,14 @@ public class EditorView extends SelectNode implements View, FileWatcher.FileChan
 		*/
 
 		String soldierStatusString = "";
-		Token soldier = world.scenario.getSoldier(1);
+		Token soldier = world.scenario.getSoldier(2);
 		if(soldier != null){
-			soldierStatusString+="Pos: "+UtMath.round(soldier.location,2);
+			soldierStatusString+="Pos: "+soldier.location;
+			soldierStatusString+="\nVel: "+soldier.agent.velocity;
 			soldierStatusString+="\nElevation: "+soldier.elevation;
 			soldierStatusString+="\nDirection: "+soldier.direction;
-			Vector3 normal = world.terrainView.terrain.getWeightedNormalAt(new Vector3(soldier.location.x,0,soldier.location.y), new Vector3());
+
+			Vector3 normal = world.terrainView.terrain.getWeightedNormalAt(VecHelper.toVector3(soldier.location, new Vector3()), new Vector3());
 			soldierStatusString+="\nNormal: "+UtMath.round(normal,2);
 		}
 		baseFpsLabelContainer.getActor().setText(

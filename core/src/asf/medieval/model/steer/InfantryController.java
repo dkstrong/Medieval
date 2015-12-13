@@ -14,45 +14,53 @@ import asf.medieval.model.steer.behavior.Pursuit;
 import asf.medieval.model.steer.behavior.Seek;
 import asf.medieval.model.steer.behavior.Separation;
 import asf.medieval.model.steer.behavior.Wander;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by daniel on 11/18/15.
  */
-public class InfantryController extends SteerController {
+public strictfp class InfantryController extends SteerController {
 
 	public Behavior behavior;
 	public PostBehavior postBehavior;
 
-
 	public InfantryController(Token token) {
 		super(token);
-		maxSpeed = 7f;
-		maxTurnForce = 10;
-		mass = 0.4f;
-		avoidanceRadius = 1f;
+		maxSpeed.set("7");
+		maxTurnForce.set("10");
+		mass.set("0.5");
+		avoidanceRadius.set("1");
 	}
 
-	private final Vector2 force = new Vector2();
+	private static final StrictVec2 force = new StrictVec2();
 
-	public void update(float delta) {
+	private static final StrictPoint tempPoint = new StrictPoint();
+
+	public void update(StrictPoint delta) {
+
 		if (behavior != null) {
 			behavior.update(delta);
 			force.set(behavior.getForce());
 
-			if (mass < Float.MIN_VALUE) {
+			if (mass.lessThanOrEqual(StrictPoint.MIN_ROUNDING_ERROR)) {
 				// very little mass, instantly hit max speed
-				velocity.set(force.nor().scl(maxSpeed));
+				//velocity.set(force).nor().scl(maxSpeed);//.scl(maxSpeed);
+				velocity.set(force).nor().scl(maxSpeed);
 			} else {
 				// use mass to calculate acceleration
 				// TODO: should i multiply by delta here?
-				UtMath.truncate(force, maxTurnForce * delta);
-				force.scl(1f / mass); // convert to acceleration
-				UtMath.truncate(velocity.add(force), maxSpeed);
+				StrictPoint maxTurnForceDelta = tempPoint.set(maxTurnForce).mul(delta);
+				force.truncate(maxTurnForceDelta);
+				force.div(mass);// convert to acceleration
+				velocity.add(force).truncate(maxSpeed);
 			}
 
-			if (!velocity.equals(Vector2.Zero)) {
+			//System.out.println("final velocity: " +velocity +" ("+velocity.len(new StrictPoint())+")");
+
+			if (!velocity.equals(StrictVec2.Zero)) {
 				//System.out.println("velocity: "+velocity);
 				//if (!canStepIntoOtherAgents && agent.isObstructed(tpf)) {
 				//        setVelocity(velocity.negate());
@@ -66,8 +74,8 @@ public class InfantryController extends SteerController {
 			}
 
 		} else {
-			force.set(0, 0);
-			velocity.set(0,0);
+			force.setZero();
+			velocity.setZero();
 		}
 
 		if(postBehavior!=null)
@@ -80,7 +88,7 @@ public class InfantryController extends SteerController {
 		behavior = null;
 	}
 
-	public void setTarget(Vector2 staticTarget) {
+	public void setTarget(StrictVec2 staticTarget) {
 
 		Seek seek = new Seek();
 		seek.agent = this;
@@ -103,9 +111,9 @@ public class InfantryController extends SteerController {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(arrive, 1f);
-		blend.add(avoid, 8f);
-		blend.add(separation, 10f);
+		blend.add(arrive, "1");
+		blend.add(avoid, "8");
+		blend.add(separation, "10");
 		//blend.normalizeWeights();
 
 		behavior = blend;
@@ -129,9 +137,9 @@ public class InfantryController extends SteerController {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(seek, 1);
-		blend.add(avoid, 1);
-		blend.add(separation, 1);
+		blend.add(seek, "1");
+		blend.add(avoid, "1");
+		blend.add(separation, "1");
 		//blend.normalizeWeights();
 
 		behavior = blend;
@@ -154,8 +162,8 @@ public class InfantryController extends SteerController {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(arrive, 1);
-		blend.add(avoid, 4);
+		blend.add(arrive, "1");
+		blend.add(avoid, "4");
 
 		behavior = null;
 
@@ -163,7 +171,7 @@ public class InfantryController extends SteerController {
 
 	}
 
-	public void setDeath(Vector2 deathLocation) {
+	public void setDeath(StrictVec2 deathLocation) {
 		Arrive arrive = new Arrive();
 		arrive.agent = this;
 		arrive.target.set(deathLocation);
@@ -178,8 +186,8 @@ public class InfantryController extends SteerController {
 
 		Blend blend = new Blend();
 		blend.agent = this;
-		blend.add(arrive, 1);
-		blend.add(avoid, 4);
+		blend.add(arrive, "1");
+		blend.add(avoid, "4");
 
 		behavior = null;
 

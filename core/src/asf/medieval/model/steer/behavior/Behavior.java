@@ -1,14 +1,14 @@
 package asf.medieval.model.steer.behavior;
 
-import com.badlogic.gdx.math.Vector2;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
 
 /**
  * Created by Danny on 11/13/2015.
  */
-public interface Behavior {
+public strictfp interface Behavior {
 
+	public void update(StrictPoint delta);
 
-	public void update(float delta);
-
-	public Vector2 getForce();
+	public StrictVec2 getForce();
 }

@@ -1,6 +1,8 @@
 package asf.medieval.model.steer.behavior;
 
 import asf.medieval.model.steer.SteerController;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -13,7 +15,7 @@ import com.badlogic.gdx.utils.Array;
 public strictfp class Separation implements Behavior{
 
 
-	private Vector2 steeringOut = new Vector2();
+	private StrictVec2 steeringOut = new StrictVec2();
 
 	public SteerController agent;
 
@@ -33,48 +35,58 @@ public strictfp class Separation implements Behavior{
 	 *
 	 */
 
-	private Vector2 temp1 = new Vector2();
-	private Vector2 temp2 = new Vector2();
+	private static final StrictVec2 temp1 = new StrictVec2();
+	private static final StrictVec2 temp2 = new StrictVec2();
+	private static final StrictPoint len2 = new StrictPoint();
 	@Override
-	public void update(float delta) {
-		Vector2 location = agent.getLocation();
-		Vector2 steering = temp1.set(0, 0);
+	public void update(StrictPoint delta) {
+		StrictVec2 location = agent.getLocation();
+		StrictVec2 steering = temp1.setZero();
 
-		Array<SteerController> neighbours = getNeighbors(agent, 5);
+		Array<SteerController> neighbours = getNeighbors(agent, StrictPoint.FIVE);
 
 		for (SteerController o : neighbours) {
 			if (o == agent) {
 				continue;
 			}
 
-			Vector2 loc = temp2.set(o.getLocation()).sub(location);
-			float len2 = loc.len2();
-			loc.nor();
-			steering.add(loc.scl(-1f).scl(1f / len2).scl(0.25f));
+			StrictVec2 loc = temp2.set(o.getLocation()).sub(location);
+			loc.len2(len2);
+			//loc.nor().scl("-1").div(len2).scl("0.25");
+			loc.nor().negate().div(len2).scl("0.25");
+
+			// instead of negate if i do scl(1,-1) i can get the "forming a line" effect)
+			//loc.nor().scl("-1", "1").div(len2).scl("0.25");
+			// if i use the drection vector of the group for the scale parameter,
+			// i could use it to make the seperation match the line up behavior...
+
+
+			steering.add(loc);
 		}
 
 		steeringOut.set(steering);
 	}
 
-
-	private Array<SteerController> getNeighbors(SteerController me, float withinRadius) {
-		Array<SteerController> nearbyNeighbors = new Array<SteerController>();
+	private static final Array<SteerController> nearbyNeighbors = new Array<SteerController>();
+	private static final StrictPoint r2 = new StrictPoint();
+	private static final StrictPoint d2 = new StrictPoint();
+	private Array<SteerController> getNeighbors(SteerController me, StrictPoint withinRadius) {
 		nearbyNeighbors.clear();
 
-		float r2 = UtMath.sqr(withinRadius);
+		r2.set(withinRadius).sqr();
 
 		for (SteerController agent : nearbyAgents) {
 			if (agent == me) {
 				continue;
-			} else if (agent.getVelocity().equals(Vector2.Zero)) {
+			} else if (agent.getVelocity().equals(StrictVec2.Zero)) {
 				continue;
 			}else if(agent.token.owner.team != me.token.owner.team){
 				//continue;
 			}
 
-			float d2 = me.getLocation().dst2(agent.getLocation());
+			me.getLocation().dst2(agent.getLocation(),d2);
 
-			if (d2 < r2) // if it is within the radius
+			if (d2.val < r2.val) // if it is within the radius
 			{
 				nearbyNeighbors.add(agent);
 			}
@@ -86,7 +98,7 @@ public strictfp class Separation implements Behavior{
 
 
 	@Override
-	public Vector2 getForce() {
+	public StrictVec2 getForce() {
 		return steeringOut;
 	}
 }

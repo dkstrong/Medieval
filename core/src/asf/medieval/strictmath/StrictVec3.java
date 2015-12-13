@@ -10,7 +10,7 @@ public strictfp class StrictVec3 {
 	public final static StrictVec3 Z = new StrictVec3("0", "0", "1");
 	public final static StrictVec3 Zero = new StrictVec3("0", "0", "0");
 
-	public final static StrictPoint TEMP_POINT = new StrictPoint();
+	private final static StrictPoint TEMP_POINT = new StrictPoint();
 
 	public final StrictPoint x;
 	public final StrictPoint y;
@@ -52,6 +52,13 @@ public strictfp class StrictVec3 {
 	}
 
 	public StrictVec3 set (String x, String y, String z) {
+		this.x.set(x);
+		this.y.set(y);
+		this.z.set(z);
+		return this;
+	}
+
+	public StrictVec3 set (StrictPoint x, StrictPoint y, StrictPoint z) {
 		this.x.set(x);
 		this.y.set(y);
 		this.z.set(z);

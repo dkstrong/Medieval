@@ -23,4 +23,6 @@ public interface SelectableView {
 	public boolean isSelected();
 
 	public Vector3 getTranslation();
+
+	public ModelViewInfo getModelViewInfo();
 }

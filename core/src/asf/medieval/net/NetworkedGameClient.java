@@ -10,6 +10,7 @@ import asf.medieval.net.message.Login;
 import asf.medieval.net.message.Register;
 import asf.medieval.net.message.RegistrationRequired;
 import asf.medieval.net.message.RemoveUser;
+import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.utility.UtLog;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -26,7 +27,7 @@ import java.io.IOException;
 /**
  * Created by daniel on 11/15/15.
  */
-public class NetworkedGameClient extends GameClient implements Disposable, GameHost {
+public strictfp class NetworkedGameClient extends GameClient implements Disposable, GameHost {
 
 	public String hostName;
 	public int tcpPort;
@@ -89,13 +90,12 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 	private final IntMap<LongMap<Action>> receivedActions = new IntMap<LongMap<Action>>(8);
 	private LongMap<Action> actionsToSend = new LongMap<Action>(8);
 	private float frameLength = 0.05f; //50 miliseconds is .05       60fps is 0.016
+	private final StrictPoint strictFrameLength = new StrictPoint("0.05");
 	private float accumilatedTime = 0f;
 	private int gameFrame = 0;
 	private int gameFramesPerLocksetpTurn =4;
 
 	private long lockstepFrame=0;
-
-
 
 	@Override
 	public void updateGameFrame(float delta)
@@ -133,7 +133,7 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 					newAction.lockstepFrame = lockstepFrame;
 					actionsToSend.put(lockstepFrame,newAction);
 
-					scenario.update(frameLength);
+					scenario.update(strictFrameLength);
 					gameFrame++;
 				}else{
 					//System.out.println("NO ACTIONS for frame: "+(lockstepFrame+1));
@@ -143,7 +143,7 @@ public class NetworkedGameClient extends GameClient implements Disposable, GameH
 			else
 			{
 				// regular game frame, just update the model
-				scenario.update(frameLength);
+				scenario.update(strictFrameLength);
 				gameFrame++;
 				if(gameFrame == gameFramesPerLocksetpTurn) {
 					gameFrame = 0;

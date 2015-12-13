@@ -1,6 +1,8 @@
 package asf.medieval.model.steer.behavior;
 
 import asf.medieval.model.steer.SteerController;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -8,22 +10,22 @@ import com.badlogic.gdx.math.Vector2;
  *
  * Created by daniel on 11/13/15.
  */
-public class Flee implements Behavior{
+public strictfp class Flee implements Behavior{
 
-	private Vector2 force = new Vector2();
+	private StrictVec2 force = new StrictVec2();
 
 	public SteerController agent;
-	public final Vector2 target = new Vector2();
+	public final StrictVec2 target = new StrictVec2();
 
 	@Override
-	public void update(float delta) {
+	public void update(StrictPoint delta) {
 		force.set(agent.getLocation()).sub(target);
 		force.nor().scl(agent.getMaxSpeed());
 		force.sub(agent.getVelocity());
 	}
 
 	@Override
-	public Vector2 getForce() {
+	public StrictVec2 getForce() {
 		return force;
 	}
 }

@@ -1,37 +1,41 @@
 package asf.medieval.model.steer.behavior;
 
 import asf.medieval.model.steer.SteerController;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by daniel on 11/13/15.
  */
-public class Wander implements Behavior {
+public strictfp class Wander implements Behavior {
 
-	private Vector2 force = new Vector2();
+	private StrictVec2 force = new StrictVec2();
 
 	public SteerController agent;
-	public float circleDistance = 10;
-	public float circleRadius = 1;
-	public float angleChange;
+	public final StrictPoint circleDistance = new StrictPoint(10);
+	public final StrictPoint circleRadius = new StrictPoint(1);
+	public final StrictPoint angleChange = new StrictPoint(0);
 
-	private final Vector2 displacement = new Vector2();
-	private float wanderAngle;
+	private final StrictVec2 displacement = new StrictVec2();
+	private final StrictPoint wanderAngle = new StrictPoint();
+
+	private static final StrictPoint TEMP_POINT = new StrictPoint();
+	private static final StrictPoint TEMP_POINT2 = new StrictPoint();
 
 	public Wander() {
-		// TODO: need to get random instance from scenario or this wont be deterministic
-		angleChange = MathUtils.PI2 * 0.1f;
-		wanderAngle = MathUtils.random.nextFloat() * MathUtils.PI2;
+		angleChange.set(StrictPoint.PI2).mul("0.1");
+		wanderAngle.set(StrictPoint.PI2).mul("0.5"); // TODO: wanderAngle = PI2 * randomFloat, but provided from StrictRand in the Scenario
 	}
 
 	@Override
-	public void update(float delta) {
+	public void update(StrictPoint delta) {
 		// Calculate the circle center
 		force.set(agent.getVelocity()).nor().scl(circleDistance);
 
 		// Calculate the displacement force
-		displacement.set(0,-1).scl(circleRadius);
+		displacement.set("0","-1").scl(circleRadius);
 
 		// Randomly change the vector direction  by making it change its current angle
 		setAngle(displacement, wanderAngle);
@@ -40,20 +44,25 @@ public class Wander implements Behavior {
 		force.add(displacement);
 
 		// Change wanderAngle just a bit, so it won't have the same value in the  next game frame.
-		wanderAngle += MathUtils.random.nextFloat() * angleChange *delta;
+
+		// TODO: TEMP_POINT should be set to randomFloat instead of "0.5", provided from StrictRand
+		TEMP_POINT.set("0.5").mul(angleChange).mul(delta);
+		wanderAngle.add(TEMP_POINT);
 
 
 	}
 
 
-	private static void setAngle(Vector2 vector, float value) {
-		float len = vector.len();
-		vector.x = (float)Math.cos(value) * len;
-		vector.y = (float)Math.sin(value) * len;
+
+	private static void setAngle(StrictVec2 vector, StrictPoint value) {
+		StrictPoint len = vector.len(TEMP_POINT);
+
+		vector.x.set(TEMP_POINT2.set(value).cos().mul(len)); // x = cos(value) * len
+		vector.y.set(TEMP_POINT2.set(value).sin().mul(len)); // y = sin(value) * len
 	}
 
 	@Override
-	public Vector2 getForce() {
+	public StrictVec2 getForce() {
 		return force;
 	}
 }

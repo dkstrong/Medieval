@@ -2,6 +2,8 @@ package asf.medieval.view;
 
 import asf.medieval.model.Command;
 import asf.medieval.model.ModelId;
+import asf.medieval.strictmath.StrictVec2;
+import asf.medieval.strictmath.VecHelper;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -90,7 +92,7 @@ public class HudCommandView implements View,InputProcessor {
 					{
 						Command command = new Command();
 						command.tokenId = ((InfantryView) sgo).token.id;
-						command.location = UtMath.toVector2(lastMoveCommandLocation, new Vector2());
+						command.location = VecHelper.toVec2(lastMoveCommandLocation, new StrictVec2());
 						world.gameClient.sendCommand(command);
 						//sgo.token.setTarget(lastMoveCommandLocation);
 					}
@@ -143,7 +145,7 @@ public class HudCommandView implements View,InputProcessor {
 	public void spawnCommand(int modelId, Vector3 spawnTarget){
 
 		Command buildCommand = new Command();
-		buildCommand.location = UtMath.toVector2(spawnTarget, new Vector2());
+		buildCommand.location = VecHelper.toVec2(spawnTarget, new StrictVec2());
 		buildCommand.modelId = modelId;
 		world.gameClient.sendCommand(buildCommand);
 

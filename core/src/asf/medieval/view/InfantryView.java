@@ -2,7 +2,8 @@ package asf.medieval.view;
 
 import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.Token;
-import asf.medieval.shape.Shape;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.VecHelper;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -22,7 +23,6 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	private MedievalWorld world;
 	public final Token token;
 	public final InfantryController agent;
-	public final Shape shape;
 	private ModelInstance modelInstance;
 	private AnimationController animController;
 	public final Vector3 translation = new Vector3();
@@ -42,7 +42,6 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		this.world = world;
 		this.token = soldierToken;
 		agent = (InfantryController)token.agent;
-		shape = token.shape;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
 		mvi = world.modelViewInfo[soldierToken.modelId];
@@ -78,11 +77,11 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(token.shape.radius *3.5f, token.shape.radius *3.5f);
+		selectionDecal.setDimensions(mvi.shape.radius *3.5f, mvi.shape.radius *3.5f);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
-		translation.set(token.location.x,token.elevation,token.location.y);
+		VecHelper.toVector3(token.location, token.elevation, translation);
 	}
 
 	private Node weaponAttachmentNode;
@@ -112,26 +111,31 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 
 	}
 
+
+	private static StrictPoint tempPoint = new StrictPoint();
+
 	@Override
 	public void update(float delta) {
 		//System.out.println(token.id + ": " + token.location);
 
-		translation.set(token.location.x,token.elevation,token.location.y);
-		rotation.setFromAxisRad(0,1,0,token.direction);
-		float speed = agent.getVelocity().len();
+		VecHelper.toVector3(token.location, token.elevation, translation);
+
+		rotation.setFromAxisRad(0,1,0,token.direction.toFloat());
+
+		float speed = agent.getVelocity().len(tempPoint).toFloat();
 
 
-		if(token.damage != null && token.damage.health <=0){
+		if(token.damage != null && token.damage.health.toFloat() <=0){
 			if (!animController.current.animation.id.startsWith(die[0].id)){
 				animController.animate(die[0].id, 0, -1, 1, 1, this, 0.2f);
 			}
-		}else if(token.attack.attackU >0){
+		}else if(token.attack.attackU.toFloat() >0){
 			if (!animController.current.animation.id.startsWith(attack[0].id)){
-				animController.animate(attack[0].id, 0, -1, 1, attack[0].duration/token.attack.attackDuration, this, 0.2f);
+				animController.animate(attack[0].id, 0, -1, 1, attack[0].duration/token.attack.attackDuration.toFloat(), this, 0.2f);
 			}
-		}else if(token.damage!=null && token.damage.hitU >0){
+		}else if(token.damage!=null && token.damage.hitU.toFloat() >0){
 			if (!animController.current.animation.id.startsWith(hit[0].id)){
-				animController.animate(hit[0].id, 0, -1, 1, hit[0].duration/token.damage.hitDuration, this, 0.2f);
+				animController.animate(hit[0].id, 0, -1, 1, hit[0].duration/token.damage.hitDuration.toFloat(), this, 0.2f);
 			}
 		}else if(speed < 0.75f){
 			if (!animController.current.animation.id.startsWith("Idle"))
@@ -139,7 +143,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		}
 		else
 		{
-			float animSpeed = speed  /agent.getMaxSpeed() * 0.5f;
+			float animSpeed = speed  /agent.getMaxSpeed().toFloat() * 0.65f;
 			if (!animController.current.animation.id.startsWith(walk[0].id)){
 				if(mvi.loopWalkAnimation)
 					animController.animate(walk[0].id, 0, -1, -1, animSpeed, this, 0.2f);
@@ -210,8 +214,9 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	 * or when there is an intersection: the squared distance between the center of this
 	 * object and the point on the ray closest to this object when there is intersection.
 	 */
+	@Override
 	public float intersects(Ray ray) {
-		return shape.intersects(modelInstance.transform, ray);
+		return mvi.shape.intersects(modelInstance.transform, ray);
 	}
 
 	@Override
@@ -232,6 +237,11 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	@Override
 	public Vector3 getTranslation() {
 		return translation;
+	}
+
+	@Override
+	public ModelViewInfo getModelViewInfo() {
+		return mvi;
 	}
 
 	@Override

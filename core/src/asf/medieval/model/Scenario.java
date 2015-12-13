@@ -5,6 +5,9 @@ import asf.medieval.model.steer.SteerGraph;
 import asf.medieval.model.steer.StructureController;
 import asf.medieval.net.User;
 import asf.medieval.shape.Box;
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictRand;
+import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.math.Vector2;
@@ -14,10 +17,10 @@ import com.badlogic.gdx.utils.IntMap;
 /**
  * Created by Daniel Strong on 11/11/2015.
  */
-public class Scenario {
+public strictfp class Scenario {
 	private transient Listener listener;
 
-	public final ScenarioRand rand;
+	public final StrictRand rand;
 	public final ModelInfo[] modelInfo;
 	public transient Terrain terrain;
 
@@ -25,8 +28,8 @@ public class Scenario {
 	public IntMap<Player> players = new IntMap<Player>(2);
 	public Array<Token> tokens = new Array<Token>(false, 256, Token.class);
 
-	public Scenario(ScenarioRand rand) {
-		this.rand = rand;
+	public Scenario(long seed) {
+		this.rand = new StrictRand(seed);
 		modelInfo = ModelInfo.standardConfiguration();
 	}
 
@@ -88,7 +91,7 @@ public class Scenario {
 
 	private int lastTokenId = 0;
 
-	public Token buildToken(int owner, Vector2 location, int modelId){
+	public Token buildToken(int owner, StrictVec2 location, int modelId){
 
 		ModelInfo modelInfo = this.modelInfo[modelId];
 
@@ -96,7 +99,7 @@ public class Scenario {
 			return newStructure(owner, location, modelId);
 		}else{
 			Token barracks = getBarracksToBuild(owner,location, modelId);
-			final Vector2 spawnLoc = barracks.location;
+			final StrictVec2 spawnLoc = barracks.location;
 
 			Token soldier =  newSoldier(owner, spawnLoc, modelId);
 
@@ -107,7 +110,7 @@ public class Scenario {
 		}
 	}
 
-	public Token newSoldier(int owner, Vector2 location, int modelId)
+	public Token newSoldier(int owner, StrictVec2 location, int modelId)
 	{
 		Token token= new Token();
 		++lastTokenId;
@@ -115,7 +118,7 @@ public class Scenario {
 		token.scenario = this;
 		token.owner = players.get(owner);
 		token.modelId = modelId;
-		token.shape = new Box(1f, 7.5f);
+		token.mi = modelInfo[modelId];
 		token.location.set(location);
 		token.attack = new AttackController(token);
 		token.damage = new DamageController(token);
@@ -124,28 +127,25 @@ public class Scenario {
 		tokens.add(token);
 
 		setNonOverlappingPosition(token, location);
-		token.elevation = terrain.getElevation(location.x,location.y);
+		token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
+
 
 		if(listener!=null)
 			listener.onNewToken(token);
 		return token;
 	}
 
-	public Token newStructure(int owner, Vector2 location, int modelId)
+	public Token newStructure(int owner, StrictVec2 location, int modelId)
 	{
-		ModelInfo mi = this.modelInfo[modelId];
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
 		token.modelId = modelId;
-		float width = 9.5f;
-		float height = 10f;
-		float depth = 10.2f;
-		token.shape = new Box( width, height, depth, width*0.05f, height, -depth*0.75f);
+		token.mi = modelInfo[modelId];
 		token.owner = players.get(owner);
 		token.location.set(location);
-		token.elevation = terrain.getElevation(location.x,location.y);
+		token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
 		token.barracks = new BarracksController(token);
 		token.agent = new StructureController(token);
 		steerGraph.agents.add(token.agent);
@@ -156,16 +156,16 @@ public class Scenario {
 		return token;
 	}
 
-	public Token newResource(Vector2 location, int modelId){
+	public Token newResource(StrictVec2 location, int modelId){
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
 		token.modelId = modelId;
-		token.shape = new Box(1,7.5f);
+		token.mi = modelInfo[modelId];
 		token.owner = Player.NULL_PLAYER;
 		token.location.set(location);
-		token.elevation = terrain.getElevation(location.x,location.y);
+		token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
 		token.resource = new ResourceController(token);
 
 		token.agent = new StructureController(token);
@@ -178,10 +178,13 @@ public class Scenario {
 	}
 
 	private Array<Token> tempTokens = new Array<Token>(false, 16, Token.class);
+	private static final StrictPoint tempPoint = new StrictPoint();
+	private static final StrictPoint tempPoint2 = new StrictPoint();
+	private static final StrictPoint tempPoint3 = new StrictPoint();
 
-	public Token getBarracksToBuild(int owner, Vector2 location, int modelId) {
+	public Token getBarracksToBuild(int owner, StrictVec2 location, int modelId) {
 		Token closestBarracks = null;
-		float closestDist2 = Float.MAX_VALUE;
+		StrictPoint closestDist2 = tempPoint.set(StrictPoint.MAX_VALUE);
 		for (Token token : tokens) {
 			if (token.owner.playerId == owner) {
 				if (token.barracks != null) {
@@ -189,10 +192,10 @@ public class Scenario {
 						return token;
 					}else if(closestBarracks == null){
 						closestBarracks = token;
-						closestDist2 = token.location.dst2(location);
+						token.location.dst2(location,closestDist2);
 					}else{
-						float dist2 = token.location.dst2(location);
-						if(dist2 < closestDist2){
+						StrictPoint dist2 = token.location.dst2(location,tempPoint2);
+						if(dist2.val < closestDist2.val){
 							closestBarracks = token;
 							closestDist2 = dist2;
 						}
@@ -206,16 +209,21 @@ public class Scenario {
 	}
 
 
-	public void setRandomNonOverlappingPosition (Token token, float minX, float maxX, float minY, float maxY) {
+	public void setRandomNonOverlappingPosition (Token token,
+						     StrictPoint minX, StrictPoint maxX,
+						     StrictPoint minY, StrictPoint maxY) {
 		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
-		final float eps = 0.001f;
+		StrictPoint eps = tempPoint.set("0.001");
 		SET_NEW_POS:
 		while (--maxTries >= 0) {
-			token.location.set(rand.range(minX,maxX),rand.range(minY,maxY));
+
+			rand.range(minX,maxX,token.location.x);
+			rand.range(minY,maxY,token.location.y);
+
 			for (Token t : tokens) {
 				if(t!= token){
 					Token other =  t;
-					if(UtMath.abs(token.location.x-other.location.x) <eps && UtMath.abs(token.location.y-other.location.y) <eps){
+					if(token.location.epsilonEquals(other.location, eps)){
 						continue SET_NEW_POS;
 					}
 				}
@@ -225,7 +233,7 @@ public class Scenario {
 		throw new IllegalStateException("Probable infinite loop detected");
 	}
 
-	public void setNonOverlappingPosition(Token token, Vector2 location )
+	public void setNonOverlappingPosition(Token token, StrictVec2 location )
 	{
 		// THis is a workaround for the bug where if two tokens are in the same location, one of them
 		// will end up with a location of "NaN" i suppose due to the steering system.
@@ -233,7 +241,9 @@ public class Scenario {
 		// the soldiers...
 		token.location.set(location);
 		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
-		final float eps = 0.001f;
+		StrictPoint eps = tempPoint.set("0.001");
+		StrictPoint radius = token.mi.shape.radius;
+		StrictPoint negRadius = tempPoint2.set(token.mi.shape.radius).negate();
 		SET_NEW_POS:
 		while (--maxTries >= 0) {
 			for (Token t : tokens) {
@@ -241,9 +251,10 @@ public class Scenario {
 				if(t!= token){
 					Token other =  t;
 					//if(token.location.dst(other.location) <= token.radius){
-					if(UtMath.abs(token.location.x-other.location.x) <eps && UtMath.abs(token.location.y-other.location.y) <eps){
-						token.location.x = location.x + rand.range(-token.shape.radius,token.shape.radius);
-						token.location.y = location.y + rand.range(-token.shape.radius,token.shape.radius);
+
+					if(token.location.epsilonEquals(other.location, eps)){
+						rand.range(negRadius,radius,token.location.x).add(location.x);
+						rand.range(negRadius,radius,token.location.y).add(location.y);
 						continue SET_NEW_POS;
 					}
 				}
@@ -255,7 +266,7 @@ public class Scenario {
 	}
 
 
-	public void update(float delta)
+	public void update(StrictPoint delta)
 	{
 
 
