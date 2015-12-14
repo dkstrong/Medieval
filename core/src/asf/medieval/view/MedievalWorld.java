@@ -3,6 +3,7 @@ package asf.medieval.view;
 import asf.medieval.CursorId;
 import asf.medieval.MedievalApp;
 import asf.medieval.model.ModelId;
+import asf.medieval.model.TerrainInfo;
 import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.Scenario;
 import asf.medieval.model.steer.StructureController;
@@ -16,6 +17,7 @@ import asf.medieval.model.Player;
 import asf.medieval.net.User;
 import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.StrictVec2;
+import asf.medieval.strictmath.StrictVec3;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileManager;
@@ -201,7 +203,8 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 			addGameObject(terrainView =new TerrainView(this));
 			//addGameObject(new TerrainDebugView(this));
 
-			scenario.terrain = terrainView.terrain;
+			scenario.terrain = new TerrainInfo();
+			scenario.terrain.setFieldDataFromTerrain(terrainView.terrain);
 
 			scenario.setListener(this);
 
@@ -428,10 +431,15 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		}
 	}
 
+	private final StrictVec2 tempCoord = new StrictVec2();
+	private final StrictPoint tempElevation = new StrictPoint();
+
 	@Override
 	public float getElevationAt(float x, float z)
 	{
-		return scenario.terrain.getElevation(x,z);
+		tempCoord.x.fromFloat(x);
+		tempCoord.y.fromFloat(z);
+		return scenario.terrain.getElevation(tempCoord,tempElevation).val;
 
 	}
 }

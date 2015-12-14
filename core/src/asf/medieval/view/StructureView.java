@@ -115,7 +115,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 		if(selected)
 		{
 			selectionDecal.setPosition(translation);
-			world.scenario.terrain.getWeightedNormalAt(translation, vec1);
+			world.terrainView.terrain.getWeightedNormalAt(translation, vec1);
 			selectionDecal.setRotation(vec1, Vector3.Y);
 			vec1.scl(0.1f);
 			selectionDecal.translate(vec1);

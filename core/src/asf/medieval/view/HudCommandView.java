@@ -52,7 +52,7 @@ public class HudCommandView implements View,InputProcessor {
 		if(spacebarDown || forceSpacebarTimer>0)
 		{
 			moveCommandDecal.setPosition(lastMoveCommandLocation);
-			world.scenario.terrain.getWeightedNormalAt(lastMoveCommandLocation, vec1);
+			world.terrainView.terrain.getWeightedNormalAt(lastMoveCommandLocation, vec1);
 			moveCommandDecal.setRotation(vec1, Vector3.Y);
 			vec1.scl(0.11f);
 			moveCommandDecal.translate(vec1);
@@ -71,7 +71,7 @@ public class HudCommandView implements View,InputProcessor {
 		//storeWorldCoord.set(ray.direction).scl(distance).add(ray.origin);
 
 
-		world.scenario.terrain.intersect(ray, storeWorldCoord);
+		world.terrainView.terrain.intersect(ray, storeWorldCoord);
 
 
 		return ray;

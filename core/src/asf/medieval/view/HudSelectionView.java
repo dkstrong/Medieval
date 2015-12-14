@@ -125,7 +125,7 @@ public class HudSelectionView implements View,InputProcessor {
 	private void directSelect(int screenX, int screenY)
 	{
 		Ray ray = world.cameraManager.cam.getPickRay(screenX, screenY);
-		final boolean intersectsTerrain = world.scenario.terrain.intersect(ray, terrainIntersectionPoint);
+		final boolean intersectsTerrain = world.terrainView.terrain.intersect(ray, terrainIntersectionPoint);
 		final float groundDst2 = intersectsTerrain ? ray.origin.dst2(terrainIntersectionPoint) : Float.MAX_VALUE;
 
 		SelectableView closestSgo = null;
@@ -186,7 +186,7 @@ public class HudSelectionView implements View,InputProcessor {
 						getScreenCord(tokenCenterWorldCoord, tokenCenterScreenCoord);
 
 						Ray ray = world.cameraManager.cam.getPickRay(tokenCenterScreenCoord.x, tokenCenterScreenCoord.y);
-						final boolean intersectsTerrain = world.scenario.terrain.intersect(ray, terrainIntersectionPoint);
+						final boolean intersectsTerrain = world.terrainView.terrain.intersect(ray, terrainIntersectionPoint);
 						final float groundDst2 = intersectsTerrain ? ray.origin.dst2(terrainIntersectionPoint) : Float.MAX_VALUE;
 						final float viewDst2 = ray.origin.dst2(tokenCenterWorldCoord);
 

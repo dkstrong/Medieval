@@ -320,11 +320,19 @@ public strictfp class StrictVec3 {
 		return this;
 	}
 
+	/*
 	public StrictVec3 lerp (StrictVec3 target, StrictPoint alpha) {
 		final float invAlpha = 1.0f - alpha.val;
 		this.x.val = (x.val * invAlpha) + (target.x.val * alpha.val);
 		this.y.val = (y.val * invAlpha) + (target.y.val * alpha.val);
 		this.z.val = (z.val * invAlpha) + (target.z.val * alpha.val);
+		return this;
+	}
+	 */
+	public StrictVec3 lerp (StrictVec3 target, StrictPoint alpha) {
+		x.val += alpha.val * (target.x.val - x.val);
+		y.val += alpha.val * (target.y.val - y.val);
+		z.val += alpha.val * (target.z.val - z.val);
 		return this;
 	}
 

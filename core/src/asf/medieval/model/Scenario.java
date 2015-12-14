@@ -22,7 +22,7 @@ public strictfp class Scenario {
 
 	public final StrictRand rand;
 	public final ModelInfo[] modelInfo;
-	public transient Terrain terrain;
+	public TerrainInfo terrain;
 
 	public final SteerGraph steerGraph = new SteerGraph();
 	public IntMap<Player> players = new IntMap<Player>(2);
@@ -30,7 +30,7 @@ public strictfp class Scenario {
 
 	public Scenario(long seed) {
 		this.rand = new StrictRand(seed);
-		modelInfo = ModelInfo.standardConfiguration();
+		this.modelInfo = ModelInfo.standardConfiguration();
 	}
 
 	public void setListener(Listener listener) {
@@ -127,7 +127,9 @@ public strictfp class Scenario {
 		tokens.add(token);
 
 		setNonOverlappingPosition(token, location);
-		token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
+
+		terrain.getElevation(location, token.elevation);
+		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
 
 
 		if(listener!=null)
@@ -145,7 +147,8 @@ public strictfp class Scenario {
 		token.mi = modelInfo[modelId];
 		token.owner = players.get(owner);
 		token.location.set(location);
-		token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
+		terrain.getElevation(location, token.elevation);
+		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
 		token.barracks = new BarracksController(token);
 		token.agent = new StructureController(token);
 		steerGraph.agents.add(token.agent);
@@ -165,7 +168,8 @@ public strictfp class Scenario {
 		token.mi = modelInfo[modelId];
 		token.owner = Player.NULL_PLAYER;
 		token.location.set(location);
-		token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
+		terrain.getElevation(location, token.elevation);
+		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
 		token.resource = new ResourceController(token);
 
 		token.agent = new StructureController(token);

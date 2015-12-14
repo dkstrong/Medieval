@@ -38,10 +38,8 @@ public strictfp class Token {
 			agent.update(delta);
 		}
 
-		// TODO: terrain is not strict..
-		// TODO: need to have a seperate model to store strict points of the terrain
-		// used for getting elevation values..
-		elevation.val = scenario.terrain.getElevation(location.x.val,location.y.val);
+		scenario.terrain.getElevation(location, elevation);
+		//elevation.val = scenario.terrain.getElevation(location.x.val,location.y.val);
 
 	}
 
