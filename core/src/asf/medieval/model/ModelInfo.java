@@ -1,8 +1,6 @@
 package asf.medieval.model;
 
-import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.StrictShape;
-import com.badlogic.gdx.utils.IntMap;
 
 /**
  * Created by daniel on 12/4/15.
@@ -11,8 +9,8 @@ public strictfp class ModelInfo {
 
 	public StrictShape shape;
 
-	public boolean resource;
-	public int resourceId;
+	public boolean mine;
+	public int mineResourceId;
 
 	public boolean structure;
 	public int[] buildCosts;
@@ -29,8 +27,9 @@ public strictfp class ModelInfo {
 		ModelInfo tree = new ModelInfo();
 		tree.shape = new StrictShape().fromRadius("1");
 		tree.structure = true;
-		tree.resource = true;
-		tree.resourceId = ResourceId.Wood.ordinal();
+		tree.mine = true;
+		tree.mineResourceId = ResourceId.Wood.ordinal();
+
 
 		ModelInfo church = new ModelInfo();
 		church.shape = new StrictShape().fromExtents("9.5", "10.2", "0","0");

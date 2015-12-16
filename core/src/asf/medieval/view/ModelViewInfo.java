@@ -59,7 +59,7 @@ public class ModelViewInfo {
 		ModelViewInfo tree = new ModelViewInfo();
 		tree.name = "Tree";
 		tree.shape = new Box(1f, 7.5f);
-		tree.setAssetLocation("Models/Foliage/Tree.g3db");
+		tree.setAssetLocation("Models/Foliage/Tree.g3db","Models/Mineables/WoodLog.g3db","Models/Mineables/WoodCut.g3db");
 		tree.materialAttributes = new Attribute[]{
 			new IntAttribute(IntAttribute.CullFace, 0),
 			new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA),
@@ -72,7 +72,7 @@ public class ModelViewInfo {
 		float churchHeight = 10f;
 		float churchDepth = 10.2f;
 		church.shape = new Box( churchWidth, churchHeight, churchDepth, churchWidth*0.05f, churchHeight, -churchDepth*0.75f);
-		church.setAssetLocation("Models/Church/Church.g3db");
+		church.setAssetLocation("Models/Structures/Church.g3db");
 
 		Shape infantryShape = new Box(1f, 7.5f);
 		ModelViewInfo knight = new ModelViewInfo();

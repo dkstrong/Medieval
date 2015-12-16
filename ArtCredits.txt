@@ -22,6 +22,46 @@ Danimal
 http://opengameart.org/content/mecha-training-dummy
 reanimated by Daniel Strong
 
+### Structures
+
+Stone House
+sandsound
+http://opengameart.org/content/buildings-lowpoly
+CC-BY-SA
+
+
+Military keep, related assets
+AlKoponen
+http://www.sharecg.com/v/73627/browse/5/3D-Model/AK-Poorlords-keep
+
+Wooden shack
+bishop
+http://www.blendswap.com/blends/view/68534
+edited by Daniel Strong
+
+Desert Shack
+hjmediastudios
+http://www.blendswap.com/blends/view/47607
+
+Farm
+DeadKir
+http://opengameart.org/content/farm-0
+GPL
+
+
+Wooden Log
+PantherOne
+http://opengameart.org/content/wooden-log
+CC-BY-SA
+modified by daniel strong
+
+Wood Log Texture
+Dakal
+http://opengameart.org/node/9288
+
+Basket Model
+sandsound
+http://opengameart.org/content/baskets
 
 ### Doors, Crates, Traps, Switches, etc
 Ceramic Pitcher

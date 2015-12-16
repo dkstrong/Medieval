@@ -1,11 +1,9 @@
 package asf.medieval.view.editor;
 
-import asf.medieval.CursorId;
 import asf.medieval.model.ModelId;
 import asf.medieval.model.ModelInfo;
 import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.strictmath.VecHelper;
-import asf.medieval.utility.UtMath;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.ModelViewInfo;
 import com.badlogic.gdx.Gdx;
@@ -13,19 +11,16 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 /**
@@ -178,7 +173,7 @@ public class BuilderEditorPane implements EditorNode {
 		if (currentModelBuildNode != null) {
 			if (button == Input.Buttons.LEFT) {
 				StrictVec2 loc = VecHelper.toVec2(translation, new StrictVec2());
-				world.scenario.newResource(loc, currentModelBuildNode.modelId);
+				world.scenario.newMineable(loc, currentModelBuildNode.modelId);
 				if (!Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					buttonGroup.uncheckAll();
 				}

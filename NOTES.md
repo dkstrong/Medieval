@@ -41,3 +41,47 @@ it doesnt trigger the confirmation code
 Graphics todo:
 
 frustum culling for infantry and structures. use their collision boxes as bounding boxes...
+
+
+
+
+
+
+
+
+
+
+
+
+== Mining and Resources
+
+Gold - collected through central building based on time (no worker needed)
+Food - collected from farm structures to stockpile structure
+Wood - collected from tree mine, taken to lumber structure, taken to stockpile structure
+Stone - collected from stone mine, tak
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

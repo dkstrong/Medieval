@@ -1,10 +1,8 @@
 package asf.medieval.model;
 
 import asf.medieval.model.steer.SteerController;
-import asf.medieval.shape.Shape;
 import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.StrictVec2;
-import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -22,7 +20,7 @@ public strictfp class Token {
 	public AttackController attack;
 	public DamageController damage;
 	public BarracksController barracks;
-	public ResourceController resource;
+	public MineController mineable;
 
 	public void update(StrictPoint delta)
 	{

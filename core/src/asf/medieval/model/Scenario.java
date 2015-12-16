@@ -4,13 +4,10 @@ import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.steer.SteerGraph;
 import asf.medieval.model.steer.StructureController;
 import asf.medieval.net.User;
-import asf.medieval.shape.Box;
 import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.StrictRand;
 import asf.medieval.strictmath.StrictVec2;
-import asf.medieval.terrain.Terrain;
 import asf.medieval.utility.UtMath;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 
@@ -159,7 +156,7 @@ public strictfp class Scenario {
 		return token;
 	}
 
-	public Token newResource(StrictVec2 location, int modelId){
+	public Token newMineable(StrictVec2 location, int modelId){
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
@@ -170,7 +167,7 @@ public strictfp class Scenario {
 		token.location.set(location);
 		terrain.getElevation(location, token.elevation);
 		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
-		token.resource = new ResourceController(token);
+		token.mineable = new MineController(token);
 
 		token.agent = new StructureController(token);
 		steerGraph.agents.add(token.agent);

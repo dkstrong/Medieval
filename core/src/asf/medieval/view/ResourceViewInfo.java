@@ -1,7 +1,6 @@
 package asf.medieval.view;
 
 import asf.medieval.model.ResourceId;
-import com.badlogic.gdx.utils.IntMap;
 
 /**
  * Created by daniel on 12/5/15.

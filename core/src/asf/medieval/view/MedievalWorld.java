@@ -257,8 +257,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		}
 
 		for(int i= 0; i<10; i++){
+//			scenario.setRandomNonOverlappingPosition(
+//				scenario.newSoldier(2, new StrictVec2(), ModelId.Skeleton.ordinal()),
+//				negFifty,negThirty,negFifty,fifty );
+
 			scenario.setRandomNonOverlappingPosition(
-				scenario.newSoldier(2, new StrictVec2(), ModelId.Skeleton.ordinal()),
+				scenario.newMineable(new StrictVec2(), ModelId.Tree.ordinal()),
 				negFifty,negThirty,negFifty,fifty );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));
