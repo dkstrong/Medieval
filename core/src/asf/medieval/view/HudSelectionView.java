@@ -167,7 +167,8 @@ public class HudSelectionView implements View,InputProcessor {
 			{
 				SelectableView sgo = (SelectableView) view;
 				sgo.setSelected(false);
-				if(canSelectToken(sgo.getToken())){
+				if(sgo instanceof InfantryView && canSelectToken(sgo.getToken())){
+					InfantryView infantryView = (InfantryView) sgo;
 					// TODO: this treats the selectable spot as a point in space, isntead it should be a box
 					// TODO: the box should be the same as the tokens shape, but only half the height
 					// TODO: so that only the bottom half of the token is box selectable.
@@ -179,9 +180,10 @@ public class HudSelectionView implements View,InputProcessor {
 						// TODO: check for obstruction by structures..
 						// TODO: will need to make some kind of "terrainish" array that stores
 						// TODO: the terrain and structures and anything else that obstructs selection
+
 						tokenCenterWorldCoord.set(sgo.getTranslation()).
 							add(	0,
-								sgo.getModelViewInfo().shape.dimensions.y/2f,
+								infantryView.mvi.shape.dimensions.y/2f,
 								0);
 						getScreenCord(tokenCenterWorldCoord, tokenCenterScreenCoord);
 

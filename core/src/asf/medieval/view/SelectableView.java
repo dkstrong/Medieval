@@ -24,5 +24,4 @@ public interface SelectableView {
 
 	public Vector3 getTranslation();
 
-	public ModelViewInfo getModelViewInfo();
 }

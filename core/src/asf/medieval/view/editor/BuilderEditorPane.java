@@ -1,11 +1,14 @@
 package asf.medieval.view.editor;
 
-import asf.medieval.model.ModelId;
-import asf.medieval.model.ModelInfo;
+import asf.medieval.model.MilitaryId;
+import asf.medieval.model.MilitaryInfo;
+import asf.medieval.model.StructureId;
+import asf.medieval.model.StructureInfo;
 import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.strictmath.VecHelper;
 import asf.medieval.view.MedievalWorld;
 import asf.medieval.view.ModelViewInfo;
+import asf.medieval.view.StructureViewInfo;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -60,7 +63,7 @@ public class BuilderEditorPane implements EditorNode {
 		toolTable.row();
 		toolTable.add(new Label("Resources", world.app.skin));
 
-		ModelBuildMapping tree = new ModelBuildMapping(ModelId.Tree.ordinal());
+		ModelBuildMapping tree = new ModelBuildMapping(StructureId.Tree);
 
 
 		buttonGroup = new ButtonGroup<Button>();
@@ -173,7 +176,7 @@ public class BuilderEditorPane implements EditorNode {
 		if (currentModelBuildNode != null) {
 			if (button == Input.Buttons.LEFT) {
 				StrictVec2 loc = VecHelper.toVec2(translation, new StrictVec2());
-				world.scenario.newMineable(loc, currentModelBuildNode.modelId);
+				world.scenario.newMineable(loc, currentModelBuildNode.structureId.ordinal());
 				if (!Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					buttonGroup.uncheckAll();
 				}
@@ -214,18 +217,32 @@ public class BuilderEditorPane implements EditorNode {
 	private class ModelBuildMapping implements EventListener {
 		public TextButton button;
 
-		public final int modelId;
+		public StructureId structureId;
+		public MilitaryId militaryId;
 		public ModelInstance modelInstance;
 
-
-		public ModelBuildMapping(int modelId) {
-			ModelViewInfo mvi = world.modelViewInfo[modelId];
-			ModelInfo mi = world.scenario.modelInfo[modelId];
-			button = new TextButton(mvi.name, world.app.skin, "toggle");
+		public ModelBuildMapping(StructureId structureId) {
+			this.structureId = structureId;
+			StructureViewInfo svi = world.structureViewInfo[structureId.ordinal()];
+			StructureInfo si = world.scenario.structureInfo[structureId.ordinal()];
+			button = new TextButton(svi.name, world.app.skin, "toggle");
 			button.setUserObject(this);
 			button.addListener(this);
 
-			this.modelId = modelId;
+
+			Model model = world.assetManager.get(svi.assetLocation[0]);
+			modelInstance = new ModelInstance(model);
+
+
+		}
+
+		public ModelBuildMapping(MilitaryId militaryId) {
+			this.militaryId = militaryId;
+			ModelViewInfo mvi = world.modelViewInfo[militaryId.ordinal()];
+			MilitaryInfo mi = world.scenario.militaryInfo[militaryId.ordinal()];
+			button = new TextButton(mvi.name, world.app.skin, "toggle");
+			button.setUserObject(this);
+			button.addListener(this);
 
 			Model model = world.assetManager.get(mvi.assetLocation[0]);
 			modelInstance = new ModelInstance(model);

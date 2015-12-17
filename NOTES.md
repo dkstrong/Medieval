@@ -61,6 +61,10 @@ Wood - collected from tree mine, taken to lumber structure, taken to stockpile s
 Stone - collected from stone mine, tak
 
 
+== Population
+
+number of houses represent max population (workers)
+soldiers are purchased at barracks and require a build time, soldiers slowly drain food and gold
 
 
 

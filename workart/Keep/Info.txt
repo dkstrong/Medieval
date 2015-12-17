@@ -1,0 +1,34 @@
+----------------------------------------------------------
+Sources:
+
+http://alkoponen.deviantart.com/
+http://www.sharecg.com/pf/full_uploads.php?pf_user_name=keppu
+
+----------------------------------------------------------
+
+Poorlord's keep. Name tells it all. Very down to earth, dirty keep without any fancies. Dude so poor, can't even buy towers for his keep..
+
+Learnt a few things AO baking and UVW mapping. Basically how wasteful I'm with space. Well next time more economical with the space.
+
+If you have any issues, or there is something I could have done better, please let me know. Your input is appreciated!
+
+----------------------------------------------------------
+
+AK _objects_002_poorlords_keep
+
+Model: 1117 Tris .fbx + .obj
+
+Textures: 24-bit .TGA format | 1024px - 4096px size | Diffusal + Specular + Normal maps
+
+Usage:  Free for use in any project, non-commercial or commercial. Please credit and if possible I would like to see your work! :)
+
+Materials used: 
+http://cgtextures.com/texview.php?id=66162
+http://cgtextures.com/texview.php?id=53684
+http://cgtextures.com/texview.php?id=40389
+http://cgtextures.com/texview.php?id=53686
+http://cgtextures.com/texview.php?id=87462
+http://cgtextures.com/texview.php?id=8851
+http://cgtextures.com/texview.php?id=48014
+http://cgtextures.com/texview.php?id=88647
+http://cgtextures.com/texview.php?id=46432

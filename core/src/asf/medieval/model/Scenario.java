@@ -18,7 +18,9 @@ public strictfp class Scenario {
 	private transient Listener listener;
 
 	public final StrictRand rand;
-	public final ModelInfo[] modelInfo;
+	public final StructureInfo[] structureInfo;
+	public final WorkerInfo[] workerInfo;
+	public final MilitaryInfo[] militaryInfo;
 	public TerrainInfo terrain;
 
 	public final SteerGraph steerGraph = new SteerGraph();
@@ -27,7 +29,9 @@ public strictfp class Scenario {
 
 	public Scenario(long seed) {
 		this.rand = new StrictRand(seed);
-		this.modelInfo = ModelInfo.standardConfiguration();
+		this.structureInfo = StructureInfo.standardConfiguration();
+		this.workerInfo = WorkerInfo.standardConfiguration();
+		this.militaryInfo = MilitaryInfo.standardConfiguration();
 	}
 
 	public void setListener(Listener listener) {
@@ -88,24 +92,30 @@ public strictfp class Scenario {
 
 	private int lastTokenId = 0;
 
-	public Token buildToken(int owner, StrictVec2 location, int modelId){
+	public Token buildStructure(int owner,StrictVec2 location, int structureId){
+		StructureInfo structure = structureInfo[structureId];
+		return newStructure(owner, location, structureId);
 
-		ModelInfo modelInfo = this.modelInfo[modelId];
-
-		if(modelInfo.structure){
-			return newStructure(owner, location, modelId);
-		}else{
-			Token barracks = getBarracksToBuild(owner,location, modelId);
-			final StrictVec2 spawnLoc = barracks.location;
-
-			Token soldier =  newSoldier(owner, spawnLoc, modelId);
-
-			InfantryController infantry = (InfantryController)soldier.agent;
-			infantry.setTarget(location);
-
-			return soldier;
-		}
 	}
+
+	public Token buildWorker(int owner, StrictVec2 location, int workerId){
+		throw new UnsupportedOperationException("not yet implemented");
+	}
+
+	public Token buildMilitary(int owner,StrictVec2 location, int militaryId){
+		MilitaryInfo militaryInfo = this.militaryInfo[militaryId];
+
+		Token barracks = getBarracksToBuild(owner,location, militaryId);
+		final StrictVec2 spawnLoc = barracks.location;
+
+		Token soldier =  newSoldier(owner, spawnLoc, militaryId);
+
+		InfantryController infantry = (InfantryController)soldier.agent;
+		infantry.setTarget(location);
+
+		return soldier;
+	}
+
 
 	public Token newSoldier(int owner, StrictVec2 location, int modelId)
 	{
@@ -114,8 +124,8 @@ public strictfp class Scenario {
 		token.id = lastTokenId;
 		token.scenario = this;
 		token.owner = players.get(owner);
-		token.modelId = modelId;
-		token.mi = modelInfo[modelId];
+		token.mi = militaryInfo[modelId];
+		token.shape = token.mi.shape;
 		token.location.set(location);
 		token.attack = new AttackController(token);
 		token.damage = new DamageController(token);
@@ -134,14 +144,14 @@ public strictfp class Scenario {
 		return token;
 	}
 
-	public Token newStructure(int owner, StrictVec2 location, int modelId)
+	public Token newStructure(int owner, StrictVec2 location, int structureId)
 	{
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
-		token.modelId = modelId;
-		token.mi = modelInfo[modelId];
+		token.si = structureInfo[structureId];
+		token.shape = token.si.shape;
 		token.owner = players.get(owner);
 		token.location.set(location);
 		terrain.getElevation(location, token.elevation);
@@ -156,13 +166,13 @@ public strictfp class Scenario {
 		return token;
 	}
 
-	public Token newMineable(StrictVec2 location, int modelId){
+	public Token newMineable(StrictVec2 location, int structureId){
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
-		token.modelId = modelId;
-		token.mi = modelInfo[modelId];
+		token.si = structureInfo[structureId];
+		token.shape = token.si.shape;
 		token.owner = Player.NULL_PLAYER;
 		token.location.set(location);
 		terrain.getElevation(location, token.elevation);
@@ -183,11 +193,12 @@ public strictfp class Scenario {
 	private static final StrictPoint tempPoint2 = new StrictPoint();
 	private static final StrictPoint tempPoint3 = new StrictPoint();
 
-	public Token getBarracksToBuild(int owner, StrictVec2 location, int modelId) {
+	public Token getBarracksToBuild(int owner, StrictVec2 location, int militaryId) {
 		Token closestBarracks = null;
 		StrictPoint closestDist2 = tempPoint.set(StrictPoint.MAX_VALUE);
 		for (Token token : tokens) {
 			if (token.owner.playerId == owner) {
+				// TODO: check that barracks can actually build this military id..
 				if (token.barracks != null) {
 					if(location == null){
 						return token;
@@ -243,8 +254,8 @@ public strictfp class Scenario {
 		token.location.set(location);
 		int maxTries = UtMath.largest(100, tokens.size * tokens.size);
 		StrictPoint eps = tempPoint.set("0.001");
-		StrictPoint radius = token.mi.shape.radius;
-		StrictPoint negRadius = tempPoint2.set(token.mi.shape.radius).negate();
+		StrictPoint radius = token.shape.radius;
+		StrictPoint negRadius = tempPoint2.set(token.shape.radius).negate();
 		SET_NEW_POS:
 		while (--maxTries >= 0) {
 			for (Token t : tokens) {

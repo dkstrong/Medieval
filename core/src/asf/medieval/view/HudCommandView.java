@@ -1,15 +1,14 @@
 package asf.medieval.view;
 
 import asf.medieval.model.Command;
-import asf.medieval.model.ModelId;
+import asf.medieval.model.MilitaryId;
+import asf.medieval.model.StructureId;
 import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.strictmath.VecHelper;
-import asf.medieval.utility.UtMath;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
@@ -142,13 +141,21 @@ public class HudCommandView implements View,InputProcessor {
 		return false;
 	}
 
-	public void spawnCommand(int modelId, Vector3 spawnTarget){
+	public void spawnCommand(StructureId structureId, Vector3 spawnTarget){
 
-		Command buildCommand = new Command();
-		buildCommand.location = VecHelper.toVec2(spawnTarget, new StrictVec2());
-		buildCommand.modelId = modelId;
+		Command buildCommand = Command.buildStructure(
+			structureId.ordinal(),
+			VecHelper.toVec2(spawnTarget, new StrictVec2()));
 		world.gameClient.sendCommand(buildCommand);
 
+	}
+
+	public void spawnCommand(MilitaryId militaryId, Vector3 spawnTarget){
+
+		Command buildCommand = Command.buildMilitary(
+			militaryId.ordinal(),
+			VecHelper.toVec2(spawnTarget, new StrictVec2()));
+		world.gameClient.sendCommand(buildCommand);
 	}
 
 	@Override

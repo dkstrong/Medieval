@@ -1,8 +1,10 @@
 package asf.medieval.view;
 
 import asf.medieval.CursorId;
-import asf.medieval.model.ModelId;
-import asf.medieval.model.ModelInfo;
+import asf.medieval.model.MilitaryId;
+import asf.medieval.model.MilitaryInfo;
+import asf.medieval.model.StructureId;
+import asf.medieval.model.StructureInfo;
 import asf.medieval.model.Token;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -39,13 +41,13 @@ public class HudBuildView implements View, InputProcessor {
 	public HudBuildView(MedievalWorld world) {
 		this.world = world;
 
-		ModelBuildNode construction_church = new ModelBuildNode(ModelId.Church.ordinal());
+		ModelBuildNode construction_church = new ModelBuildNode(StructureId.Church);
 		CategoryBuildNode construction = new CategoryBuildNode("Construction", construction_church);
 
-		ModelBuildNode church_knight = new ModelBuildNode(ModelId.Knight.ordinal());
-		ModelBuildNode church_skeleton = new ModelBuildNode(ModelId.Skeleton.ordinal());
-		ModelBuildNode church_jimmy = new ModelBuildNode(ModelId.Jimmy.ordinal());
-		CategoryBuildNode church = new CategoryBuildNode(ModelId.Church.ordinal(), church_knight, church_skeleton, church_jimmy);
+		ModelBuildNode church_knight = new ModelBuildNode(MilitaryId.Knight);
+		ModelBuildNode church_skeleton = new ModelBuildNode(MilitaryId.Skeleton);
+		ModelBuildNode church_jimmy = new ModelBuildNode(MilitaryId.Jimmy);
+		CategoryBuildNode church = new CategoryBuildNode(StructureId.Church, church_knight, church_skeleton, church_jimmy);
 
 
 		currentRootBuildNode = new RootBuildNode(construction, church);
@@ -102,7 +104,11 @@ public class HudBuildView implements View, InputProcessor {
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if (currentModelBuildNode != null) {
 			if (button == Input.Buttons.LEFT) {
-				world.hudView.hudCommandView.spawnCommand(currentModelBuildNode.modelId, translation);
+				if(currentModelBuildNode.structureId != null) {
+					world.hudView.hudCommandView.spawnCommand(currentModelBuildNode.structureId, translation);
+				}else {
+					world.hudView.hudCommandView.spawnCommand(currentModelBuildNode.militaryId, translation);
+				}
 				if (!Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					//currentRootBuildNode.buttonGroup.uncheckAll();
 					currentCategoryBuildNode.buttonGroup.uncheckAll();
@@ -261,7 +267,7 @@ public class HudBuildView implements View, InputProcessor {
 	}
 
 	private class CategoryBuildNode implements BuildNode, EventListener {
-		public int categoryModelId;
+		public StructureId categoryStructureId;
 		public TextButton button;
 		public Table table;
 		public ButtonGroup<Button> buttonGroup;
@@ -269,13 +275,12 @@ public class HudBuildView implements View, InputProcessor {
 		public ModelBuildNode[] childNodes;
 
 		public CategoryBuildNode(String categoryName, ModelBuildNode... childNodes) {
-			categoryModelId = -1;
 			commonInit(categoryName, childNodes);
 		}
 
-		public CategoryBuildNode(int categoryModelId, ModelBuildNode... childNodes) {
-			this.categoryModelId = categoryModelId;
-			ModelViewInfo mvi = world.modelViewInfo[categoryModelId];
+		public CategoryBuildNode(StructureId categoryStructureId, ModelBuildNode... childNodes) {
+			this.categoryStructureId = categoryStructureId;
+			StructureViewInfo mvi = world.structureViewInfo[categoryStructureId.ordinal()];
 			commonInit(mvi.name, childNodes);
 		}
 
@@ -374,34 +379,50 @@ public class HudBuildView implements View, InputProcessor {
 		public TextButton button;
 		public CategoryBuildNode parent;
 
-		public final int modelId;
+		public final StructureId structureId;
+		public final MilitaryId militaryId;
+
+
 		public ModelInstance modelInstance;
 
 		public int cursor;
 
-		public ModelBuildNode(int modelId) {
-			ModelViewInfo mvi = world.modelViewInfo[modelId];
-			ModelInfo mi = world.scenario.modelInfo[modelId];
+		public ModelBuildNode(StructureId structureId) {
+			this.structureId = structureId;
+			this.militaryId = null;
+			StructureViewInfo svi = world.structureViewInfo[structureId.ordinal()];
+			StructureInfo si = world.scenario.structureInfo[structureId.ordinal()];
+
+			button = new TextButton(svi.name, world.app.skin, "toggle");
+			button.setUserObject(this);
+			button.addListener(this);
+
+			Model model = world.assetManager.get(svi.assetLocation[0]);
+			modelInstance = new ModelInstance(model);
+			cursor = -1;
+
+
+		}
+
+		public ModelBuildNode(MilitaryId militaryId) {
+			this.structureId = null;
+			this.militaryId = militaryId;
+
+			ModelViewInfo mvi = world.modelViewInfo[militaryId.ordinal()];
+			MilitaryInfo mi = world.scenario.militaryInfo[militaryId.ordinal()];
+
 			button = new TextButton(mvi.name, world.app.skin, "toggle");
 			button.setUserObject(this);
 			button.addListener(this);
 
-			this.modelId = modelId;
 
-			if (mi.structure) {
-				Model model = world.assetManager.get(mvi.assetLocation[0]);
-				modelInstance = new ModelInstance(model);
-				cursor = -1;
-			} else {
-				cursor = CursorId.RECRUIT_SOLDIER;
-			}
-
+			cursor = CursorId.RECRUIT_SOLDIER;
 
 		}
 
 		@Override
 		public void refreshUi() {
-			button.setDisabled(modelId != ModelId.Church.ordinal() && getBarracksToBuild(modelId) == null);
+			button.setDisabled(militaryId!=null && getBarracksToBuild(militaryId.ordinal())==null  );
 		}
 
 		@Override

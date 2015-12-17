@@ -44,7 +44,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 		agent = (InfantryController)token.agent;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		mvi = world.modelViewInfo[soldierToken.modelId];
+		mvi = world.modelViewInfo[soldierToken.mi.id];
 
 
 		Model model = world.assetManager.get(mvi.assetLocation[0]);
@@ -237,11 +237,6 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	@Override
 	public Vector3 getTranslation() {
 		return translation;
-	}
-
-	@Override
-	public ModelViewInfo getModelViewInfo() {
-		return mvi;
 	}
 
 	@Override

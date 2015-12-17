@@ -15,8 +15,7 @@ public strictfp class MineController {
 	}
 
 	public int getMineResourceId(){
-		ModelInfo mi = token.scenario.modelInfo[token.modelId];
-		return mi.mineResourceId;
+		return token.si.mineResourceId;
 	}
 
 

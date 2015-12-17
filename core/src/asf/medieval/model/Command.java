@@ -10,7 +10,8 @@ import com.badlogic.gdx.math.Vector2;
 public strictfp class Command {
 	public int tokenId;
 	public StrictVec2 location;
-	public int modelId;
+	public int structureId;
+	public int militaryId;
 
 	public void performCommand(int playerId, Scenario scenario)
 	{
@@ -22,7 +23,35 @@ public strictfp class Command {
 
 		}else{
 			// spawn command
-			scenario.buildToken(playerId, location, modelId);
+			if(structureId >=0){
+				scenario.buildStructure(playerId, location, structureId);
+			}else{
+				scenario.buildMilitary(playerId, location, militaryId);
+			}
 		}
+	}
+
+	public static Command moveCommand(int tokenId, StrictVec2 location){
+		Command command = new Command();
+		command.tokenId = tokenId;
+		command.location = location;
+		return command;
+
+	}
+
+	public static Command buildStructure(int structureId, StrictVec2 location){
+		Command command = new Command();
+		command.structureId = structureId;
+		command.militaryId = -1;
+		command.location = location;
+		return command;
+	}
+
+	public static Command buildMilitary(int militaryId, StrictVec2 location){
+		Command command = new Command();
+		command.structureId = -1;
+		command.militaryId = militaryId;
+		command.location = location;
+		return command;
 	}
 }

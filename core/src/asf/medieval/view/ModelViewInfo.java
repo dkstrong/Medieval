@@ -1,15 +1,9 @@
 package asf.medieval.view;
 
-import asf.medieval.model.ModelId;
-import asf.medieval.model.ModelInfo;
+import asf.medieval.model.MilitaryId;
 import asf.medieval.shape.Box;
 import asf.medieval.shape.Shape;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Attribute;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
-import com.badlogic.gdx.utils.IntMap;
 
 /**
  * Created by daniel on 12/4/15.
@@ -55,24 +49,7 @@ public class ModelViewInfo {
 
 	public static ModelViewInfo[] standardConfiguration()
 	{
-		ModelViewInfo[] store = new ModelViewInfo[ModelId.values().length];
-		ModelViewInfo tree = new ModelViewInfo();
-		tree.name = "Tree";
-		tree.shape = new Box(1f, 7.5f);
-		tree.setAssetLocation("Models/Foliage/Tree.g3db","Models/Mineables/WoodLog.g3db","Models/Mineables/WoodCut.g3db");
-		tree.materialAttributes = new Attribute[]{
-			new IntAttribute(IntAttribute.CullFace, 0),
-			new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA),
-			new FloatAttribute(FloatAttribute.AlphaTest, 0.5f)
-		};
-
-		ModelViewInfo church = new ModelViewInfo();
-		church.name = "Church";
-		float churchWidth = 9.5f;
-		float churchHeight = 10f;
-		float churchDepth = 10.2f;
-		church.shape = new Box( churchWidth, churchHeight, churchDepth, churchWidth*0.05f, churchHeight, -churchDepth*0.75f);
-		church.setAssetLocation("Models/Structures/Church.g3db");
+		ModelViewInfo[] store = new ModelViewInfo[MilitaryId.values().length];
 
 		Shape infantryShape = new Box(1f, 7.5f);
 		ModelViewInfo knight = new ModelViewInfo();
@@ -116,12 +93,10 @@ public class ModelViewInfo {
 		jimmy.setHitAnims("ThrustersOn");
 		jimmy.setDieAnims("Death01");
 
-		store[ModelId.Tree.ordinal()] = tree;
-		store[ModelId.Church.ordinal()] = church;
-		store[ModelId.Knight.ordinal()] = knight;
-		store[ModelId.Skeleton.ordinal()] = skeleton;
-		store[ModelId.RockMonster.ordinal()] = rockMonster;
-		store[ModelId.Jimmy.ordinal()] = jimmy;
+		store[MilitaryId.Knight.ordinal()] = knight;
+		store[MilitaryId.Skeleton.ordinal()] = skeleton;
+		store[MilitaryId.RockMonster.ordinal()] = rockMonster;
+		store[MilitaryId.Jimmy.ordinal()] = jimmy;
 
 		return store;
 	}

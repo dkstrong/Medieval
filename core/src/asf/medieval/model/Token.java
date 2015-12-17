@@ -2,6 +2,7 @@ package asf.medieval.model;
 
 import asf.medieval.model.steer.SteerController;
 import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictShape;
 import asf.medieval.strictmath.StrictVec2;
 
 /**
@@ -11,8 +12,10 @@ public strictfp class Token {
 	public Scenario scenario;
 	public Player owner;
 	public int id;
-	public int modelId;
-	public ModelInfo mi;
+	public StrictShape shape;
+	public StructureInfo si;
+	public WorkerInfo wi;
+	public MilitaryInfo mi;
 	public final StrictVec2 location = new StrictVec2();
 	public final StrictPoint elevation = new StrictPoint();
 	public final StrictPoint direction = new StrictPoint();

@@ -2,7 +2,8 @@ package asf.medieval.view;
 
 import asf.medieval.CursorId;
 import asf.medieval.MedievalApp;
-import asf.medieval.model.ModelId;
+import asf.medieval.model.MilitaryId;
+import asf.medieval.model.StructureId;
 import asf.medieval.model.TerrainInfo;
 import asf.medieval.model.steer.InfantryController;
 import asf.medieval.model.Scenario;
@@ -17,7 +18,6 @@ import asf.medieval.model.Player;
 import asf.medieval.net.User;
 import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.StrictVec2;
-import asf.medieval.strictmath.StrictVec3;
 import asf.medieval.terrain.Terrain;
 import asf.medieval.terrain.TerrainLoader;
 import asf.medieval.utility.FileManager;
@@ -40,13 +40,10 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultRenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-
-import java.util.Random;
 
 /**
  * Created by Daniel Strong on 11/11/2015.
@@ -88,6 +85,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	public GameClient gameClient;
 
 	public final ResourceViewInfo[] resourceViewInfo;
+	public final StructureViewInfo[] structureViewInfo;
 	public final ModelViewInfo[] modelViewInfo;
 	public final Scenario scenario;
 	public final Array<View> gameObjects;
@@ -127,10 +125,16 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		Gdx.input.setInputProcessor(internalLoadingInputAdapter);
 
 		resourceViewInfo = ResourceViewInfo.standardConfiguration();
+		structureViewInfo = StructureViewInfo.standardConfiguration();
 		modelViewInfo = ModelViewInfo.standardConfiguration();
 
 		assetManager.load("Packs/Game.atlas", TextureAtlas.class);
 
+		for (StructureViewInfo svi : structureViewInfo) {
+			for (String s : svi.assetLocation) {
+				assetManager.load(s, Model.class);
+			}
+		}
 		for (ModelViewInfo mvi : modelViewInfo) {
 			for (String s : mvi.assetLocation) {
 				assetManager.load(s, Model.class);
@@ -252,7 +256,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		StrictPoint negFifty = new StrictPoint("-70");
 		for(int i= 0; i<10; i++){
 			scenario.setRandomNonOverlappingPosition(
-				scenario.newSoldier(1, new StrictVec2(), ModelId.Knight.ordinal()),
+				scenario.newSoldier(1, new StrictVec2(), MilitaryId.Knight.ordinal()),
 				thirty,fifty,negFifty,fifty);
 		}
 
@@ -262,7 +266,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 //				negFifty,negThirty,negFifty,fifty );
 
 			scenario.setRandomNonOverlappingPosition(
-				scenario.newMineable(new StrictVec2(), ModelId.Tree.ordinal()),
+				scenario.newMineable(new StrictVec2(), StructureId.Tree.ordinal()),
 				negFifty,negThirty,negFifty,fifty );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));

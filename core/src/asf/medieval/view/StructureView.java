@@ -31,7 +31,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 	public boolean selected = false;
 	private final Decal selectionDecal = new Decal();
 
-	public ModelViewInfo mvi;
+	public StructureViewInfo svi;
 	private final String openAnim;
 
 	public StructureView(MedievalWorld world, Token structureToken) {
@@ -40,9 +40,9 @@ public class StructureView implements View, SelectableView, AnimationController.
 
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		mvi = world.modelViewInfo[token.modelId];
+		svi = world.structureViewInfo[token.si.id];
 
-		Model model = world.assetManager.get(mvi.assetLocation[0]);
+		Model model = world.assetManager.get(svi.assetLocation[0]);
 		modelInstance = new ModelInstance(model);
 
 		if (modelInstance.animations.size > 0) {
@@ -55,9 +55,9 @@ public class StructureView implements View, SelectableView, AnimationController.
 		}
 		//rotation.setEulerAngles(180f, 0, 0);
 
-		if(mvi.materialAttributes!=null){
+		if(svi.materialAttributes!=null){
 			for (Material mat : modelInstance.materials) {
-				mat.set(mvi.materialAttributes);
+				mat.set(svi.materialAttributes);
 			}
 		}
 
@@ -69,7 +69,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 
 		selectionDecal.setTextureRegion(world.pack.findRegion("Textures/MoveCommandMarker"));
 		selectionDecal.setBlending(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		selectionDecal.setDimensions(mvi.shape.radius *3.5f, mvi.shape.radius *3.5f);
+		selectionDecal.setDimensions(svi.shape.radius *3.5f, svi.shape.radius *3.5f);
 		selectionDecal.setColor(1, 1, 0, 1);
 		selectionDecal.rotateX(-90);
 
@@ -130,7 +130,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 	 */
 	@Override
 	public float intersects(Ray ray) {
-		return mvi.shape.intersects(modelInstance.transform, ray);
+		return svi.shape.intersects(modelInstance.transform, ray);
 	}
 
 	@Override
@@ -151,11 +151,6 @@ public class StructureView implements View, SelectableView, AnimationController.
 	@Override
 	public Vector3 getTranslation() {
 		return translation;
-	}
-
-	@Override
-	public ModelViewInfo getModelViewInfo() {
-		return mvi;
 	}
 
 	@Override

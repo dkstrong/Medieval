@@ -13,7 +13,7 @@ public strictfp class StructureController extends SteerController {
 	public StructureController(Token token) {
 		super(token);
 		mass.set("10");
-		avoidanceRadius.set(token.mi.shape.radius);
+		avoidanceRadius.set(token.si.shape.radius);
 	}
 
 	public void update(StrictPoint delta)
