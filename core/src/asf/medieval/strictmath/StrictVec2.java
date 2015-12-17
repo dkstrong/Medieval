@@ -373,9 +373,11 @@ public strictfp class StrictVec2 {
 	 * @param radians The angle in radians to set.
 	 */
 	public StrictVec2 setAngleRad(StrictPoint radians) {
-		x.val = len(TEMP_POINT).val;
-		y.val = 0;
-		this.rotateRad(radians);
+		float len = len(TEMP_POINT).val;
+
+		x.val = (float)StrictMath.cos(radians.val) * len;
+		y.val = (float)StrictMath.sin(radians.val) * len;
+
 		return this;
 	}
 

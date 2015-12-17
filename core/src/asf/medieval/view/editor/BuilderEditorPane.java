@@ -176,7 +176,7 @@ public class BuilderEditorPane implements EditorNode {
 		if (currentModelBuildNode != null) {
 			if (button == Input.Buttons.LEFT) {
 				StrictVec2 loc = VecHelper.toVec2(translation, new StrictVec2());
-				world.scenario.newMineable(loc, currentModelBuildNode.structureId.ordinal());
+				world.scenario.newStructure(-1,loc, currentModelBuildNode.structureId.ordinal());
 				if (!Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					buttonGroup.uncheckAll();
 				}

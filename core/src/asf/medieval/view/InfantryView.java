@@ -1,7 +1,8 @@
 package asf.medieval.view;
 
-import asf.medieval.model.steer.InfantryController;
+import asf.medieval.model.steer.InfantrySteerController;
 import asf.medieval.model.Token;
+import asf.medieval.shape.Shape;
 import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.VecHelper;
 import com.badlogic.gdx.graphics.GL20;
@@ -22,7 +23,7 @@ import com.badlogic.gdx.math.collision.Ray;
 public class InfantryView implements View, SelectableView, AnimationController.AnimationListener {
 	private MedievalWorld world;
 	public final Token token;
-	public final InfantryController agent;
+	public final InfantrySteerController agent;
 	private ModelInstance modelInstance;
 	private AnimationController animController;
 	public final Vector3 translation = new Vector3();
@@ -32,6 +33,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	private final Decal selectionDecal = new Decal();
 
 	public ModelViewInfo mvi;
+
 	private Animation[] idle;
 	private Animation[] walk;
 	private Animation[] attack ;
@@ -41,12 +43,10 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 	public InfantryView(MedievalWorld world, Token soldierToken) {
 		this.world = world;
 		this.token = soldierToken;
-		agent = (InfantryController)token.agent;
+		agent = (InfantrySteerController)token.agent;
 
 		//world.addGameObject(new DebugShapeView(world).shape(token.location,token.shape));
-		mvi = world.modelViewInfo[soldierToken.mi.id];
-
-
+		 mvi = world.modelViewInfo[soldierToken.mi.id];
 		Model model = world.assetManager.get(mvi.assetLocation[0]);
 
 		modelInstance = new ModelInstance(model);
@@ -129,7 +129,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 			if (!animController.current.animation.id.startsWith(die[0].id)){
 				animController.animate(die[0].id, 0, -1, 1, 1, this, 0.2f);
 			}
-		}else if(token.attack.attackU.toFloat() >0){
+		}else if(token.attack!=null && token.attack.attackU.toFloat() >0){
 			if (!animController.current.animation.id.startsWith(attack[0].id)){
 				animController.animate(attack[0].id, 0, -1, 1, attack[0].duration/token.attack.attackDuration.toFloat(), this, 0.2f);
 			}

@@ -16,9 +16,12 @@ public class StructureInfo {
 	public boolean mine;
 	public int mineResourceId;
 
+	public TokenInitializer tokenInitializer;
+
 	public StructureInfo() {
 		buildCosts = new int[ResourceId.values().length];
 	}
+
 
 	public static StructureInfo[] standardConfiguration()
 	{
@@ -29,10 +32,22 @@ public class StructureInfo {
 		tree.shape = new StrictShape().fromRadius("1");
 		tree.mine = true;
 		tree.mineResourceId = ResourceId.Wood.ordinal();
+		tree.tokenInitializer = new TokenInitializer() {
+			@Override
+			public void initializeToken(Token token) {
+				token.mineable = new MineController(token);
+			}
+		};
 
 		StructureInfo keep = store[StructureId.Keep.ordinal()] =new StructureInfo();
 		keep.id = StructureId.Keep.ordinal();
 		keep.shape = new StrictShape().fromExtents("10", "10", "0","0");
+		keep.tokenInitializer = new TokenInitializer() {
+			@Override
+			public void initializeToken(Token token) {
+				token.keep = new KeepController(token);
+			}
+		};
 
 		StructureInfo granary = store[StructureId.Granary.ordinal()] =new StructureInfo();
 		granary.id = StructureId.Granary.ordinal();
@@ -56,6 +71,19 @@ public class StructureInfo {
 		church.shape = new StrictShape().fromExtents("9.5", "10.2", "0","0");
 		church.buildCosts[ResourceId.Gold.ordinal()] = 100;
 		church.buildCosts[ResourceId.Wood.ordinal()] = 25;
+		church.tokenInitializer = new TokenInitializer() {
+			@Override
+			public void initializeToken(Token token) {
+				token.barracks = new BarracksController(token);
+				token.barracks.buildableMilitaryIds = new int[]{
+					MilitaryId.Knight.ordinal(),
+					MilitaryId.Skeleton.ordinal(),
+					MilitaryId.Jimmy.ordinal(),
+
+				};
+			}
+		};
+
 
 
 		return store;

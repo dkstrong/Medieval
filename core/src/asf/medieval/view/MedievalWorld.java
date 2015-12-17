@@ -5,9 +5,9 @@ import asf.medieval.MedievalApp;
 import asf.medieval.model.MilitaryId;
 import asf.medieval.model.StructureId;
 import asf.medieval.model.TerrainInfo;
-import asf.medieval.model.steer.InfantryController;
+import asf.medieval.model.steer.InfantrySteerController;
 import asf.medieval.model.Scenario;
-import asf.medieval.model.steer.StructureController;
+import asf.medieval.model.steer.StructureSteerController;
 import asf.medieval.model.Token;
 import asf.medieval.net.NetworkedGameClient;
 import asf.medieval.net.GameClient;
@@ -254,6 +254,12 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 		StrictPoint negThirty = new StrictPoint("-10");
 		StrictPoint fifty = new StrictPoint("90");
 		StrictPoint negFifty = new StrictPoint("-70");
+
+		scenario.setRandomNonOverlappingPosition(
+
+		scenario.newStructure(1, new StrictVec2(), StructureId.Keep.ordinal()),
+			thirty,fifty,negFifty,fifty);
+
 		for(int i= 0; i<10; i++){
 			scenario.setRandomNonOverlappingPosition(
 				scenario.newSoldier(1, new StrictVec2(), MilitaryId.Knight.ordinal()),
@@ -266,11 +272,13 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 //				negFifty,negThirty,negFifty,fifty );
 
 			scenario.setRandomNonOverlappingPosition(
-				scenario.newMineable(new StrictVec2(), StructureId.Tree.ordinal()),
+				scenario.newStructure(-1, new StrictVec2(), StructureId.Tree.ordinal()),
 				negFifty,negThirty,negFifty,fifty );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));
 		//scenario.newSoldier(1,new Vector2(-74.47005f, 169.50835f), true);
+
+
 
 	}
 
@@ -301,9 +309,9 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 	@Override
 	public void onNewToken(Token token) {
 
-		if(token.agent instanceof InfantryController){
+		if(token.agent instanceof InfantrySteerController){
 			addGameObject(new InfantryView(this,token));
-		}else if(token.agent instanceof StructureController){
+		}else if(token.agent instanceof StructureSteerController){
 			addGameObject(new StructureView(this,token));
 			hudView.hudBuildView.refreshUi();
 

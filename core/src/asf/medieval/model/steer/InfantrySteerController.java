@@ -22,12 +22,12 @@ import com.badlogic.gdx.math.Vector2;
 /**
  * Created by daniel on 11/18/15.
  */
-public strictfp class InfantryController extends SteerController {
+public strictfp class InfantrySteerController extends SteerController {
 
 	public Behavior behavior;
 	public PostBehavior postBehavior;
 
-	public InfantryController(Token token) {
+	public InfantrySteerController(Token token) {
 		super(token);
 		maxSpeed.set("7");
 		maxTurnForce.set("10");

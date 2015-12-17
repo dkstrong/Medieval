@@ -8,9 +8,9 @@ import com.badlogic.gdx.math.Vector2;
 /**
  * Created by daniel on 11/18/15.
  */
-public strictfp class StructureController extends SteerController {
+public strictfp class StructureSteerController extends SteerController {
 
-	public StructureController(Token token) {
+	public StructureSteerController(Token token) {
 		super(token);
 		mass.set("10");
 		avoidanceRadius.set(token.si.shape.radius);

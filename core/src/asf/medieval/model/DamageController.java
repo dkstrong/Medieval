@@ -1,6 +1,6 @@
 package asf.medieval.model;
 
-import asf.medieval.model.steer.InfantryController;
+import asf.medieval.model.steer.InfantrySteerController;
 import asf.medieval.strictmath.StrictPoint;
 
 /**
@@ -39,7 +39,7 @@ public strictfp class DamageController {
 			hitU.set(StrictPoint.ZERO);
 			hitDuration.set(attacker.attack.attackDuration);
 
-			((InfantryController) token.agent).setCombatTarget(attacker.agent);
+			((InfantrySteerController) token.agent).setCombatTarget(attacker.agent);
 		}
 
 	}
@@ -55,9 +55,9 @@ public strictfp class DamageController {
 			// when did clearTarget() isnt called and i dont think the PostBehavior
 			// gets reset
 			if(health.val >StrictPoint.ZERO.val){
-				((InfantryController)token.agent).clearTarget();
+				((InfantrySteerController)token.agent).clearTarget();
 			}else{
-				((InfantryController)token.agent).setDeath(token.location);
+				((InfantrySteerController)token.agent).setDeath(token.location);
 			}
 		}
 

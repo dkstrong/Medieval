@@ -1,8 +1,8 @@
 package asf.medieval.model;
 
-import asf.medieval.model.steer.InfantryController;
+import asf.medieval.model.steer.InfantrySteerController;
 import asf.medieval.model.steer.SteerGraph;
-import asf.medieval.model.steer.StructureController;
+import asf.medieval.model.steer.StructureSteerController;
 import asf.medieval.net.User;
 import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.StrictRand;
@@ -19,7 +19,6 @@ public strictfp class Scenario {
 
 	public final StrictRand rand;
 	public final StructureInfo[] structureInfo;
-	public final WorkerInfo[] workerInfo;
 	public final MilitaryInfo[] militaryInfo;
 	public TerrainInfo terrain;
 
@@ -30,7 +29,6 @@ public strictfp class Scenario {
 	public Scenario(long seed) {
 		this.rand = new StrictRand(seed);
 		this.structureInfo = StructureInfo.standardConfiguration();
-		this.workerInfo = WorkerInfo.standardConfiguration();
 		this.militaryInfo = MilitaryInfo.standardConfiguration();
 	}
 
@@ -77,6 +75,7 @@ public strictfp class Scenario {
 	}
 
 	public Player getPlayer(int id){
+		if(id <0) return Player.NULL_PLAYER;
 		return players.get(id);
 	}
 
@@ -98,8 +97,12 @@ public strictfp class Scenario {
 
 	}
 
-	public Token buildWorker(int owner, StrictVec2 location, int workerId){
-		throw new UnsupportedOperationException("not yet implemented");
+	public Token buildWorker(KeepController keep)
+	{
+
+		keep.token.owner.pop++;
+
+		return newWorker(keep.token.owner.playerId, keep.token.location);
 	}
 
 	public Token buildMilitary(int owner,StrictVec2 location, int militaryId){
@@ -110,13 +113,65 @@ public strictfp class Scenario {
 
 		Token soldier =  newSoldier(owner, spawnLoc, militaryId);
 
-		InfantryController infantry = (InfantryController)soldier.agent;
+		InfantrySteerController infantry = (InfantrySteerController)soldier.agent;
 		infantry.setTarget(location);
 
 		return soldier;
 	}
 
+	public Token newStructure(int owner, StrictVec2 location, int structureId)
+	{
+		Token token= new Token();
+		++lastTokenId;
+		token.id = lastTokenId;
+		token.scenario = this;
+		token.si = structureInfo[structureId];
+		token.shape = token.si.shape;
+		token.owner = getPlayer(owner);
+		token.location.set(location);
+		terrain.getElevation(location, token.elevation);
+		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
 
+		if(token.si.tokenInitializer!=null){
+			token.si.tokenInitializer.initializeToken(token);
+		}
+		token.agent = new StructureSteerController(token);
+		steerGraph.agents.add(token.agent);
+		tokens.add(token);
+
+		if(listener!=null)
+			listener.onNewToken(token);
+		return token;
+	}
+
+	public Token newWorker(int owner, StrictVec2 location)
+	{
+		Token token= new Token();
+		++lastTokenId;
+		token.id = lastTokenId;
+		token.scenario = this;
+		token.owner = players.get(owner);
+		token.mi = militaryInfo[MilitaryId.Jimmy.ordinal()];
+		token.shape = token.mi.shape;
+		token.location.set(location);
+		token.damage = new DamageController(token);
+		token.agent = new InfantrySteerController(token);
+		steerGraph.agents.add(token.agent);
+
+		token.worker = new WorkerController(token);
+
+		tokens.add(token);
+
+		setNonOverlappingPosition(token, location);
+
+		terrain.getElevation(location, token.elevation);
+		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
+
+
+		if(listener!=null)
+			listener.onNewToken(token);
+		return token;
+	}
 	public Token newSoldier(int owner, StrictVec2 location, int modelId)
 	{
 		Token token= new Token();
@@ -129,7 +184,7 @@ public strictfp class Scenario {
 		token.location.set(location);
 		token.attack = new AttackController(token);
 		token.damage = new DamageController(token);
-		token.agent = new InfantryController(token);
+		token.agent = new InfantrySteerController(token);
 		steerGraph.agents.add(token.agent);
 		tokens.add(token);
 
@@ -144,49 +199,7 @@ public strictfp class Scenario {
 		return token;
 	}
 
-	public Token newStructure(int owner, StrictVec2 location, int structureId)
-	{
-		Token token= new Token();
-		++lastTokenId;
-		token.id = lastTokenId;
-		token.scenario = this;
-		token.si = structureInfo[structureId];
-		token.shape = token.si.shape;
-		token.owner = players.get(owner);
-		token.location.set(location);
-		terrain.getElevation(location, token.elevation);
-		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
-		token.barracks = new BarracksController(token);
-		token.agent = new StructureController(token);
-		steerGraph.agents.add(token.agent);
-		tokens.add(token);
 
-		if(listener!=null)
-			listener.onNewToken(token);
-		return token;
-	}
-
-	public Token newMineable(StrictVec2 location, int structureId){
-		Token token= new Token();
-		++lastTokenId;
-		token.id = lastTokenId;
-		token.scenario = this;
-		token.si = structureInfo[structureId];
-		token.shape = token.si.shape;
-		token.owner = Player.NULL_PLAYER;
-		token.location.set(location);
-		terrain.getElevation(location, token.elevation);
-		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
-		token.mineable = new MineController(token);
-
-		token.agent = new StructureController(token);
-		steerGraph.agents.add(token.agent);
-		tokens.add(token);
-
-		if(listener!=null)
-			listener.onNewToken(token);
-		return token;
-	}
 
 	private Array<Token> tempTokens = new Array<Token>(false, 16, Token.class);
 	private static final StrictPoint tempPoint = new StrictPoint();
@@ -280,8 +293,6 @@ public strictfp class Scenario {
 
 	public void update(StrictPoint delta)
 	{
-
-
 		for (Token token : tokens) {
 			token.update(delta);
 		}

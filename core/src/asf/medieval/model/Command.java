@@ -1,8 +1,7 @@
 package asf.medieval.model;
 
-import asf.medieval.model.steer.InfantryController;
+import asf.medieval.model.steer.InfantrySteerController;
 import asf.medieval.strictmath.StrictVec2;
-import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by daniel on 11/16/15.
@@ -18,7 +17,7 @@ public strictfp class Command {
 		if(tokenId > 0){
 			// move command
 			Token token = scenario.getSoldier(tokenId);
-			InfantryController agent = (InfantryController)token.agent;
+			InfantrySteerController agent = (InfantrySteerController)token.agent;
 			agent.setTarget(location);
 
 		}else{

@@ -1,6 +1,6 @@
 package asf.medieval.model;
 
-import asf.medieval.model.steer.InfantryController;
+import asf.medieval.model.steer.InfantrySteerController;
 import asf.medieval.strictmath.StrictPoint;
 
 /**
@@ -59,7 +59,7 @@ public strictfp class AttackController {
 					dmg.set(StrictPoint.ONE);
 
 
-				((InfantryController)token.agent).clearTarget();
+				((InfantrySteerController)token.agent).clearTarget();
 
 				target.damage.health.sub(dmg);
 
@@ -81,7 +81,7 @@ public strictfp class AttackController {
 		attackU.set(StrictPoint.ZERO);
 		attackDuration.set("2");
 
-		((InfantryController) token.agent).setCombatTarget(target.agent);
+		((InfantrySteerController) token.agent).setCombatTarget(target.agent);
 
 		if(target.damage != null){
 			target.damage.attackedBy(token);
@@ -90,7 +90,7 @@ public strictfp class AttackController {
 	}
 
 	public void clearAttackTarget(){
-		((InfantryController)token.agent).clearTarget();
+		((InfantrySteerController)token.agent).clearTarget();
 		attackU.set("-1");
 		if(target != null){
 			target.damage.clearAttacked(token);

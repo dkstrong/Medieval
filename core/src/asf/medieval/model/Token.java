@@ -14,7 +14,6 @@ public strictfp class Token {
 	public int id;
 	public StrictShape shape;
 	public StructureInfo si;
-	public WorkerInfo wi;
 	public MilitaryInfo mi;
 	public final StrictVec2 location = new StrictVec2();
 	public final StrictPoint elevation = new StrictPoint();
@@ -22,22 +21,27 @@ public strictfp class Token {
 	public SteerController agent;
 	public AttackController attack;
 	public DamageController damage;
+	public KeepController keep;
+	public WorkerController worker;
 	public BarracksController barracks;
 	public MineController mineable;
 
 	public void update(StrictPoint delta)
 	{
-		if(attack != null){
-			attack.update(delta);
-		}
-
-		if(damage != null){
+		if(damage != null)
 			damage.update(delta);
-		}
 
-		if(agent !=null) {
+		if(keep != null)
+			keep.update(delta);
+
+		if(worker != null)
+			worker.update(delta);
+
+		if(attack != null)
+			attack.update(delta);
+
+		if(agent !=null)
 			agent.update(delta);
-		}
 
 		scenario.terrain.getElevation(location, elevation);
 		//elevation.val = scenario.terrain.getElevation(location.x.val,location.y.val);

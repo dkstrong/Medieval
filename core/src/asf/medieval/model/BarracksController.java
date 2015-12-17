@@ -6,23 +6,18 @@ package asf.medieval.model;
 public strictfp class BarracksController {
 	public Token token;
 
-
-	public int[] buildableModelIds;
+	public int[] buildableMilitaryIds;
 
 	public BarracksController(Token token) {
 		this.token = token;
-		buildableModelIds = new int[]{
-			MilitaryId.Knight.ordinal(),
-			MilitaryId.Skeleton.ordinal(),
-			MilitaryId.Jimmy.ordinal(),
-
-		};
 	}
 
 
-	public boolean canBuild(int modelId){
-		for (int buildableModelId : buildableModelIds) {
-			if(buildableModelId == modelId)
+	public boolean canBuild(int militaryId){
+		if(buildableMilitaryIds == null)
+			return false;
+		for (int buildableMilitaryId : buildableMilitaryIds) {
+			if(buildableMilitaryId == militaryId)
 				return true;
 		}
 		return false;
