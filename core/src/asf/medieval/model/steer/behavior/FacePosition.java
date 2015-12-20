@@ -22,7 +22,7 @@ public strictfp class FacePosition implements PostBehavior {
 	@Override
 	public void update(StrictPoint delta) {
 		// token.direction = (target - token.location).nor().angleRad();
-		temp.set(target).sub(token.location).nor().angleRad(StrictVec2.Y, token.direction);
+		temp.set(target).sub(token.location).nor().angleRad(token.direction);
 
 	}
 }

@@ -24,7 +24,8 @@ public strictfp class FaceVelocity implements PostBehavior {
 		if(token.agent.getVelocity().len2(len2).val > 1)
 		{
 			//  look direction of movement
-			temp.set(token.agent.getVelocity()).nor().angleRad(StrictVec2.Y, token.direction);
+			//temp.set(token.agent.getVelocity()).nor().angleRad(StrictVec2.Y, token.direction);
+			temp.set(token.agent.getVelocity()).nor().angleRad(token.direction);
 		}
 	}
 }

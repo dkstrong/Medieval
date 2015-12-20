@@ -257,7 +257,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 
 		scenario.setRandomNonOverlappingPosition(
 
-		scenario.newStructure(1, new StrictVec2(), StructureId.Keep.ordinal()),
+		scenario.newStructure(1, new StrictVec2(), new StrictPoint(StrictPoint.PI), StructureId.Keep.ordinal()),
 			thirty,fifty,negFifty,fifty);
 
 		for(int i= 0; i<10; i++){
@@ -272,7 +272,7 @@ public class MedievalWorld implements Disposable, Scenario.Listener, RtsCamContr
 //				negFifty,negThirty,negFifty,fifty );
 
 			scenario.setRandomNonOverlappingPosition(
-				scenario.newStructure(-1, new StrictVec2(), StructureId.Tree.ordinal()),
+				scenario.newStructure(-1, new StrictVec2(), StrictPoint.HALF_PI,StructureId.Tree.ordinal()),
 				negFifty,negThirty,negFifty,fifty );
 		}
 		//scenario.newStructure(2, new Vector2(-20,-20));

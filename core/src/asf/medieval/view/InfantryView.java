@@ -120,7 +120,7 @@ public class InfantryView implements View, SelectableView, AnimationController.A
 
 		VecHelper.toVector3(token.location, token.elevation, translation);
 
-		rotation.setFromAxisRad(0,1,0,token.direction.toFloat());
+		rotation.setFromAxisRad(0,-1,0,token.direction.toFloat()+MathUtils.PI*1.5f);
 
 		float speed = agent.getVelocity().len(tempPoint).toFloat();
 

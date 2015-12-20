@@ -6,14 +6,13 @@ import asf.medieval.strictmath.StrictVec2;
 /**
  * Created by daniel on 11/19/15.
  */
-public strictfp class MineController extends StructureController{
+public strictfp class GranaryController extends StructureController{
 
-	public int remainingResource;
+	public int food = 0;
 
-	public MineController(Token token) {
+	public GranaryController(Token token) {
 		super(token);
 
-		remainingResource = 100;
 	}
 
 	@Override
@@ -21,8 +20,6 @@ public strictfp class MineController extends StructureController{
 	{
 
 	}
-
-
 
 	@Override
 	public StrictVec2 getWorkerTargetLocation(StrictVec2 store) {

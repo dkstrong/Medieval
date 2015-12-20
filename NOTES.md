@@ -69,7 +69,72 @@ soldiers are purchased at barracks and require a build time, soldiers slowly dra
 
 
 
+Worker Paths:
+// TODO: need to incorporate if the worker is interrupted on its task and then resumes it, (eg if the worker is attacked but survives)
+// Or if the building mode changes, or if repair is activated etc etc
+// TODO: need Unassign work to account for workers that are unassigned due to low popularity or died
 
+Structure
+	Build
+		1. Take Idle Worker/Use Assigned Worker 2. Worker Moves to structure 3. Worker builds structure 4. [Operate Structure]
+	Repair
+		1. Take Idle Worker/Use Assigned Worker 2. Worker Moves to structure 3. Worker repairs structure 4. [Operate Structure]
+	Operate Structure (Requires Build, if not build then does build instead)
+		1. [Unassign Worker]
+	Unassign Worker
+		1. Assign Worker to [Operate Structure] on closest idle building 2. if no idle building exists then assigned to keep
+		
+Granary 
+	
+Farm
+	Operate Structure
+		1. Take Idle Worker/Use Assigned Worker. 
+		2. Worker Moves to Farm.
+		3. Worker collects Food. 
+		4. Worker carries Food to Granary. 
+		5. Worker places food.
+		6. [Operate Structure]
+
+Lumber Camp
+	Operate Structure
+		1. Take Idle Worker/Use Assigned Worker.
+		2. Attach Tree to lumber camp if there is none/Use Already Attached Tree 
+		3. Worker Moves to attached tree
+		4. Worker Collects Wood Log from tree
+		5. Worker carries Wood Log to lumber camper
+		6. Worker converts Wood Log to Wood
+		7. Worker carries Wood to Stockpile
+	 	8. Worker places Wood
+		9. [Operate Structure]
+	Unassign Worker
+			1. [super.Unassign Worker]
+			2. Unattach tree so that other lumber camps to attach to it
+			
+				
+Stone Mine
+	Operate Structure
+		1. Take Idle Worker/Use Assigned Worker.
+		2. Worker moves to Stone Mine
+		3. worker spawns stone in mine
+		4. Attach closest unattached ox tether to this mine/ Do nothing if already have attached ox tether 
+		5. [Operate Structure]	
+		
+Ox Tether
+	Operate Structure
+		1. Take Idle Worker/Use Assigned Worker.
+			a. If attached
+				2. Worker moves to mine
+				3. Collect Stone
+				4. if cart full then detaach from mine
+				5. [Operate Structure]
+			b. If not attached
+				c.If cart contains stone
+					6. Worker moves to stockpile
+					7. Worker places stone in stockpile
+					8. [Operate Structure]
+				d.If cart empty
+					9. Worker moves to ox post
+					
 
 
 

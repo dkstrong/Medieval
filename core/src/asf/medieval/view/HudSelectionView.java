@@ -64,8 +64,10 @@ public class HudSelectionView implements View,InputProcessor {
 
 	private boolean canSelectToken(Token token){
 		// TODO: this should be handled within the model package..
+		if(token.worker!=null) return false;
 		if(token.damage!=null && token.damage.health.lessThanOrEqual(StrictPoint.ZERO)) return false;
 		if(token.owner.playerId!= world.gameClient.user.id) return false;
+
 
 		return true;
 	}

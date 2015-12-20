@@ -1,17 +1,24 @@
 package asf.medieval.model;
 
+import asf.medieval.strictmath.StrictPoint;
+import asf.medieval.strictmath.StrictVec2;
+
 /**
  * Created by daniel on 11/19/15.
  */
-public strictfp class BarracksController {
-	public Token token;
+public strictfp class BarracksController extends StructureController{
 
 	public int[] buildableMilitaryIds;
 
 	public BarracksController(Token token) {
-		this.token = token;
+		super(token);
 	}
 
+	@Override
+	public void update(StrictPoint delta)
+	{
+
+	}
 
 	public boolean canBuild(int militaryId){
 		if(buildableMilitaryIds == null)
@@ -24,4 +31,15 @@ public strictfp class BarracksController {
 	}
 
 
+	@Override
+	public StrictVec2 getWorkerTargetLocation(StrictVec2 store) {
+		store.setAngleRad(token.direction, "10");
+		store.add(token.location);
+		return store;
+	}
+
+	@Override
+	public void getNextWorkerTask(WorkerController worker) {
+
+	}
 }

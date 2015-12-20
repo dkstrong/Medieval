@@ -21,6 +21,7 @@ public strictfp class StrictPoint {
 	public static final StrictPoint MAX_VALUE = new StrictPoint(Float.MAX_VALUE);
 	public static final StrictPoint PI = new StrictPoint(3.1415927f);
 	public static final StrictPoint PI2 = new StrictPoint(3.1415927f * 2f);
+	public static final StrictPoint HALF_PI = new StrictPoint(3.1415927f /2f);
 	private static final StrictPoint RAD_DEG = new StrictPoint(180f/PI.val);
 	private static final StrictPoint DEG_RAD = new StrictPoint(PI.val/180f);
 

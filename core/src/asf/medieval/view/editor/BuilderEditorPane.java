@@ -4,6 +4,7 @@ import asf.medieval.model.MilitaryId;
 import asf.medieval.model.MilitaryInfo;
 import asf.medieval.model.StructureId;
 import asf.medieval.model.StructureInfo;
+import asf.medieval.strictmath.StrictPoint;
 import asf.medieval.strictmath.StrictVec2;
 import asf.medieval.strictmath.VecHelper;
 import asf.medieval.view.MedievalWorld;
@@ -176,7 +177,7 @@ public class BuilderEditorPane implements EditorNode {
 		if (currentModelBuildNode != null) {
 			if (button == Input.Buttons.LEFT) {
 				StrictVec2 loc = VecHelper.toVec2(translation, new StrictVec2());
-				world.scenario.newStructure(-1,loc, currentModelBuildNode.structureId.ordinal());
+				world.scenario.newStructure(-1,loc, new StrictPoint(StrictPoint.HALF_PI), currentModelBuildNode.structureId.ordinal());
 				if (!Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 					buttonGroup.uncheckAll();
 				}

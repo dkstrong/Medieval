@@ -93,7 +93,7 @@ public strictfp class Scenario {
 
 	public Token buildStructure(int owner,StrictVec2 location, int structureId){
 		StructureInfo structure = structureInfo[structureId];
-		return newStructure(owner, location, structureId);
+		return newStructure(owner, location, StrictPoint.HALF_PI, structureId);
 
 	}
 
@@ -102,7 +102,7 @@ public strictfp class Scenario {
 
 		keep.token.owner.pop++;
 
-		return newWorker(keep.token.owner.playerId, keep.token.location);
+		return newWorker(keep);
 	}
 
 	public Token buildMilitary(int owner,StrictVec2 location, int militaryId){
@@ -119,7 +119,7 @@ public strictfp class Scenario {
 		return soldier;
 	}
 
-	public Token newStructure(int owner, StrictVec2 location, int structureId)
+	public Token newStructure(int owner, StrictVec2 location, StrictPoint direction, int structureId)
 	{
 		Token token= new Token();
 		++lastTokenId;
@@ -129,6 +129,7 @@ public strictfp class Scenario {
 		token.shape = token.si.shape;
 		token.owner = getPlayer(owner);
 		token.location.set(location);
+		token.direction.set(direction);
 		terrain.getElevation(location, token.elevation);
 		//token.elevation.val = terrain.getElevation(location.x.val,location.y.val);
 
@@ -144,13 +145,14 @@ public strictfp class Scenario {
 		return token;
 	}
 
-	public Token newWorker(int owner, StrictVec2 location)
+	public Token newWorker(KeepController keep)
 	{
+		StrictVec2 location = keep.token.location;
 		Token token= new Token();
 		++lastTokenId;
 		token.id = lastTokenId;
 		token.scenario = this;
-		token.owner = players.get(owner);
+		token.owner = keep.token.owner;
 		token.mi = militaryInfo[MilitaryId.Jimmy.ordinal()];
 		token.shape = token.mi.shape;
 		token.location.set(location);
@@ -159,6 +161,7 @@ public strictfp class Scenario {
 		steerGraph.agents.add(token.agent);
 
 		token.worker = new WorkerController(token);
+		token.worker.assignedStructure = keep;
 
 		tokens.add(token);
 
@@ -206,13 +209,41 @@ public strictfp class Scenario {
 	private static final StrictPoint tempPoint2 = new StrictPoint();
 	private static final StrictPoint tempPoint3 = new StrictPoint();
 
+	public WorkerController getIdleWorker(int owner, StrictVec2 location){
+		for (int i = 0; i < tokens.size; i++) {
+			Token t = tokens.items[i];
+			if(t.owner.playerId == owner)
+			{
+				if(t.worker !=null && t.worker.assignedStructure instanceof KeepController)
+				{
+					return t.worker;
+				}
+			}
+		}
+		return null;
+	}
+
+	public GranaryController getGranaryToFill(int owner, StrictVec2 location){
+		for (int i = 0; i < tokens.size; i++) {
+			Token t = tokens.items[i];
+			if(t.owner.playerId == owner)
+			{
+				if(t.structure instanceof GranaryController)
+				{
+					return (GranaryController)t.structure;
+				}
+			}
+		}
+		return null;
+	}
+
 	public Token getBarracksToBuild(int owner, StrictVec2 location, int militaryId) {
 		Token closestBarracks = null;
 		StrictPoint closestDist2 = tempPoint.set(StrictPoint.MAX_VALUE);
 		for (Token token : tokens) {
 			if (token.owner.playerId == owner) {
 				// TODO: check that barracks can actually build this military id..
-				if (token.barracks != null) {
+				if (token.structure instanceof BarracksController) {
 					if(location == null){
 						return token;
 					}else if(closestBarracks == null){

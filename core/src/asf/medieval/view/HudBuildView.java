@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * Created by daniel on 11/20/15.
@@ -41,6 +42,31 @@ public class HudBuildView implements View, InputProcessor {
 	public HudBuildView(MedievalWorld world) {
 		this.world = world;
 
+		Array<ModelBuildNode> structureBuildNodes = new Array<ModelBuildNode>(true,8, ModelBuildNode.class);
+		for (StructureId structureId : StructureId.values()) {
+			if(structureId == StructureId.Keep || structureId == StructureId.Tree)
+				continue;
+
+			ModelBuildNode structure = new ModelBuildNode(structureId);
+			structureBuildNodes.add(structure);
+		}
+
+		CategoryBuildNode construction = new CategoryBuildNode("Construction", structureBuildNodes);
+
+		ModelBuildNode church_knight = new ModelBuildNode(MilitaryId.Knight);
+		ModelBuildNode church_skeleton = new ModelBuildNode(MilitaryId.Skeleton);
+		ModelBuildNode church_jimmy = new ModelBuildNode(MilitaryId.Jimmy);
+		CategoryBuildNode church = new CategoryBuildNode(StructureId.Church, church_knight, church_skeleton, church_jimmy);
+
+
+		currentRootBuildNode = new RootBuildNode(construction, church);
+
+		world.stage.addActor(currentRootBuildNode.container);
+
+		refreshUi();
+	}
+
+	private void oldUiBuild(){
 		ModelBuildNode construction_church = new ModelBuildNode(StructureId.Church);
 		CategoryBuildNode construction = new CategoryBuildNode("Construction", construction_church);
 
@@ -51,7 +77,6 @@ public class HudBuildView implements View, InputProcessor {
 
 
 		currentRootBuildNode = new RootBuildNode(construction, church);
-
 
 		world.stage.addActor(currentRootBuildNode.container);
 
@@ -276,6 +301,13 @@ public class HudBuildView implements View, InputProcessor {
 
 		public CategoryBuildNode(String categoryName, ModelBuildNode... childNodes) {
 			commonInit(categoryName, childNodes);
+		}
+		public CategoryBuildNode(String categoryName, Array<ModelBuildNode> childNodes) {
+			ModelBuildNode[] nodes = new ModelBuildNode[childNodes.size];
+			for (int i = 0; i < childNodes.size; i++) {
+				nodes[i] = childNodes.get(i);
+			}
+			commonInit(categoryName, nodes);
 		}
 
 		public CategoryBuildNode(StructureId categoryStructureId, ModelBuildNode... childNodes) {

@@ -25,7 +25,7 @@ public strictfp class FaceAgent implements PostBehavior {
 	public void update(StrictPoint delta) {
 
 		// token.direction = (target.location - token.location).nor().angleRad();
-		temp.set(target.getLocation()).sub(token.location).nor().angleRad(StrictVec2.Y, token.direction);
+		temp.set(target.getLocation()).sub(token.location).nor().angleRad(token.direction);
 
 	}
 }

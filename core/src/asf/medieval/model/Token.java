@@ -17,22 +17,21 @@ public strictfp class Token {
 	public MilitaryInfo mi;
 	public final StrictVec2 location = new StrictVec2();
 	public final StrictPoint elevation = new StrictPoint();
-	public final StrictPoint direction = new StrictPoint();
+	public final StrictPoint direction = new StrictPoint(StrictPoint.HALF_PI);
 	public SteerController agent;
 	public AttackController attack;
 	public DamageController damage;
-	public KeepController keep;
+	public StructureController structure;
 	public WorkerController worker;
-	public BarracksController barracks;
-	public MineController mineable;
+
 
 	public void update(StrictPoint delta)
 	{
 		if(damage != null)
 			damage.update(delta);
 
-		if(keep != null)
-			keep.update(delta);
+		if(structure != null)
+			structure.update(delta);
 
 		if(worker != null)
 			worker.update(delta);

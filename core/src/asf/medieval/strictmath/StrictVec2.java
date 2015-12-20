@@ -367,6 +367,19 @@ public strictfp class StrictVec2 {
 		return rotateRad(TEMP_POINT);
 	}
 
+	public StrictVec2 setAngleRad(StrictPoint radians, StrictPoint len){
+		x.val = (float)StrictMath.cos(radians.val) * len.val;
+		y.val = (float)StrictMath.sin(radians.val) * len.val;
+		return this;
+	}
+
+	public StrictVec2 setAngleRad(StrictPoint radians, String len){
+		float lenFloat = TEMP_POINT.set(len).val;
+		x.val = (float)StrictMath.cos(radians.val) * lenFloat;
+		y.val = (float)StrictMath.sin(radians.val) * lenFloat;
+		return this;
+	}
+
 	/**
 	 * Sets the angle of the vector in radians relative to the x-axis, towards the positive y-axis (typically counter-clockwise).
 	 *

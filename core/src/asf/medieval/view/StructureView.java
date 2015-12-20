@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -86,7 +87,7 @@ public class StructureView implements View, SelectableView, AnimationController.
 
 		VecHelper.toVector3(token.location, token.elevation, translation);
 
-		rotation.setFromAxisRad(0,1,0,token.direction.toFloat());
+		rotation.setFromAxisRad(0,-1,0,token.direction.toFloat()+ MathUtils.PI*1.5f);
 
 		if (animController != null)
 		{

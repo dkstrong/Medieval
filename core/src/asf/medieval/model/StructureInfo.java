@@ -13,9 +13,6 @@ public class StructureInfo {
 	public int[] buildCosts;
 	public int popCost; // how many workers are needed to run this building
 
-	public boolean mine;
-	public int mineResourceId;
-
 	public TokenInitializer tokenInitializer;
 
 	public StructureInfo() {
@@ -30,12 +27,10 @@ public class StructureInfo {
 		StructureInfo tree = store[StructureId.Tree.ordinal()] =new StructureInfo();
 		tree.id = StructureId.Tree.ordinal();
 		tree.shape = new StrictShape().fromRadius("1");
-		tree.mine = true;
-		tree.mineResourceId = ResourceId.Wood.ordinal();
 		tree.tokenInitializer = new TokenInitializer() {
 			@Override
 			public void initializeToken(Token token) {
-				token.mineable = new MineController(token);
+				token.structure = new MineController(token);
 			}
 		};
 
@@ -45,7 +40,7 @@ public class StructureInfo {
 		keep.tokenInitializer = new TokenInitializer() {
 			@Override
 			public void initializeToken(Token token) {
-				token.keep = new KeepController(token);
+				token.structure = new KeepController(token);
 			}
 		};
 
@@ -53,6 +48,12 @@ public class StructureInfo {
 		granary.id = StructureId.Granary.ordinal();
 		granary.shape = new StrictShape().fromExtents("10", "10", "0","0");
 		granary.buildCosts[ResourceId.Wood.ordinal()] = 150;
+		granary.tokenInitializer = new TokenInitializer() {
+			@Override
+			public void initializeToken(Token token) {
+				token.structure = new GranaryController(token);
+			}
+		};
 
 		StructureInfo house = store[StructureId.House.ordinal()] =new StructureInfo();
 		house.id = StructureId.House.ordinal();
@@ -62,9 +63,14 @@ public class StructureInfo {
 		StructureInfo farm = store[StructureId.Farm.ordinal()] =new StructureInfo();
 		farm.id = StructureId.Farm.ordinal();
 		farm.shape = new StrictShape().fromExtents("10", "10", "0","0");
-		farm.mine = true;
-		farm.mineResourceId = ResourceId.Food.ordinal();
+		farm.popCost = 1;
 		farm.buildCosts[ResourceId.Wood.ordinal()] = 40;
+		farm.tokenInitializer = new TokenInitializer() {
+			@Override
+			public void initializeToken(Token token) {
+				token.structure = new FarmController(token);
+			}
+		};
 
 		StructureInfo church = store[StructureId.Church.ordinal()] =new StructureInfo();
 		church.id = StructureId.Church.ordinal();
@@ -74,8 +80,9 @@ public class StructureInfo {
 		church.tokenInitializer = new TokenInitializer() {
 			@Override
 			public void initializeToken(Token token) {
-				token.barracks = new BarracksController(token);
-				token.barracks.buildableMilitaryIds = new int[]{
+				BarracksController barracks = new BarracksController(token);
+				token.structure = barracks;
+				barracks.buildableMilitaryIds = new int[]{
 					MilitaryId.Knight.ordinal(),
 					MilitaryId.Skeleton.ordinal(),
 					MilitaryId.Jimmy.ordinal(),
